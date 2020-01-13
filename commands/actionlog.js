@@ -14,7 +14,8 @@ module.exports = {
 		}
 
 		const actionLogChannelID = args[0];
-		client.votes.set("ACTION_LOG", actionLogChannelID);
+		
+		client.data.set("ACTION_LOG", actionLogChannelID);
 
 		const actionLogString = client.channels.get(actionLogChannelID).toString();
 

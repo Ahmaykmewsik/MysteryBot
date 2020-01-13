@@ -1,0 +1,22 @@
+{
+  "name": "mysterybot",
+  "version": "1.0.0",
+  "description": "A Discord Bot to run the Mystery Game",
+  "main": "index.js",
+  "scripts": {
+    "test": "!ping"
+  },
+  "keywords": [
+    "discord",
+    "game",
+    "roleplay"
+  ],
+  "author": "Ahmaykmewsik",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^5.4.3",
+    "discord.js": "^11.5.1",
+    "dotenv": "^8.2.0",
+    "enmap": "^5.2.4"
+  }
+}

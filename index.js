@@ -38,15 +38,12 @@ for (const file of commandFiles) {
 
 
 client.on('ready', () => {
-	console.log('EarBot Ready!');
+	console.log('It\'s time to get mysterious!');
 });
 
 client.on('message', message => {
 
 	if (message.author.bot) return; // Ignore bots.
-
-	const guildID = "660306459397193728";//Get Guild ID
-	const actionLogChannelID = client.data.get("ACTION_LOG")
 	
 	///COMMANDS ---------------------------------------------------------------------------
 	if (!message.content.startsWith(prefix) || message.author.bot) return;
@@ -71,11 +68,13 @@ client.on('message', message => {
 	//Notify if this can only be sent in guild
 	if (command.guildonly && message.channel.type === "dm") {
 		message.reply('This command cannot be sent as a DM. Send it in the server instead.');
+		return;
 	}
 
 	//Notify if this can only be sent in dm
 	if (command.dmonly && message.channel.type === "text") {
 		message.reply('This command cannot be sent in the server. Send it as a DM instead.');
+		return;
 	}
 
 	//Do the command
