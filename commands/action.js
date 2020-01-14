@@ -1,5 +1,3 @@
-
-const Enmap = require("enmap");
 const prefix = process.env.prefix;
 
 module.exports = {

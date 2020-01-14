@@ -1,24 +1,10 @@
-
-const Enmap = require("enmap");
-
 module.exports = {
 	name: 'resetall',
 	description: 'Resets all data',
 	format: "!resetall",
 	guildonly: true,
+	gmonly: true,
 	execute(client, message, args) {
-
-		//Check that the GM is giving command.
-		
-
-		///*
-
-		if (!message.member.hasPermission('ADMINISTRATOR')) {
-			message.channel.send("Don't you dare.");
-			return;
-		}
-
-		//*/
 
 		message.channel.send('Delete all data? (y or n).').then(() => {
 			const filter = m => message.author.id === m.author.id;

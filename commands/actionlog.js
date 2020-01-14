@@ -1,17 +1,10 @@
-
-const Enmap = require("enmap");
-
 module.exports = {
 	name: 'actionlog',
 	description: 'Sets the action log channel',
 	format: "!actionlog <channelid>",
 	guildonly: true,
+	adminonly: true,
 	execute(client, message, args) {
-
-		if (!message.member.hasPermission('ADMINISTRATOR')) {
-			message.channel.send("Hey you no do that.");
-			return;
-		}
 
 		const actionLogChannelID = args[0];
 		

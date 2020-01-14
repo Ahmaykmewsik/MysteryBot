@@ -27,7 +27,6 @@ client.data = new Enmap({
 });
 //const votes = new Enmap({provider: provider});
 
-
 //Commands
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
@@ -62,6 +61,18 @@ client.on('message', message => {
 		if (command.format) {
 			reply += '\nProper usage: \'${command.format}\'';
 
+		}
+	}
+
+	//Notify if this can only be used by the GM
+	if (command.gmonly) {
+		if (message.channel.type === "dm") {
+			message.reply('GM-only commands cannot be sent via DM. Send it in the server instead.');
+			return;
+		}
+		if (!message.member.hasPermission('ADMINISTRATOR')) {
+			message.reply('This command is for GM use only.');
+			return;
 		}
 	}
 
