@@ -33,7 +33,7 @@ module.exports = {
                                 player.area = player.move;
                         
                             } else {
-                                const currentArea = areas.find(a => a.id == player.area);
+                                const currentArea = player.area;
                                 if (!currentArea.reachable.includes(currentArea.id)) {
                                     // if the player can't stay still, they move at random
                                     var randomIndex = Math.floor(Math.random() * currentArea.reachable.length);
@@ -43,6 +43,7 @@ module.exports = {
                             }
                         
                             player.move = undefined;
+                            player.action = undefined;
                         });
                         client.data.set("PLAYER_DATA", players);
                         message.channel.send("Players moved. Use !players to view current locations.");

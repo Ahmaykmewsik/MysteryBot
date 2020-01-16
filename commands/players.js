@@ -9,7 +9,7 @@ module.exports = {
 
         var players = client.data.get("PLAYER_DATA");
         if (players == undefined || players.length === 0) {
-            return message.channel.send("You haven't added any players yet. Use !addplayer <person> or !setplayers <role> to add players.");
+            return message.channel.send("You haven't added any players yet. Use !addplayer <person> <character> to add players.");
         }
         
         players.forEach(player => message.channel.send(formatPlayer(player)));

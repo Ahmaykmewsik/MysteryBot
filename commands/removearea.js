@@ -31,6 +31,7 @@ module.exports = {
             message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })
                 .then(messages => {
                     if (messages.first().content == 'y') {
+                        //remove area
                         areas = areas.filter(area => area.id != id);
                         message.channel.send("Area `" + id + "` removed.");
                     } else if (messages.first().content == 'n') {
@@ -42,6 +43,7 @@ module.exports = {
                 })
                 .catch(() => {
                     message.channel.send("Something went wrong with that.");
+                    console.log(Error);
                 })
         });
 

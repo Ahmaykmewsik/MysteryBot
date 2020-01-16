@@ -17,11 +17,11 @@ module.exports = {
 
         players.forEach(player => {
             var randomIndex = Math.floor(Math.random() * areas.length);
-            player.area = areas[randomIndex].id;
+            player.area = areas[randomIndex];
         });
 
         client.data.set("PLAYER_DATA", players);
         message.channel.send("Let's go! All players have been assigned a random starting area:\n"
-            + players.map(player => player.name + ": " + player.area).join('\n'));
+            + players.map(player => player.name + ": " + player.area.name).join('\n'));
     }
 };

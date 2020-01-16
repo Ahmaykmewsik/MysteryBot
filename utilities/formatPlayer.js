@@ -2,11 +2,34 @@ const Discord = require('discord.js');
 
 module.exports = {
     formatPlayer(player) {
-        const status = (player.area == undefined) ? 'Dead' : 'Alive';
+        const status = (player.area == undefined) ? 'Dead' : '**ALIVE**';
+
+        const color = (status == "Dead") ? 0xff0000 : 0x00ff11; // RED : GREEN
+
+        const areaString = (player.area == undefined) ? " " : player.area.name;
+
+        const actionString = (player.action == undefined) ? " " : player.action;
+
+        const moveString = (player.move == undefined) ? " " : player.move.id;
+        
+        if (player.items.length == 0) {
+            var itemString = "*No Items.*" ;
+        } else {
+            var itemString;
+            player.items.forEach(item => itemString += item.description + "\n\n");
+        }
+
+
+
         return new Discord.RichEmbed()
-            .setTitle(player.name)
-            .addField('Status', status)
-            .addField('Area', player.area)
-            .addField('Movement action', player.move);
+            .setColor(color)
+            .setTitle("**" + player.name + "**")
+            .addField(status,
+                "__Character:__ **" + player.character + "**" +
+                "\n__Area:__ **" + areaString + "**" +
+                "\n__Phase Action:__ *" + actionString + "*" +
+                "\n__Movement Action:__ *" + moveString + "*"
+                )
+            .addField("Items:", itemString)
     }
 };

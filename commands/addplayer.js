@@ -19,10 +19,9 @@ module.exports = {
 
         //find player based on input
         var player;
-        message.guild.members.forEach(function(m) {
-            //console.log(m.user.username.toLowerCase() , inputusername, m.user.username.toLowerCase().includes(inputusername));
-            if (m.user.username.toLowerCase().includes(inputusername)) {
-                player = m.user;
+        message.guild.members.forEach(function(member) {
+            if (member.user.username.toLowerCase().includes(inputusername)) {
+                player = member.user;
             }
         })
             
@@ -38,7 +37,15 @@ module.exports = {
             players = [];
         }
 
-        players.push({player: player, name: player.username, character: characterName, area: undefined, move: undefined});         
+        players.push({
+            player: player, 
+            name: player.username, 
+            character: characterName, 
+            area: undefined, 
+            action: undefined,
+            move: undefined,
+            items: []
+        });
         
         client.data.set("PLAYER_DATA", players);
 

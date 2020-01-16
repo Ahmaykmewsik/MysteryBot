@@ -1,4 +1,5 @@
 const prefix = process.env.prefix;
+const formatPlayer = require('../utilities/formatPlayer').formatPlayer;
 
 module.exports = {
 	name: 'move',
@@ -11,30 +12,57 @@ module.exports = {
 		const areas = client.data.get("AREA_DATA");
 		const players = client.data.get("PLAYER_DATA");
 
-		const player = players.find(p => p.name == message.author.username);
+		var player = players.filter(p => p.name == message.author.username);
+
 		if (player == undefined) {
 			return message.channel.send("You don't seem to be on the list of players. If you think this is a mistake, ask your GM.");
 		}
+
+		player = player[0];
+
 		if (player.area == undefined) {
 			return message.channel.send("You're not alive! No movement actions for you.");
 		}
 
-		const currentArea = areas.find(a => a.id == player.area);
+		const currentArea = areas.find(a => a.id == player.area.id);
 		
 		if (args.length === 0) {
 			return message.channel.send("Please specify the ID of the area you wish to move to. Valid options: `"
 				+ currentArea.reachable.join('`, `') + '`.');
 		}
+
+		//Changes "stay" to current location
+		if (args[0].toLowerCase() == ("stay")) {
+			args[0] = currentArea.id;
+		}
+
 		if (args.length > 1 || !currentArea.reachable.includes(args[0])) {
 			return message.channel.send("Sorry, `" + args.join(' ') + "` is not a valid movement option. Valid options: `"
 				+ currentArea.reachable.join('`, `') + '`.');
 		}
 		// TODO: consider supporting hidden movement options
-        
-		player.move = args[0];
+
+		const ifUpdated = (player.action == undefined) ? false : true;
+
+		const moveid = currentArea.reachable.find(id => id.includes(args[0]));
+		player.move = areas.find(a => a.id == moveid);
+
 		client.data.set("PLAYER_DATA", players);
-        client.channels.get(actionLogChannelID).send("MOVE " + message.author.username + ": `" + action + "`");
-        
-        message.channel.send("Movement sent.");
+
+		if (ifUpdated){
+			client.channels.get(actionLogChannelID).send(
+				"----------------------------------------" +
+				"\nMOVE " + message.author.username + ": `" + player.move.id + "`"
+				);
+			message.reply("Movement updated.");
+		} else {
+			client.channels.get(actionLogChannelID).send(
+				"----------------------------------------" +
+				"\n**MOVEMENT UPDATED** " + message.author.username + ": `" + player.move.id + "`"
+				);
+			message.reply("Movement sent.");
+		}
+
+		message.reply(formatPlayer(player));
 	}
 };

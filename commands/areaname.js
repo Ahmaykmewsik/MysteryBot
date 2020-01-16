@@ -14,7 +14,7 @@ module.exports = {
             return message.channel.send("No area name given. Please specify the name you wish to assign this area.");
         }
         const id = args[0];
-        const name = args.slice(1).join(' ');
+        const name = args.slice(1).join(' ').toUpperCase();
 
         var areas = client.data.get("AREA_DATA");
         if (areas == undefined) {
