@@ -23,13 +23,13 @@ module.exports = {
 		if (player.area == undefined) {
 			return message.channel.send("You're not alive! No movement actions for you.");
 		}
-
-		const currentArea = areas.find(a => a.id == player.area.id);
 		
 		if (args.length === 0) {
 			return message.channel.send("Please specify the ID of the area you wish to move to. Valid options: `"
 				+ currentArea.reachable.join('`, `') + '`.');
 		}
+
+		const currentArea = areas.find(a => a.id == player.area.id);
 
 		//Changes "stay" to current location
 		if (args[0].toLowerCase() == ("stay")) {
@@ -48,6 +48,7 @@ module.exports = {
 		player.move = areas.find(a => a.id == moveid);
 
 		client.data.set("PLAYER_DATA", players);
+		client.data.set("AREA_DATA", areas);
 
 		if (ifUpdated){
 			client.channels.get(actionLogChannelID).send(

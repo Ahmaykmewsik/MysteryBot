@@ -31,7 +31,7 @@ module.exports = {
         }
 
 
-        var players = client.data.get("PLAYER_DATA");
+        let players = client.data.get("PLAYER_DATA");
 
         if (players == undefined) {
             players = [];

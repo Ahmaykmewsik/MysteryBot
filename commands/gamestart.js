@@ -1,3 +1,5 @@
+const createChannel = require('../utilities/createChannel.js').createChannel;
+
 module.exports = {
 	name: 'gamestart',
 	description: 'Assigns each player a random starting area',
@@ -15,12 +17,28 @@ module.exports = {
             return message.channel.send("No areas found. Use !addarea to create an area.");
         }
 
+        const catagory = client.data.get("CATEGORY_NAME");
+        if (catagory == undefined) {
+            return message.channel.send("You need to name the game! Use !gamename to name the game. (This will set the catagory name)");
+        }
+
+        const phaseCount = 1;
+
         players.forEach(player => {
             var randomIndex = Math.floor(Math.random() * areas.length);
             player.area = areas[randomIndex];
+            areas[randomIndex].playersPresent.push(player.player);
         });
 
+
+        areas.forEach(area => {
+            createChannel(message.guild, area.name, catagory, area.playersPresent, phaseCount, area.description); 
+        });
+
+        client.data.set("PHASE_COUNT", phaseCount);
         client.data.set("PLAYER_DATA", players);
+        client.data.set("AREA_DATA", areas);
+
         message.channel.send("Let's go! All players have been assigned a random starting area:\n"
             + players.map(player => player.name + ": " + player.area.name).join('\n'));
     }

@@ -9,7 +9,12 @@ module.exports = {
 	dmonly: true,
 	execute(client, message, args) {
 		
-        actionLogChannelID = client.data.get("ACTION_LOG");
+		actionLogChannelID = client.data.get("ACTION_LOG");
+		
+		if (actionLogChannelID == undefined) {
+			return message.channel.send("The GM needs to set the action log!");
+		}
+
 		const players = client.data.get("PLAYER_DATA");
 
 		var player = players.filter(p => p.name == message.author.username);

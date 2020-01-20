@@ -2,9 +2,9 @@ const prefix = process.env.prefix;
 const formatPlayer = require('../utilities/formatPlayer').formatPlayer;
 
 module.exports = {
-	name: 'getitem',
-	description: 'Gives an item to a player.',
-    format: "!getitem <player> <item id> <item description>",
+	name: 'dropitem',
+	description: 'Drops an item of a player.',
+    format: "!dropitem <player> <item id>",
     guildonly: true,
     gmonly: true,
 	execute(client, message, args) {
@@ -29,27 +29,22 @@ module.exports = {
             return message.channel.send("Invalid username: " + inputusername);
         }
 
-        if (args.length == 1) {
-            return message.channel.send("Give what now? You need to put something.");
+        if (args.length == 0) {
+            return message.channel.send("Drop what now? You need to put something.");
         }
 
-        if (args.length == 2) {
-            return message.channel.send("You need to put a description.");
-        }
-
-        //Give Item
+        //drop Item
         const itemid = args.shift().toLowerCase();
-        
-        const itemdescription = args.join(" ");
 
-        playerToGive.items.push({
-            id: itemid, 
-            description: itemdescription
-        });
+        if (!playerToGive.items.includes(itemid)) {
+            return message.channel.send(playerToGive.name + " isn't holding a " + itemid);
+        }
+        
+        playerToGive.items = playerToGive.items.filter(i => i.id != itemid);
   
         client.data.set("PLAYER_DATA", players);
 
-        message.channel.send(playerToGive.name + " got the `" + itemid + "`");
+        message.channel.send(playerToGive.name + " dropped the `" + itemid + "`");
         message.channel.send(formatPlayer(playerToGive));
 	}
 };

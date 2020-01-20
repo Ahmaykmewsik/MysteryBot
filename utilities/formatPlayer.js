@@ -6,17 +6,19 @@ module.exports = {
 
         const color = (status == "Dead") ? 0xff0000 : 0x00ff11; // RED : GREEN
 
-        const areaString = (player.area == undefined) ? " " : player.area.name;
+        const areaString = (player.area == undefined) ? "-" : player.area.name;
 
-        const actionString = (player.action == undefined) ? " " : player.action;
+        const actionString = (player.action == undefined) ? "-" : player.action;
 
-        const moveString = (player.move == undefined) ? " " : player.move.id;
+        const moveString = (player.move == undefined) ? "-" : player.move.id;
         
         if (player.items.length == 0) {
             var itemString = "*No Items.*" ;
         } else {
-            var itemString;
-            player.items.forEach(item => itemString += item.description + "\n\n");
+            var itemString = "";
+            player.items.forEach(item => { 
+                itemString += "`" + item.id + "` " + item.description + "\n\n";
+            });
         }
 
 

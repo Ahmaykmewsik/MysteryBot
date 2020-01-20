@@ -24,7 +24,7 @@ module.exports = {
             return message.channel.send("An area with that ID already exists!");
         }
 
-        const newArea = {id, name: id, description: undefined, reachable: [id]};
+        const newArea = {id, name: id, description: undefined, reachable: [id], playersPresent: []};
         areas.push(newArea);
         client.data.set("AREA_DATA", areas);
         message.channel.send("Successfully created new area: `" + id + "`.");

@@ -13,17 +13,15 @@ module.exports = {
         if (args.length > 1) {
             return message.channel.send("Area ID cannot contain whitespace.");
         }
-        const id = args[0];
 
         var areas = client.data.get("AREA_DATA");
         if (areas == undefined) {
             areas = [];
         }
 
-        var areaToDisplay = areas.find(area => area.id == id);
+        var areaToDisplay = areas.find(area => area.id.includes(args[0]));
         if (areaToDisplay == undefined) {
-            return message.channel.send("No area exists with ID `" + id
-                + "`. Use !areas to view all areas, or !addarea <id> to create a new area.");
+            return message.channel.send("No area exists with that ID. Use !areas to view all areas, or !addarea <id> to create a new area.");
         }
 
         message.channel.send(formatArea(areaToDisplay));
