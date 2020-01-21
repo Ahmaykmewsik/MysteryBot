@@ -50,6 +50,9 @@ module.exports = {
         client.data.set("PLAYER_DATA", players);
 
         message.channel.send(playerToGive.name + " got the `" + itemid + "`");
+        
+        message.playerToGive.send("**Got item!**\n" + itemdescription);
+
         message.channel.send(formatPlayer(playerToGive));
 	}
 };

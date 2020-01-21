@@ -62,7 +62,7 @@ module.exports = {
                                 //Update Player Present in area
                                 var newarea = areas.filter(a => a.id == player.move.id);
                                 console.log(newarea);
-                                newarea[0].playersPresent.push(player.player);
+                                newarea[0].playersPresent.push(player);
                     
                             } else {
                                 const currentArea = player.area;

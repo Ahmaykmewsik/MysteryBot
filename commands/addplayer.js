@@ -38,7 +38,6 @@ module.exports = {
         }
 
         players.push({
-            player: playerobject, 
             name: playerobject.username, 
             character: characterName, 
             area: undefined, 

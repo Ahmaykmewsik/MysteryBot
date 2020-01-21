@@ -27,9 +27,8 @@ module.exports = {
         players.forEach(player => {
             var randomIndex = Math.floor(Math.random() * areas.length);
             player.area = areas[randomIndex];
-            areas[randomIndex].playersPresent.push(player.player);
+            areas[randomIndex].playersPresent.push(player);
         });
-
 
         areas.forEach(area => {
             createChannel(message.guild, area.name, catagory, area.playersPresent, phaseCount, area.description); 
