@@ -6,11 +6,11 @@ module.exports = {
 
         const color = (status == "Dead") ? 0xff0000 : 0x00ff11; // RED : GREEN
 
-        const areaString = (player.area == undefined) ? "-" : player.area.name;
+        const areaString = (player.area == undefined) ? "-" : player.area;
 
         const actionString = (player.action == undefined) ? "-" : player.action;
 
-        const moveString = (player.move == undefined) ? "-" : player.move.id;
+        const moveString = (player.move == undefined) ? "-" : player.move;
         
         if (player.items.length == 0) {
             var itemString = "*No Items.*" ;
@@ -20,8 +20,6 @@ module.exports = {
                 itemString += "`" + item.id + "` " + item.description + "\n\n";
             });
         }
-
-
 
         return new Discord.RichEmbed()
             .setColor(color)

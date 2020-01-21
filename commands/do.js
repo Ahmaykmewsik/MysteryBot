@@ -34,8 +34,6 @@ module.exports = {
 		}
 
 		const action = message.content.split(prefix + "do ")[1];
-
-		console.log(action);
 		
 		const ifUpdated = (player.action == undefined) ? false : true;
 

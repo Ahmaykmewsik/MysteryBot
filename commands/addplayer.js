@@ -38,12 +38,12 @@ module.exports = {
         }
 
         players.push({
-            name: playerobject.username, 
-            character: characterName, 
-            area: undefined, 
-            action: undefined,
-            move: undefined,
-            items: []
+            name: playerobject.username, //string
+            character: characterName, //string
+            area: undefined, //id
+            action: undefined, //string
+            move: undefined, //id
+            items: [] //list of strings
         });
         
         client.data.set("PLAYER_DATA", players);

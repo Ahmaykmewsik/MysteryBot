@@ -45,7 +45,7 @@ module.exports = {
 		const ifUpdated = (player.action == undefined) ? false : true;
 
 		const moveid = currentArea.reachable.find(id => id.includes(args[0]));
-		player.move = areas.find(a => a.id == moveid);
+		player.move = moveid;
 
 		client.data.set("PLAYER_DATA", players);
 		client.data.set("AREA_DATA", areas);

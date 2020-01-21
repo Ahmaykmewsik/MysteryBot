@@ -27,15 +27,16 @@ module.exports = {
         players.forEach(player => {
             var randomIndex = Math.floor(Math.random() * areas.length);
             player.area = areas[randomIndex];
-            areas[randomIndex].playersPresent.push(player);
+            areas[randomIndex].playersPresent.push(player.id);
         });
+
+        client.data.set("PLAYER_DATA", players);
 
         areas.forEach(area => {
             createChannel(message.guild, area.name, catagory, area.playersPresent, phaseCount, area.description); 
         });
 
         client.data.set("PHASE_COUNT", phaseCount);
-        client.data.set("PLAYER_DATA", players);
         client.data.set("AREA_DATA", areas);
 
         message.channel.send("Let's go! All players have been assigned a random starting area:\n"

@@ -35,12 +35,12 @@ module.exports = {
 
         //drop Item
         const itemid = args.shift().toLowerCase();
-
-        // if (!playerToGive.items.includes(itemid)) {
-        //     return message.channel.send(playerToGive.name + " isn't holding a " + itemid);
-        // }
         
-        playerToGive.items = playerToGive.items.filter(i => i.id != itemid);
+        playerToGive.itemsNew = playerToGive.items.filter(i => i.id != itemid);
+
+        if (!playerToGive.items == playerToGive.itemsNew) {
+            return message.channel.send(playerToGive.name + " wasn't ever holding a " + itemid);
+        }
   
         client.data.set("PLAYER_DATA", players);
 

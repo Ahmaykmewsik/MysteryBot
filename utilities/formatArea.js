@@ -10,7 +10,7 @@ module.exports = {
             var playersPresentString = "";
             console.log(area.playersPresent);
             area.playersPresent.forEach(p => {
-                playersPresentString += (p.username + " ");
+                playersPresentString += (id + " ");
             });
         }
         return new Discord.RichEmbed()

@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 
 module.exports = {
-    createChannel(guild, areaName, categoryName, playerArray, phaseNumber, areaDescription) {
+    createChannel(guild, areaName, categoryName, playerArrayID, phaseNumber, areaDescription) {
 
         // let category = guild.channels.find(c => c.name == categoryName);
 
@@ -36,12 +36,12 @@ module.exports = {
                 )
 
                 //Add players
-                playerArray.forEach(p => {
-                    let player = guild.members.get(p.id);
+                playerArrayID.forEach(id => {
+                    let player = guild.members.get(id);
                     
                     channel.overwritePermissions(player, {READ_MESSAGES: true}).catch(console.error);
                     
-                    channel.send("<@" + p.id + ">");
+                    channel.send("<@" + id + ">");
                 })
 
             })
