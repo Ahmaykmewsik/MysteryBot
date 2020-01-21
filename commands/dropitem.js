@@ -36,9 +36,9 @@ module.exports = {
         //drop Item
         const itemid = args.shift().toLowerCase();
 
-        if (!playerToGive.items.includes(itemid)) {
-            return message.channel.send(playerToGive.name + " isn't holding a " + itemid);
-        }
+        // if (!playerToGive.items.includes(itemid)) {
+        //     return message.channel.send(playerToGive.name + " isn't holding a " + itemid);
+        // }
         
         playerToGive.items = playerToGive.items.filter(i => i.id != itemid);
   

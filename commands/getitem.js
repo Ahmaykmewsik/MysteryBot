@@ -51,7 +51,7 @@ module.exports = {
 
         message.channel.send(playerToGive.name + " got the `" + itemid + "`");
         
-        message.playerToGive.send("**Got item!**\n" + itemdescription);
+        playerToGive.send("**Got item!**\n" + itemdescription);
 
         message.channel.send(formatPlayer(playerToGive));
 	}
