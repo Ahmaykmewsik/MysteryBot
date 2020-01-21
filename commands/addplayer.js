@@ -18,15 +18,15 @@ module.exports = {
         }
 
         //find player based on input
-        var player;
+        var playerobject;
         message.guild.members.forEach(function(member) {
             if (member.user.username.toLowerCase().includes(inputusername)) {
-                player = member.user;
+                playerobject = member.user;
             }
         })
             
         //Notify if invalid input for user
-        if (player == undefined) {
+        if (playerobject == undefined) {
             return message.channel.send("Invalid username: " + inputusername);
         }
 
@@ -38,8 +38,8 @@ module.exports = {
         }
 
         players.push({
-            player: player, 
-            name: player.username, 
+            player: playerobject, 
+            name: playerobject.username, 
             character: characterName, 
             area: undefined, 
             action: undefined,
