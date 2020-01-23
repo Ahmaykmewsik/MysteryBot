@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 
 module.exports = {
-    createChannel(guild, areaName, categoryName, playerArrayID, phaseNumber, areaDescription) {
+    createChannel(guild, areaName, categoryName, playerArray, phaseNumber, areaDescription) {
 
         // let category = guild.channels.find(c => c.name == categoryName);
 
@@ -19,13 +19,12 @@ module.exports = {
         //       .catch(console.error);
         // }
 
-        guild.createChannel("p-" + areaName, {
+        guild.createChannel("p" + phaseNumber + "-" + areaName, {
             type: 'text',
             permissionOverwrites: [{
                 id: guild.id,
                 deny: ['READ_MESSAGES']
               }]
-
           })
             .then(channel => {
                 //Post the thing
@@ -36,12 +35,17 @@ module.exports = {
                 )
 
                 //Add players
-                playerArrayID.forEach(id => {
-                    let player = guild.members.get(id);
+                playerArray.forEach(playername => {
                     
-                    channel.overwritePermissions(player, {READ_MESSAGES: true}).catch(console.error);
-                    
-                    channel.send("<@" + id + ">");
+                    var playerobject;
+                    guild.members.forEach(function(member) {
+                        if (member.user.username == playername) {
+                            playerobject = member.user;
+                        }
+                    })
+
+                    channel.overwritePermissions(playerobject, {READ_MESSAGES: true}).catch(console.error);
+                    channel.send("<@" + playerobject.id + ">");
                 })
 
             })

@@ -25,8 +25,8 @@ module.exports = {
         }
 
         const newArea = {
-            id,
-            name: id, 
+            id, 
+            name: id,
             description: undefined, 
             reachable: [id], 
             playersPresent: []

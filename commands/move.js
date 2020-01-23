@@ -18,6 +18,10 @@ module.exports = {
 			return message.channel.send("You don't seem to be on the list of players. If you think this is a mistake, ask your GM.");
 		}
 
+		if (actionLogChannelID == undefined) {
+			return message.channel.send("The GM needs to set the action log!");
+		}
+
 		player = player[0];
 
 		if (player.area == undefined) {
@@ -29,11 +33,11 @@ module.exports = {
 				+ currentArea.reachable.join('`, `') + '`.');
 		}
 
-		const currentArea = areas.find(a => a.id == player.area.id);
+		const currentArea = areas.find(a => a.id == player.area);
 
 		//Changes "stay" to current location
 		if (args[0].toLowerCase() == ("stay")) {
-			args[0] = currentArea.id;
+			args[0] = currentArea;
 		}
 
 		if (args.length > 1 || !currentArea.reachable.includes(args[0])) {
@@ -52,16 +56,14 @@ module.exports = {
 
 		if (ifUpdated){
 			client.channels.get(actionLogChannelID).send(
-				"----------------------------------------" +
-				"\nMOVE " + message.author.username + ": `" + player.move.id + "`"
-				);
-			message.reply("Movement updated.");
-		} else {
-			client.channels.get(actionLogChannelID).send(
-				"----------------------------------------" +
-				"\n**MOVEMENT UPDATED** " + message.author.username + ": `" + player.move.id + "`"
+				"\nMOVE " + message.author.username.toUpperCase() + ": **" + player.move + "**"
 				);
 			message.reply("Movement sent.");
+		} else {
+			client.channels.get(actionLogChannelID).send(
+				"\n**MOVEMENT UPDATED** " + message.author.username.toUpperCase() + ": **" + player.move + "**"
+				);
+			message.reply("Movement updated.");
 		}
 
 		message.reply(formatPlayer(player));

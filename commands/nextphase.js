@@ -27,16 +27,16 @@ module.exports = {
 
         var nonDoers = players.filter(p => p.action == undefined);
         if (nonDoers.length > 0) {
-            message.channel.send("The following players have not sent their main action:\n"
-                + nonDoers.map(p => p.name).join('\n')
+            message.channel.send("The following players have not sent their main **action**:\n"
+                + "`" + nonDoers.map(p => p.name).join('\n') + "`"
                 + "\nIf you proceed, they will do nothing.");
         }
     
         var nonMovers = players.filter(p => p.move == undefined);
         if (nonMovers.length > 0) {
-            message.channel.send("The following players have not sent their movement action:\n"
-                + nonMovers.map(p => p.name).join('\n')
-                + "\nIf you proceed, they will stay still if possible; otherwise they will move at random.");
+            message.channel.send("The following players have not sent their **movement** action:\n"
+                + "`" + nonMovers.map(p => p.name).join('\n') + "`"
+                + "\nIf you proceed, they will stay still if possible. Otherwise, they will move at random.");
         }
 
         message.channel.send("Are you sure you would like to proceed with the movement phase?").then(() => {
@@ -47,7 +47,7 @@ module.exports = {
 
                         //LET'S DO THIS SHIT!------
 
-                        sendPassMessages(players);
+                        sendPassMessages(message.guild.members, players);
 
                         areas.forEach(area => {
                             area.playersPresent = [];
@@ -58,14 +58,9 @@ module.exports = {
                             if (player.move != undefined) {
                                 // move the player normally
                                 player.area = player.move;
-
-                                //Update Player Present in area
-                                var newarea = areas.filter(a => a.id == player.move);
-                                console.log(newarea);
-                                newarea[0].playersPresent.push(player.id);
                     
                             } else {
-                                const currentArea = player.area;
+                                let currentArea = areas.find(a => a.id == player.area);
                                 if (!currentArea.reachable.includes(currentArea.id)) {
                                     // if the player can't stay still, they move at random
                                     var randomIndex = Math.floor(Math.random() * currentArea.reachable.length);
@@ -73,6 +68,10 @@ module.exports = {
                                 }
                                 // otherwise, the player doesn't move
                             }
+                            //Update Area's "Player Present" value
+                            let newarea = areas.find(a => a.id == player.area);
+                            newarea.playersPresent.push(player.name);
+
                             //reset movement and actions
                             player.move = undefined;
                             player.action = undefined;
@@ -99,7 +98,7 @@ module.exports = {
                         message.channel.send("...uh, okay.");
                     }
                 })
-                .catch((console.error))
+                .catch(console.error);
         });
     }
 };

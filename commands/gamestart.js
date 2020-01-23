@@ -26,8 +26,8 @@ module.exports = {
 
         players.forEach(player => {
             var randomIndex = Math.floor(Math.random() * areas.length);
-            player.area = areas[randomIndex];
-            areas[randomIndex].playersPresent.push(player.id);
+            player.area = areas[randomIndex].id;
+            areas[randomIndex].playersPresent.push(player.name);
         });
 
         client.data.set("PLAYER_DATA", players);
@@ -40,6 +40,6 @@ module.exports = {
         client.data.set("AREA_DATA", areas);
 
         message.channel.send("Let's go! All players have been assigned a random starting area:\n"
-            + players.map(player => player.name + ": " + player.area.name).join('\n'));
+            + players.map(player => player.name + ": " + player.area).join('\n'));
     }
 };
