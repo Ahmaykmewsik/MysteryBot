@@ -9,6 +9,7 @@ module.exports = {
 	execute(client, message, args) {
 
         var players = client.data.get("PLAYER_DATA");
+        var areas = client.data.get("AREA_DATA");
 
         if (players == undefined) {
             return message.channel.send("You don't have any players. There's no one to kill!");
@@ -38,8 +39,13 @@ module.exports = {
                 p.area = undefined;
             }
         });
+
+        areas.forEach(area => {
+            area.playersPresent.filter(p => p != playerToDie);
+        })
   
         client.data.set("PLAYER_DATA", players);
+        client.data.set("AREA_DATA", areas);
 
         message.channel.send(playerToDie.username + " is dead!\n");
 	}

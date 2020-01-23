@@ -2,9 +2,9 @@ const prefix = process.env.prefix;
 const formatPlayer = require('../utilities/formatPlayer').formatPlayer;
 
 module.exports = {
-	name: 'getitem',
+	name: 'gotitem',
 	description: 'Gives an item to a player.',
-    format: "!getitem <player> <item id> <item description>",
+    format: "!gotitem <player> <item id> <item description>",
     guildonly: true,
     gmonly: true,
 	execute(client, message, args) {
@@ -51,7 +51,8 @@ module.exports = {
 
         message.channel.send(playerToGive.name + " got the `" + itemid + "`");
         
-        message.playerToGive.send("**Got item!**\n" + itemdescription);
+        playerobject = message.guild.members.find(m => m.user.username == playerToGive.name);
+        playerobject.send("**Got item!**\n" + itemdescription);
 
         message.channel.send(formatPlayer(playerToGive));
 	}

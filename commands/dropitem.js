@@ -38,13 +38,19 @@ module.exports = {
         
         playerToGive.itemsNew = playerToGive.items.filter(i => i.id != itemid);
 
-        if (!playerToGive.items == playerToGive.itemsNew) {
-            return message.channel.send(playerToGive.name + " wasn't ever holding a " + itemid);
+        if (playerToGive.items == playerToGive.itemsNew) {
+            return message.channel.send(playerToGive.name + " doesn't have a " + itemid + " to drop.");
         }
+
+        playerToGive.items = playerToGive.itemsNew;
   
         client.data.set("PLAYER_DATA", players);
 
         message.channel.send(playerToGive.name + " dropped the `" + itemid + "`");
+
+        playerobject = message.guild.members.find(m => m.user.username == playerToGive.name);
+        playerobject.send("You no longer have the `" + itemid + "`");
+
         message.channel.send(formatPlayer(playerToGive));
 	}
 };
