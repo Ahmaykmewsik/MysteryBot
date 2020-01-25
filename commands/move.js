@@ -46,7 +46,7 @@ module.exports = {
 		}
 		// TODO: consider supporting hidden movement options
 
-		const ifUpdated = (player.action == undefined) ? false : true;
+		const ifUpdated = (player.move == undefined) ? false : true;
 
 		const moveid = currentArea.reachable.find(id => id.includes(args[0]));
 		player.move = moveid;
@@ -54,7 +54,7 @@ module.exports = {
 		client.data.set("PLAYER_DATA", players);
 		client.data.set("AREA_DATA", areas);
 
-		if (ifUpdated){
+		if (!ifUpdated){
 			client.channels.get(actionLogChannelID).send(
 				"\nMOVE " + message.author.username.toUpperCase() + ": **" + player.move + "**"
 				);

@@ -7,9 +7,21 @@ module.exports = {
                 
         const gameName = args.join(" ");
 
-        client.data.set("CATEGORY_NAME", gameName);
+        if (!message.guild.channels.has("name", gameName)) {
+            message.guild.createChannel(gameName, {
+                type: 'category'
+              })
+              .then((id) => {
+                  category = {
+                      id: id,
+                      name: gameName
+                  };
+
+                  client.data.set("CATEGORY_DATA", category);
+              })
+              .catch(console.error);
+        }
+
         message.channel.send("Game name set to: " + gameName);
-
-
     }
 };

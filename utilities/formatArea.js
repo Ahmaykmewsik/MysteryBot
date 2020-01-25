@@ -8,7 +8,6 @@ module.exports = {
             var playersPresentString = "*None*" ;
         } else {
             var playersPresentString = "";
-            console.log(area.playersPresent);
             area.playersPresent.forEach(id => {
                 playersPresentString += (id + " ");
             });

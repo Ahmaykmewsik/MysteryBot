@@ -17,10 +17,15 @@ module.exports = {
             return message.channel.send("No areas found. Use !addarea to create an area.");
         }
 
-        const catagory = client.data.get("CATEGORY_NAME");
+        const catagory = client.data.get("CATEGORY_DATA");
         if (catagory == undefined) {
             return message.channel.send("You need to name the game! Use !gamename to name the game. (This will set the catagory name)");
         }
+
+        const actionLogChannelID = client.data.get("ACTION_LOG");
+		if (actionLogChannelID == undefined) {
+			return message.channel.send("You need to set the action log!");
+		}
 
         const phaseCount = 1;
 
@@ -38,6 +43,8 @@ module.exports = {
 
         client.data.set("PHASE_COUNT", phaseCount);
         client.data.set("AREA_DATA", areas);
+
+        client.channels.get(actionLogChannelID).send("----------------------------\n---------**PHASE " + phaseCount + "**---------\n----------------------------");
 
         message.channel.send("Let's go! All players have been assigned a random starting area:\n"
             + players.map(player => player.name + ": " + player.area).join('\n'));
