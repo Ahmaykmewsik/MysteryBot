@@ -33,6 +33,9 @@ module.exports = {
             var randomIndex = Math.floor(Math.random() * areas.length);
             player.area = areas[randomIndex].id;
             areas[randomIndex].playersPresent.push(player.name);
+
+            //Change nickname
+
         });
 
         client.data.set("PLAYER_DATA", players);

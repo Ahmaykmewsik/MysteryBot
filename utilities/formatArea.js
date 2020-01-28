@@ -12,11 +12,13 @@ module.exports = {
                 playersPresentString += (id + " ");
             });
         }
+        console.log(area.canspawn);
         return new Discord.RichEmbed()
             .setTitle(area.id)
             .addField('Name', area.name)
             .addField('Description', area.description)
             .addField('Connected to', reachable)
-            .addField('Players Present', playersPresentString);
+            .addField('Players Present', playersPresentString)
+            .addField("Can Spawn", area.canspawn)
     }
 };

@@ -1,5 +1,7 @@
 const prefix = process.env.prefix;
 const formatPlayer = require('../utilities/formatPlayer').formatPlayer;
+const d20roll = require('../utilities/d20roll').d20roll;
+
 
 
 module.exports = {
@@ -44,14 +46,14 @@ module.exports = {
 			client.channels.get(actionLogChannelID).send(
 				"----------------------------------------" +
 				"\n**ACTION UPDATED** by `" + message.author.username + "` ```" + action + "```" +
-				"ROLL: " + (Math.floor(Math.random() * 20 ) + 1 ) //d20 roll ftw
+				"ROLL: " + d20roll() //d20 roll ftw
 				);
 			message.reply("Action updated.");
 		} else {
 			client.channels.get(actionLogChannelID).send(
 				"----------------------------------------" +
 				"\nACTION by `" + message.author.username + "` ```" + action + "```" +
-				"ROLL: " + (Math.floor(Math.random() * 20 ) + 1 ) //d20 roll ftw
+				"ROLL: " + d20roll() //d20 roll ftw
 				);
 			message.reply("Action sent.");
 		}

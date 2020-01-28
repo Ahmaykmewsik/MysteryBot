@@ -29,7 +29,8 @@ module.exports = {
             name: id,
             description: undefined, 
             reachable: [id], 
-            playersPresent: []
+            playersPresent: [],
+            canspawn: true //rather or not a player can start the game here
         };
         areas.push(newArea);
         client.data.set("AREA_DATA", areas);

@@ -1,4 +1,3 @@
-const Discord = require('discord.js');
 
 module.exports = {
     createChannel(guild, areaName, category, playerArray, phaseNumber, areaDescription) { 
