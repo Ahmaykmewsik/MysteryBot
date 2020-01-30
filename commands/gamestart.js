@@ -36,6 +36,15 @@ module.exports = {
 
             //Change nickname
 
+            var playerobject;
+            message.guild.members.forEach(function(member) {
+                if (member.user.username == player.name) {
+                    playerobject = member;
+                }
+            })    
+            playerobject.setNickname(player.character)
+            .catch(console.error)
+
         });
 
         client.data.set("PLAYER_DATA", players);

@@ -56,12 +56,12 @@ module.exports = {
 
 		if (!ifUpdated){
 			client.channels.get(actionLogChannelID).send(
-				"\nMOVE " + message.author.username.toUpperCase() + ": **" + player.move + "**"
+				":arrow_right: MOVE " + message.author.username.toUpperCase() + ": **" + player.move + "**"
 				);
 			message.reply("Movement sent.");
 		} else {
 			client.channels.get(actionLogChannelID).send(
-				"\n**MOVEMENT UPDATED** " + message.author.username.toUpperCase() + ": **" + player.move + "**"
+				":fast_forward: **MOVEMENT UPDATED** " + message.author.username.toUpperCase() + ": **" + player.move + "**"
 				);
 			message.reply("Movement updated.");
 		}

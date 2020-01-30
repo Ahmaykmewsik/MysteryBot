@@ -14,19 +14,17 @@ module.exports = {
                 deny: ['READ_MESSAGES']
               }]
           })
-            .then(channel => {
-                
-                channel.setParent(category.id).catch(console.error);
+            .then(async channel => {
 
                 //Post the thing
-                channel.send(
+                await channel.send(
                     ">>> *-----Phase " + phaseNumber + "-----*\n" +
                     "**" + areaName + "**\n\n" +
                     areaDescription
                 )
 
                 //Add players
-                playerArray.forEach(playername => {
+                await playerArray.forEach(playername => {
                     
                     var playerobject;
                     guild.members.forEach(function(member) {
@@ -38,6 +36,8 @@ module.exports = {
                     channel.overwritePermissions(playerobject, {READ_MESSAGES: true}).catch(console.error);
                     channel.send("<@" + playerobject.id + ">");
                 })
+
+                await channel.setParent(category.id).catch(console.error);
 
             })
             .catch(console.error);
