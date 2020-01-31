@@ -60,12 +60,19 @@ module.exports = {
                         players.forEach(player => {
                             //Check that the player isn't dead
                             if (player.area != undefined){
+                                
+                                //get current channel
+                                channelName = "p" + phaseCount + "-" + player.area;
+                                playerChannel = message.guild.channels.find(c => c.name == channelName);
 
                                 if (player.move != undefined) {
                                     // move the player normally
                                     player.area = player.move;
+                                    //Post about it
+                                    areaToMove = areas.find(a => a.id == player.move);
+                                    playerChannel.send(player.character + " moved to: " + areaToMove.name);
                         
-                                //if player didnt' submit movement
+                                //if player didnt' submit movement:
                                 } else {
 
                                     let currentArea = areas.find(a => a.id == player.area);
@@ -75,8 +82,11 @@ module.exports = {
                                         // if the player can't stay still, they move at random
                                         var randomIndex = Math.floor(Math.random() * currentArea.reachable.length);
                                         player.area = currentArea.reachable[randomIndex];
+                                        areaToMove = areas.find(a => a.id == player.area);
+                                        playerChannel.send(player.character + " couldn't decide where to go, so they went to: " + areaToMove.name);
                                     }
                                     // otherwise, the player doesn't move
+                                    playerChannel.send(player.character + " stayed here.");
                                 }
 
                                 //Update Area's "Player Present" value
