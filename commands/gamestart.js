@@ -50,7 +50,7 @@ module.exports = {
         client.data.set("PLAYER_DATA", players);
 
         areas.forEach(area => {
-            createChannel(message.guild, area.name, catagory, area.playersPresent, phaseCount, area.description); 
+            createChannel(message.guild, area.id, catagory, area.playersPresent, phaseCount, area.description); 
         });
 
         client.data.set("PHASE_COUNT", phaseCount);

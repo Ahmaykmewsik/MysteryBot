@@ -52,6 +52,7 @@ module.exports = {
         message.channel.send(playerToGive.name + " got the `" + itemid + "`");
         
         playerobject = message.guild.members.find(m => m.user.username == playerToGive.name);
+        
         playerobject.send("**Got item!**\n" + itemdescription);
 
         message.channel.send(formatPlayer(playerToGive));
