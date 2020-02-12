@@ -35,7 +35,7 @@ module.exports = {
         }
 
         //Find area
-        var areaToSet = areas.find(area => area.id.includes(args[0]));
+        let areaToSet = areas.find(area => area.id.includes(args[0]));
         if (areaToSet == undefined) {
             return message.channel.send("No area exists with that ID.");
         }
@@ -46,6 +46,9 @@ module.exports = {
                 p.area = areaToSet.id;
             }
         });
+        
+        //Update Area's "Player Present" value
+        areaToSet.playersPresent.push(playerToSet.name);
   
         client.data.set("PLAYER_DATA", players);
         client.data.set("AREA_DATA", areas);

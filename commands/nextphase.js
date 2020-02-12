@@ -106,7 +106,7 @@ module.exports = {
 
                         //CreateChannels
                         areas.forEach(area => {
-                            createChannel(message.guild, area, category, phaseCount); 
+                            createChannel(message.guild, area, category.id, phaseCount); 
                         });
 
                         //Updtate data

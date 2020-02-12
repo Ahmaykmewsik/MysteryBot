@@ -11,10 +11,10 @@ module.exports = {
             message.guild.createChannel(gameName, {
                 type: 'category'
               })
-              .then((id) => {
+              .then((categoryObject) => {
                   category = {
-                      id: id,
-                      name: gameName
+                      id: categoryObject.id,
+                      name: categoryObject.name
                   };
 
                   client.data.set("CATEGORY_DATA", category);

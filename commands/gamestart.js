@@ -17,8 +17,8 @@ module.exports = {
             return message.channel.send("No areas found. Use !addarea to create an area.");
         }
 
-        const catagory = client.data.get("CATEGORY_DATA");
-        if (catagory == undefined) {
+        const category = client.data.get("CATEGORY_DATA");
+        if (category == undefined) {
             return message.channel.send("You need to name the game! Use !gamename to name the game. (This will set the catagory name)");
         }
 
@@ -29,13 +29,18 @@ module.exports = {
 
         const phaseCount = 1;
 
+        const nonAreas = players.filter(p => (p.area == undefined))
+
+        console.log(nonAreas);
+
+        if (nonAreas.length > 0) {
+            return message.channel.send("The following players do not have an area set:\n"
+                + "`" + nonAreas.map(p => p.name).join('\n') + "`"
+                + "\nAborting game start.");
+        }
+
+        //Change nickname
         players.forEach(player => {
-            var randomIndex = Math.floor(Math.random() * areas.length);
-            player.area = areas[randomIndex].id;
-            areas[randomIndex].playersPresent.push(player.name);
-
-            //Change nickname
-
             var playerobject;
             message.guild.members.forEach(function(member) {
                 if (member.user.username == player.name) {
@@ -44,21 +49,19 @@ module.exports = {
             })    
             playerobject.setNickname(player.character)
             .catch(console.error)
+        });
 
+        areas.forEach(area => {
+            createChannel(message.guild, area, category.id, phaseCount); 
         });
 
         client.data.set("PLAYER_DATA", players);
-
-        areas.forEach(area => {
-            createChannel(message.guild, area, category, phaseCount); 
-        });
-
         client.data.set("PHASE_COUNT", phaseCount);
         client.data.set("AREA_DATA", areas);
 
         client.channels.get(actionLogChannelID).send("----------------------------\n---------**PHASE " + phaseCount + "**---------\n----------------------------");
 
-        message.channel.send("Let's go! All players have been assigned a random starting area:\n"
+        message.channel.send("**The game has begun!**\n"
             + players.map(player => player.name + ": " + player.area).join('\n'));
     }
 };

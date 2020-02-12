@@ -1,6 +1,6 @@
 
 module.exports = {
-    createChannel(guild, area, category, phaseNumber) { 
+    createChannel(guild, area, categoryID, phaseNumber) { 
 
         //If nobody is there, don't make a channel for it
         if (area.playersPresent.length == 0) {
@@ -9,12 +9,12 @@ module.exports = {
 
         guild.createChannel("p" + phaseNumber + "-" + area.id, {
             type: 'text',
+            parentID: categoryID,
             permissionOverwrites: [{
                 id: guild.id,
                 deny: ['READ_MESSAGES']
               }]
-          })
-            .then(async channel => {
+          }).then(async channel => {
 
                 //Post the thing
                 await channel.send(
@@ -24,22 +24,18 @@ module.exports = {
                 )
 
                 //Add players
-                await area.playersPresent.forEach(playername => {
+                await guild.members.forEach(member => {
                     
-                    var playerobject;
-                    guild.members.forEach(function(member) {
-                        if (member.user.username == playername) {
-                            playerobject = member.user;
-                        }
-                    })
+                    playername = area.playersPresent.find(p => p == member.user.username);
 
-                    channel.overwritePermissions(playerobject, {READ_MESSAGES: true}).catch(console.error);
-                    channel.send("<@" + playerobject.id + ">");
+                    if (playername != undefined) {
+                        
+                        channel.overwritePermissions(member.user, {READ_MESSAGES: true}).catch(console.error);
+                        channel.send("<@" + member.user.id + ">");
+                    }
+
                 })
 
-                await channel.setParent(category.id).catch(console.error);
-
-            })
-            .catch(console.error);
+            }).catch(console.error);
     }
 };
