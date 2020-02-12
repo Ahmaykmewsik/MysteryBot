@@ -3,7 +3,7 @@ module.exports = {
     sendPassMessages(members, players) {
         players.forEach(player => {
             //find players who are swapping locations
-            swappers = players.filter(p => (player.area == p.move) && (player.move == p.area) && (player.move != player.area));
+            swappers = players.filter(p => (player.area == p.move) && (player.move == p.area) && (player.move != player.area) && (player.area != undefined));
             if (swappers.length > 0) {
                 const swappersString = swappers.map(s => s.character).join(', ');
                 playerobject = members.find(m => m.user.username == player.name);

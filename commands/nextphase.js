@@ -70,7 +70,7 @@ module.exports = {
                                     player.area = player.move;
                                     //Post about it
                                     areaToMove = areas.find(a => a.id == player.move);
-                                    playerChannel.send(player.character + " moved to: " + areaToMove.name);
+                                    playerChannel.send(player.character + " moved to: " + areaToMove.name).catch(console.error());
                         
                                 //if player didnt' submit movement:
                                 } else {
@@ -106,7 +106,7 @@ module.exports = {
 
                         //CreateChannels
                         areas.forEach(area => {
-                            createChannel(message.guild, area.name, category, area.playersPresent, phaseCount, area.description); 
+                            createChannel(message.guild, area, category, phaseCount); 
                         });
 
                         //Updtate data

@@ -1,13 +1,13 @@
 
 module.exports = {
-    createChannel(guild, areaName, category, playerArray, phaseNumber, areaDescription) { 
+    createChannel(guild, area, category, phaseNumber) { 
 
         //If nobody is there, don't make a channel for it
-        if (playerArray.length == 0) {
+        if (area.playersPresent.length == 0) {
             return;
         }
 
-        guild.createChannel("p" + phaseNumber + "-" + areaName, {
+        guild.createChannel("p" + phaseNumber + "-" + area.id, {
             type: 'text',
             permissionOverwrites: [{
                 id: guild.id,
@@ -19,12 +19,12 @@ module.exports = {
                 //Post the thing
                 await channel.send(
                     ">>> *-----Phase " + phaseNumber + "-----*\n" +
-                    "**" + areaName + "**\n\n" +
-                    areaDescription
+                    "**" + area.name+ "**\n\n" +
+                    area.description
                 )
 
                 //Add players
-                await playerArray.forEach(playername => {
+                await area.playersPresent.forEach(playername => {
                     
                     var playerobject;
                     guild.members.forEach(function(member) {

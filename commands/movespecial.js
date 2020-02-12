@@ -22,7 +22,7 @@ module.exports = {
 			return message.channel.send("You're not alive! No movement actions for you.");
 		}
 
-        client.channels.get(actionLogChannelID).send("MOVE SPECIAL" + message.author.username + ": `" + args.join(" ") + "`");
+        client.channels.get(actionLogChannelID).send(":bangbang: :arrow_forward: MOVE SPECIAL" + message.author.username + ": `" + args.join(" ") + "`");
 		
 		message.channel.send("Movement to " + player.move + " sent. The GM will process this action manually.");
 
