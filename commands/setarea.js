@@ -44,12 +44,10 @@ module.exports = {
         players.forEach(function(p) {
             if (p.name == playerToSet.username) {
                 p.area = areaToSet.id;
+                areaToSet.playersPresent.push(p.name);
             }
         });
         
-        //Update Area's "Player Present" value
-        areaToSet.playersPresent.push(playerToSet.name);
-  
         client.data.set("PLAYER_DATA", players);
         client.data.set("AREA_DATA", areas);
 

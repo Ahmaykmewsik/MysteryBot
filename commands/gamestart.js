@@ -1,4 +1,5 @@
 const createChannel = require('../utilities/createChannel.js').createChannel;
+const createEarlog = require('../utilities/createEarlog.js').createEarlog;
 
 module.exports = {
 	name: 'gamestart',
@@ -31,8 +32,6 @@ module.exports = {
 
         const nonAreas = players.filter(p => (p.area == undefined))
 
-        console.log(nonAreas);
-
         if (nonAreas.length > 0) {
             return message.channel.send("The following players do not have an area set:\n"
                 + "`" + nonAreas.map(p => p.name).join('\n') + "`"
@@ -51,10 +50,15 @@ module.exports = {
             .catch(console.error)
         });
 
+        //Create channels
         areas.forEach(area => {
-            createChannel(message.guild, area, category.id, phaseCount); 
+            createEarlog(client, message.guild, area);
+            createChannel(message.guild, area, category.id, phaseCount);
         });
 
+        
+
+        
         client.data.set("PLAYER_DATA", players);
         client.data.set("PHASE_COUNT", phaseCount);
         client.data.set("AREA_DATA", areas);

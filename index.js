@@ -41,9 +41,33 @@ client.on('ready', () => {
 });
 
 client.on('message', message => {
-
-	if (message.author.bot) return; // Ignore bots.
 	
+	///EARLOG
+	if ((message.channel.name[0] == "p") && (!message.content.startsWith(prefix)))  {
+
+		const earlog_data = client.data.get("EARLOG_DATA");
+
+		if (earlog_data != undefined) {
+			//find channel
+
+			const areaid = message.channel.name.split("-")[1];
+
+			const earlogChannel = earlog_data.find(c => c.areaid == areaid);
+
+			if (earlogChannel == undefined) {
+				return console.log("Whoops");
+			}
+			
+			//Copy to Ear Log
+			client.channels.get(earlogChannel.channelid).send("`[" + message.channel.name.toUpperCase() + "]` **" + message.author.username + ":** " + message.content);
+
+			if (message.attachments.array().length != 0) {
+				client.channels.get(earlogChannel.channelid).send({file: message.attachments.array()[0].url});
+			}			
+		}
+
+	}
+
 	///COMMANDS ---------------------------------------------------------------------------
 	if (!message.content.startsWith(prefix) || message.author.bot) return;
 
