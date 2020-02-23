@@ -70,7 +70,10 @@ module.exports = {
                                     player.area = player.move;
                                     //Post about it
                                     areaToMove = areas.find(a => a.id == player.move);
-                                    playerChannel.send(player.character + " moved to: " + areaToMove.name).catch(console.error());
+                                    if (areaToMove != undefined) {
+                                        playerChannel.send(player.character + " moved to: " + areaToMove.id).catch(console.log());
+                                    }
+                                    
                         
                                 //if player didnt' submit movement:
                                 } else {
@@ -86,12 +89,15 @@ module.exports = {
                                         playerChannel.send(player.character + " couldn't decide where to go, so they went to: " + areaToMove.name);
                                     }
                                     // otherwise, the player doesn't move
-                                    playerChannel.send(player.character + " stayed here.");
+                                    //playerChannel.send(player.character + " stayed here.");
                                 }
 
                                 //Update Area's "Player Present" value
                                 let newarea = areas.find(a => a.id == player.area);
-                                newarea.playersPresent.push(player.name);
+                                if (newarea != undefined) {
+                                    newarea.playersPresent.push(player.name);
+                                }
+                                
     
                                 //reset movement and actions
                                 player.move = undefined;

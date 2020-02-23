@@ -31,8 +31,15 @@ module.exports = {
             message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })
                 .then(messages => {
                     if (messages.first().content == 'y') {
+
                         //remove area
                         areas = areas.filter(area => area.id != id);
+
+                        //remove connections to other areas
+                        areas.forEach(a => {
+                            a.reachable = a.reachable.filter(c => c != id);
+                        });
+
                         message.channel.send("Area `" + id + "` removed.");
                     } else if (messages.first().content == 'n') {
                         message.channel.send("Okay, never mind then :)");

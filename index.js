@@ -42,31 +42,44 @@ client.on('ready', () => {
 
 client.on('message', message => {
 	
-	///EARLOG
-	if ((message.channel.name[0] == "p") && (!message.content.startsWith(prefix)))  {
+	// ///EARLOG
+	if (message.channel.type != "dm") {
+		if ((message.channel.name[0] == "p"))  {
 
-		const earlog_data = client.data.get("EARLOG_DATA");
+			const earlog_data = client.data.get("EARLOG_DATA");
 
-		if (earlog_data != undefined) {
-			//find channel
+			if (earlog_data != undefined) {
+				//find channel
+				const areaid = message.channel.name.split("-").pop();
+				const earlogChannel = earlog_data.find(c => {
+					return c.areaid == areaid;
+				});
 
-			const areaid = message.channel.name.split("-")[1];
-
-			const earlogChannel = earlog_data.find(c => c.areaid == areaid);
-
-			if (earlogChannel == undefined) {
-				return console.log("Whoops");
-			}
+				if (message.member.nickname != undefined) {
+					var messageContent = "**" + message.member.nickname + ":** `["+ message.author.username.toUpperCase() + "]` " + message.content
+				} else {
+					var messageContent = "**" + message.author.username + ":** " + message.content
+				}
 			
-			//Copy to Ear Log
-			client.channels.get(earlogChannel.channelid).send("`[" + message.channel.name.toUpperCase() + "]` **" + message.author.username + ":** " + message.content);
+				if (earlogChannel != undefined) {
+					//Copy to Ear Log
+					client.channels.get(earlogChannel.channelid).send(messageContent);
 
-			if (message.attachments.array().length != 0) {
-				client.channels.get(earlogChannel.channelid).send({file: message.attachments.array()[0].url});
-			}			
+					if (message.attachments.array().length != 0) {
+						client.channels.get(earlogChannel.channelid).send(message.attachments.array()[0].url);
+					}	
+				}
+				else {
+					console.log("Whoops");
+				}
+
+				return
+			
+			}
+
 		}
-
 	}
+
 
 	///COMMANDS ---------------------------------------------------------------------------
 	if (!message.content.startsWith(prefix) || message.author.bot) return;

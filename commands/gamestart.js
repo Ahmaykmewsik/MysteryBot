@@ -1,5 +1,4 @@
 const createChannel = require('../utilities/createChannel.js').createChannel;
-const createEarlog = require('../utilities/createEarlog.js').createEarlog;
 
 module.exports = {
 	name: 'gamestart',
@@ -38,34 +37,52 @@ module.exports = {
                 + "\nAborting game start.");
         }
 
-        //Change nickname
-        players.forEach(player => {
-            var playerobject;
-            message.guild.members.forEach(function(member) {
-                if (member.user.username == player.name) {
-                    playerobject = member;
-                }
-            })    
-            playerobject.setNickname(player.character)
-            .catch(console.error)
-        });
+        message.channel.send("*Setting up game...*");
+
+        // //Change nickname
+        // players.forEach(player => {
+        //     message.guild.members.forEach(function(member) {
+        //         if (member.user.username == player.name) {
+        //             member.setNickname(player.character).catch(console.log)
+        //         }
+        //     })    
+        // });
 
         //Create channels
+        console.log("Game Start!");
+
+
+        //create earlog
         areas.forEach(area => {
-            createEarlog(client, message.guild, area);
-            createChannel(message.guild, area, category.id, phaseCount);
-        });
+            message.guild.createChannel("earlog-" + area.id, {
+                type: 'text',
+                permissionOverwrites: [{
+                    id: message.guild.id,
+                    deny: ['SEND_MESSAGES', 'READ_MESSAGES']
+                    }]
+            }).then(channel => {
+                console.log(area.id + " created");
+                var earlog_data = client.data.get("EARLOG_DATA");
+                if (earlog_data == undefined) {
+                    earlog_data = [];
+                }
+                earlog_data.push({areaid: area.id, channelid: channel.id});
+                client.data.set("EARLOG_DATA", earlog_data);
+                console.log("Making channel for: " + area.id);
+                //create channel
+                createChannel(message.guild, area, category.id, phaseCount);
+            }).catch(console.error())
+        })
 
-        
-
-        
         client.data.set("PLAYER_DATA", players);
         client.data.set("PHASE_COUNT", phaseCount);
         client.data.set("AREA_DATA", areas);
+
 
         client.channels.get(actionLogChannelID).send("----------------------------\n---------**PHASE " + phaseCount + "**---------\n----------------------------");
 
         message.channel.send("**The game has begun!**\n"
             + players.map(player => player.name + ": " + player.area).join('\n'));
+
     }
 };

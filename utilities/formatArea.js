@@ -18,6 +18,6 @@ module.exports = {
             .addField('Description', area.description)
             .addField('Connected to', reachable)
             .addField('Players Present', playersPresentString)
-            .addField("Can Spawn", area.canspawn)
+            .setImage(area.image)
     }
 };

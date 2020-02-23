@@ -1,6 +1,6 @@
 
 module.exports = {
-    createChannel(guild, area, categoryID, phaseNumber) { 
+    async createChannel(guild, area, categoryID, phaseNumber) { 
 
         //If nobody is there, don't make a channel for it
         if (area.playersPresent.length == 0) {
@@ -16,11 +16,16 @@ module.exports = {
               }]
           }).then(async channel => {
 
+                if (area.image == undefined) {
+                    area.image = "";
+                }
+
                 //Post the thing
                 await channel.send(
                     ">>> *-----Phase " + phaseNumber + "-----*\n" +
                     "**" + area.name+ "**\n\n" +
-                    area.description
+                    area.description + "\n\n" +
+                    area.image
                 )
 
                 //Add players
