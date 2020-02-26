@@ -12,7 +12,7 @@ module.exports = {
 		const areas = client.data.get("AREA_DATA");
 		const players = client.data.get("PLAYER_DATA");
 
-		var player = players.filter(p => p.name == message.author.username);
+		var player = players.find(p => p.name == message.author.username);
 
 		if (player == undefined) {
 			return message.channel.send("You don't seem to be on the list of players. If you think this is a mistake, ask your GM.");
@@ -21,8 +21,6 @@ module.exports = {
 		if (actionLogChannelID == undefined) {
 			return message.channel.send("The GM needs to set the action log!");
 		}
-
-		player = player[0];
 
 		if (player.area == undefined) {
 			return message.channel.send("You're not alive! No movement actions for you.");
