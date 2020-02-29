@@ -11,6 +11,12 @@ module.exports = {
         if (areas == undefined) {
             return message.channel.send("You have no areas yet! Add an area first.");
         }
+
+        var items = client.data.get("ITEM_DATA");
+        if (items == undefined) {
+            items = [];
+        }
+
         if (args.length === 0) {
             return message.channel.send("No arguments given. Please specify area ID and imageURL.");
         }
@@ -34,6 +40,6 @@ module.exports = {
         client.data.set("AREA_DATA", areas);
 
         message.channel.send("Area image updated!");
-        message.channel.send(formatArea(areas[areaIndexToUpdate]));
+        message.channel.send(formatArea(areas[areaIndexToUpdate], items));
     }
 };

@@ -1,18 +1,20 @@
-const Discord = require('discord.js');
-
 module.exports = {
 
     formatItem(item) {
 
         var infoStringArray = []
 
-        if (item.primary) infoString.push("Primary");
+        if (item.primary) infoStringArray.push("Primary");
 
-        if (item.use_capacity != -1) infoString.push("(" + item.use_count + " of " + item.use_capacity + ") Uses");
+        if (item.use_capacity != -1) infoStringArray.push("(" + item.use_count + " of " + item.use_capacity + " uses)");
             
-        if (item.big) infoString.push("BIG");
+        if (item.big) infoStringArray.push("BIG");
 
-        return new Discord.RichEmbed()
-        .addField(item.id, item.description + "\n" + infoString.join(", "));
+        var returnstring = "`" + item.id + "`\n" + item.description
+
+        if (infoStringArray.length > 0) {
+            returnstring += " *" + infoStringArray.join(", ") + "*";
+        } 
+        return returnstring;
     }
 };

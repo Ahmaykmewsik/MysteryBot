@@ -108,7 +108,7 @@ module.exports = {
                         //Iterate Phase
                         phaseCount += 1;
 
-                        client.channels.get(actionLogChannelID).send("----------------------------\n---------**PHASE " + phaseCount + "**---------\n----------------------------");
+                        client.channels.get(actionLogChannelID).send("--------------------------------------------------------\n-------------------------------------**PHASE " + phaseCount + "**-------------------------------------\n--------------------------------------------------------");
 
                         //CreateChannels
                         areas.forEach(area => {

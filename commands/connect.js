@@ -1,5 +1,3 @@
-const formatArea = require('../utilities/formatArea').formatArea;
-
 module.exports = {
 	name: 'connect',
 	description: 'Creates a connection between two areas. Use "!connect -o" to make the connection one-way.',

@@ -1,5 +1,3 @@
-const formatArea = require('../utilities/formatArea').formatArea;
-
 module.exports = {
 	name: 'disconnect',
 	description: 'Removes a connection between two areas.',

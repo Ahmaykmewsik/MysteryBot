@@ -1,5 +1,3 @@
-const formatArea = require('../utilities/formatArea').formatArea;
-
 module.exports = {
 	name: 'clearareas',
 	description: 'Removes all areas.',

@@ -28,6 +28,8 @@ module.exports = {
             id, 
             name: id,
             description: undefined, 
+            details: [],
+            items: [],
             reachable: [id], 
             playersPresent: [],
             image: undefined

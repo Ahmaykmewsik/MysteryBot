@@ -30,11 +30,7 @@ module.exports = {
         }
 
         if (args.length == 1) {
-            return message.channel.send("Give what now? You need to put something.");
-        }
-
-        if (args.length == 2) {
-            return message.channel.send("You need to put a description.");
+            return message.channel.send("Give what now? You need to put an item id.");
         }
 
         //Give Item

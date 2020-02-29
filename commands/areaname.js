@@ -21,6 +21,11 @@ module.exports = {
             areas = [];
         }
 
+        var items = client.data.get("ITEM_DATA");
+        if (items == undefined) {
+            items = [];
+        }
+
         var areaIndexToUpdate = areas.findIndex(area => area.id == id);
         if (areaIndexToUpdate === -1) {
             return message.channel.send("No area exists with ID `" + id + "`. Use !areas to view all areas.");
@@ -30,6 +35,6 @@ module.exports = {
         client.data.set("AREA_DATA", areas);
 
         message.channel.send("Area name updated!");
-        message.channel.send(formatArea(areas[areaIndexToUpdate]));
+        message.channel.send(formatArea(areas[areaIndexToUpdate], items));
     }
 };

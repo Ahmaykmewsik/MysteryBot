@@ -11,6 +11,10 @@ module.exports = {
         var players = client.data.get("PLAYER_DATA");
         var areas = client.data.get("AREA_DATA");
 
+        var items = client.data.get("ITEM_DATA");
+        if (items == undefined) {
+            items = [];
+        }
 		var player = players.find(p => p.name == message.author.username);
 
 		if (player == undefined) {
@@ -22,6 +26,6 @@ module.exports = {
         }
         
         const currentArea = areas.find(a => a.id == player.area);
-        message.channel.send(formatArea(currentArea));
+        message.channel.send(formatArea(currentArea, items));
     }
 };

@@ -2,8 +2,8 @@ const formatItem = require('../utilities/formatItem').formatItem;
 
 module.exports = {
 	name: 'additem',
-	description: 'Creates a new item with specified ID string. The item ID cannot contain whitespace.',
-    format: "!additem <id>",
+	description: 'Creates a new item with specified ID string. The item ID cannot contain whitespace. Must include -d tag and a description. Other tags: -b for big, -p for primary, -u for number of uses.',
+    format: "!additem <id> <tag> <tagitem>",
     gmonly: true,
 	execute(client, message, args) {
 
