@@ -16,7 +16,7 @@ module.exports = {
         }
         var phaseCount = client.data.get("PHASE_COUNT");
         if (phaseCount == undefined){
-            return message.channel.send("You need to start the game first with !gamestart.");
+            message.channel.send("The game has not started yet FYI.");
         }
 
         message.channel.send("Are you sure you want to reset the game? All player and area data will be kept.").then(() => {

@@ -1,7 +1,8 @@
 const Discord = require('discord.js');
+const formatItem = require('../utilities/formatItem').formatItem;
 
 module.exports = {
-    formatPlayer(player) {
+    formatPlayer(player, items) {
         const status = (player.area == undefined) ? 'Dead' : '**ALIVE**';
 
         const color = (status == "Dead") ? 0xff0000 : 0x00ff11; // RED : GREEN
@@ -12,12 +13,14 @@ module.exports = {
 
         const moveString = (player.move == undefined) ? "-" : player.move;
         
-        if (player.items.length == 0) {
-            var itemString = "*No Items.*" ;
-        } else {
-            var itemString = "";
+        var itemString = "*No Items.*" 
+        if (player.items.length != 0) {
+            itemString = "";
             player.items.forEach(item => { 
-                itemString += "`" + item.id + "` " + item.description + "\n\n";
+                var itemobject = items.find(i => i.id == item);
+                if (itemobject != undefined) {
+                    itemString += formatItem(itemobject) + "\n"
+                }
             });
         }
 

@@ -10,6 +10,7 @@ module.exports = {
 	execute(client, message, args) {
 
         var players = client.data.get("PLAYER_DATA");
+        const items = client.data.get("ITEM_DATA");
 
         if (players == undefined) {
             return message.channel.send("You don't have any players. There's no one to remove!");
@@ -35,15 +36,15 @@ module.exports = {
 
         //drop Item
         const itemid = args.shift().toLowerCase();
-        
-        playerToGive.itemsNew = playerToGive.items.filter(i => i.id != itemid);
-
-        if (playerToGive.items == playerToGive.itemsNew) {
+        if (!playerToGive.items.includes(itemid)) {
             return message.channel.send(playerToGive.name + " doesn't have a " + itemid + " to drop.");
         }
-
-        playerToGive.items = playerToGive.itemsNew;
   
+        playerToGive.items = playerToGive.items.filter(i => {
+            console.log(i.name, itemid)
+            i.name != itemid
+        });
+
         client.data.set("PLAYER_DATA", players);
 
         message.channel.send(playerToGive.name + " dropped the `" + itemid + "`");
@@ -51,6 +52,6 @@ module.exports = {
         playerobject = message.guild.members.find(m => m.user.username == playerToGive.name);
         playerobject.send("You no longer have the `" + itemid + "`");
 
-        message.channel.send(formatPlayer(playerToGive));
+        message.channel.send(formatPlayer(playerToGive, items));
 	}
 };

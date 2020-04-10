@@ -20,6 +20,11 @@ module.exports = {
             areas = [];
         }
 
+        var items = client.data.get("ITEM_DATA");
+        if (items == undefined) {
+            items = [];
+        }
+
         if (areas.some(area => area.id == id)) {
             return message.channel.send("An area with that ID already exists!");
         }
@@ -37,7 +42,7 @@ module.exports = {
         areas.push(newArea);
         client.data.set("AREA_DATA", areas);
         message.channel.send("Successfully created new area: `" + id + "`.");
-        message.channel.send(formatArea(newArea));
+        message.channel.send(formatArea(newArea, items));
         message.channel.send("Use !areaname, !areadesc, and !connect to edit this area's properties.");
     }
 };

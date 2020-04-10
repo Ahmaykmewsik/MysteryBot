@@ -15,24 +15,24 @@ module.exports = {
             playersPresentString = area.playersPresent.join(", ");
         }
 
-        var itemsString
-        if (area.items.length == 0) {
-            itemsString = "*None*" ;
-        } else {
-            area.items.forEach(item => {
-                var itemobject = items.find(i => i.id == item);
-                if (itemobject != undefined) {
-                    itemsString += formatItem(itemobject) + "\n";
-                }
-            })
+        // var itemsString
+        // if (area.items.length == 0) {
+        //     itemsString = "*None*" ;
+        // } else {
+        //     area.items.forEach(item => {
+        //         var itemobject = items.find(i => i.id == item);
+        //         if (itemobject != undefined) {
+        //             itemsString += formatItem(itemobject) + "\n";
+        //         }
+        //     })
             
-        }
+        // }
 
         return new Discord.RichEmbed()
             .setTitle(area.id)
             .addField('Name', area.name)
             .addField('Description', area.description)
-            .addField('Items', itemsString)
+            //.addField('Items', itemsString)
             .addField('Connected to', reachable)
             .addField('Players Present', playersPresentString)
             .setImage(area.image)

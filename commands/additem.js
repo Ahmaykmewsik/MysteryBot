@@ -29,18 +29,24 @@ module.exports = {
         if (args.includes('-u')) {
             uses = args[args.indexOf('-u') + 1];
             uses = parseInt(uses);
+            if (!Number.isInteger(uses)) {
+                return message.channel.send("The number of uses needs to be an number.");
+            }
         }
 
-        console.log(uses);
+        var success = 100;
+        if (args.includes('-s')) {
+            success = args[args.indexOf('-s') +1];
+            success = parseInt(success)
+            if (!Number.isInteger(success)) {
+                return message.channel.send("The success rate needs to be an number.");
+            }
+        }
         
         const description = args.slice(args.indexOf('-d') + 1).join(' ');
 
         if (items.some(item => item.id == id)) {
             return message.channel.send("An item with that ID already exists!");
-        }
-
-        if (!Number.isInteger(uses)) {
-            return message.channel.send("The number of uses needs to be an number.");
         }
 
         if (description.length == 0) {
@@ -54,6 +60,7 @@ module.exports = {
             use_count: uses, 
             use_capacity: uses,
             primary: isPrimary,
+            success: success,
             big: isBig
         };
 

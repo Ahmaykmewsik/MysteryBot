@@ -11,6 +11,8 @@ module.exports = {
         if (players == undefined || players.length === 0) {
             return message.channel.send("You haven't added any players yet. Use !addplayer <person> <character> to add players.");
         }
+
+        const items = client.data.get("ITEM_DATA");
         
         if (args.length == 0) {
             return message.channel.send("You need to enter a player.");
@@ -26,6 +28,6 @@ module.exports = {
             return message.channel.send("Invalid username: " + inputusername);
         }
 
-        message.channel.send(formatPlayer(playerName));
+        message.channel.send(formatPlayer(playerName, items));
     }
 };

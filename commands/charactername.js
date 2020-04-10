@@ -10,6 +10,7 @@ module.exports = {
 	execute(client, message, args) {
 
         var players = client.data.get("PLAYER_DATA");
+        var items = client.data.get("ITEM_DATA");
 
         if (players == undefined) {
             return message.channel.send("You don't have any players. There's no one to remove!");
@@ -44,6 +45,6 @@ module.exports = {
         playerobject = message.guild.members.find(m => m.user.username == playerToName.name);
         playerobject.send("**You will now appear as: **\n" + playerToName.character);
 
-        message.channel.send(formatPlayer(playerToName));
+        message.channel.send(formatPlayer(playerToName, items));
 	}
 };

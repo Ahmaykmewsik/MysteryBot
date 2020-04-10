@@ -1,5 +1,5 @@
-const prefix = process.env.prefix;
 const formatPlayer = require('../utilities/formatPlayer').formatPlayer;
+const formatItem = require('../utilities/formatItem').formatItem;
 
 module.exports = {
 	name: 'gotitem',
@@ -10,9 +10,10 @@ module.exports = {
 	execute(client, message, args) {
 
         var players = client.data.get("PLAYER_DATA");
+        var items = client.data.get("ITEM_DATA");
 
         if (players == undefined) {
-            return message.channel.send("You don't have any players. There's no one to remove!");
+            return message.channel.send("You don't have any players!");
         }
 
         if (args.length == 0) {
@@ -29,19 +30,19 @@ module.exports = {
             return message.channel.send("Invalid username: " + inputusername);
         }
 
-        if (args.length == 1) {
-            return message.channel.send("Give what now? You need to put an item id.");
+        if (args.length == 0) {
+            return message.channel.send("Give what now? You need to put an item ID.");
         }
 
-        //Give Item
+        //Find Item
         const itemid = args.shift().toLowerCase();
-        
-        const itemdescription = args.join(" ");
+        const itemToGive = items.find(i => i.id == itemid);
+        if (itemToGive == undefined) {
+            return message.channel.send("Invalid item ID: " + itemid);
+        }
 
-        playerToGive.items.push({
-            id: itemid, 
-            description: itemdescription
-        });
+        //Give item
+        playerToGive.items.push(itemid);
   
         client.data.set("PLAYER_DATA", players);
 
@@ -49,8 +50,8 @@ module.exports = {
         
         playerobject = message.guild.members.find(m => m.user.username == playerToGive.name);
         
-        playerobject.send("**Got item!**\n" + itemdescription);
+        playerobject.send("**Got item!**\n" + formatItem(itemToGive));
 
-        message.channel.send(formatPlayer(playerToGive));
+        message.channel.send(formatPlayer(playerToGive, items));
 	}
 };

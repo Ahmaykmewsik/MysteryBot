@@ -14,6 +14,8 @@ module.exports = {
             return message.channel.send("You don't have any players. There's no one to remove!");
         }
 
+        const items = client.data.get("ITEM_DATA");
+
         const areas = client.data.get("AREA_DATA");
         if (areas == undefined) {
 			return message.channel.send("You don't have any areas! Setup the game first bumbo.");
@@ -52,6 +54,6 @@ module.exports = {
 
         message.channel.send(playerToMove.name + " will move to: `" + areaid + "`");
 
-        message.channel.send(formatPlayer(playerToMove));
+        message.channel.send(formatPlayer(playerToMove, items));
 	}
 };

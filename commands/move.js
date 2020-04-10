@@ -11,6 +11,7 @@ module.exports = {
 		const actionLogChannelID = client.data.get("ACTION_LOG");
 		const areas = client.data.get("AREA_DATA");
 		const players = client.data.get("PLAYER_DATA");
+		const items = client.data.get("ITEM_DATA");
 
 		var player = players.find(p => p.name == message.author.username);
 
@@ -64,6 +65,6 @@ module.exports = {
 			message.reply("Movement updated.");
 		}
 
-		message.reply(formatPlayer(player));
+		message.reply(formatPlayer(player, items));
 	}
 };

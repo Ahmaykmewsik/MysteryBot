@@ -11,7 +11,9 @@ module.exports = {
         if (players == undefined || players.length === 0) {
             return message.channel.send("You haven't added any players yet. Use !addplayer <person> <character> to add players.");
         }
+
+        const items = client.data.get("ITEM_DATA");
         
-        players.forEach(player => message.channel.send(formatPlayer(player)));
+        players.forEach(player => message.channel.send(formatPlayer(player, items)));
     }
 };

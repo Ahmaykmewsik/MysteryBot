@@ -41,7 +41,7 @@ module.exports = {
         });
 
         areas.forEach(area => {
-            area.playersPresent.filter(p => p != playerToDie);
+            area.playersPresent.filter(p => p.name != playerToDie.username);
         })
   
         client.data.set("PLAYER_DATA", players);

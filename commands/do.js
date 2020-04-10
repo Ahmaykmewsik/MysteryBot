@@ -18,6 +18,7 @@ module.exports = {
 		}
 
 		const players = client.data.get("PLAYER_DATA");
+		const items = client.data.get("ITEM_DATA");
 
 		var player = players.filter(p => p.name == message.author.username);
 
@@ -58,6 +59,6 @@ module.exports = {
 			message.reply("Action sent.");
 		}
 		
-		message.reply(formatPlayer(player));
+		message.reply(formatPlayer(player, items));
 	}
 };
