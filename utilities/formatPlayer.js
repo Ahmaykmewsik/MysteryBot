@@ -14,7 +14,7 @@ module.exports = {
         const moveString = (player.move == undefined) ? "-" : player.move;
         
         var itemString = "*No Items.*" 
-        if (player.items.length != 0) {
+        if (player.items.length > 0) {
             itemString = "";
             player.items.forEach(item => { 
                 var itemobject = items.find(i => i.id == item);

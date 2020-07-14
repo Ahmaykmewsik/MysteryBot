@@ -3,8 +3,6 @@ const Discord = require('discord.js');
 const Attachment = require('discord.js');
 require('dotenv').config();
 
-//const { prefix, token } = require('./config.json');
-
 const token = process.env.token;
 const prefix = process.env.prefix;
 

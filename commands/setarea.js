@@ -34,6 +34,11 @@ module.exports = {
             return message.channel.send("Invalid username: " + inputusername);
         }
 
+        //remove from all areas
+        areas.forEach(area => {
+            area.playersPresent = area.playersPresent.filter(p => p != playerToSet.username);
+        });
+
         //Find area
         let areaToSet = areas.find(area => area.id.includes(args[0]));
         if (areaToSet == undefined) {

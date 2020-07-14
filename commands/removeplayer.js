@@ -9,6 +9,7 @@ module.exports = {
 	execute(client, message, args) {
 
         var players = client.data.get("PLAYER_DATA");
+        var areas = client.data.get("AREA_DATA");
 
         if (players == undefined) {
             return message.channel.send("You don't have any players. There's no one to remove!");
@@ -33,9 +34,15 @@ module.exports = {
             return message.channel.send("Invalid username: " + inputusername);
         }
 
+        //remove from areas
+        areas.forEach(area => {
+            area.playersPresent.filter(p => p != playerToRemove.username);
+        });
+
         players = players.filter(p => p.name != playerToRemove.username);
   
         client.data.set("PLAYER_DATA", players);
+        client.data.set("AREA_DATA", areas);
 
         message.channel.send(playerToRemove.username + " has been removed.");
 	}

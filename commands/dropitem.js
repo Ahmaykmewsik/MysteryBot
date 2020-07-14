@@ -39,11 +39,8 @@ module.exports = {
         if (!playerToGive.items.includes(itemid)) {
             return message.channel.send(playerToGive.name + " doesn't have a " + itemid + " to drop.");
         }
-  
-        playerToGive.items = playerToGive.items.filter(i => {
-            console.log(i.name, itemid)
-            i.name != itemid
-        });
+        //DROP IT
+        playerToGive.items = playerToGive.items.filter(i => i != itemid);
 
         client.data.set("PLAYER_DATA", players);
 
