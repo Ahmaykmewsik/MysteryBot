@@ -70,7 +70,7 @@ module.exports = {
                 client.data.set("EARLOG_DATA", earlog_data);
                 console.log("Making channel for: " + area.id);
                 //create channel
-                createChannel(message.guild, area, category.id, phaseCount);
+                createChannel(client, message.guild, area, category.id, phaseCount);
             }).catch(console.error())
         })
 

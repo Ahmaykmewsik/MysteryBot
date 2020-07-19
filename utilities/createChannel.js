@@ -1,13 +1,20 @@
 
 module.exports = {
-    async createChannel(guild, area, categoryID, phaseNumber) { 
+    async createChannel(client, guild, area, categoryID, phaseNumber) { 
 
         //If nobody is there, don't make a channel for it
         if (area.playersPresent.length == 0) {
             return;
         }
 
-        guild.createChannel("p" + phaseNumber + "-" + area.id, {
+        var channeldata = client.data.get("CHANNEL_DATA");
+        if (channeldata == undefined) {
+            channeldata = {};
+        }
+
+        const channelname = "p" + phaseNumber + "-" + area.id;
+
+        guild.createChannel(channelname, {
             type: 'text',
             parentID: categoryID,
             permissionOverwrites: [{
@@ -40,6 +47,9 @@ module.exports = {
                     }
 
                 })
+
+                channeldata[channelname] = channel.id;
+                client.data.set("CHANNEL_DATA", channeldata);
 
             }).catch(console.error);
     }

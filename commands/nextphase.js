@@ -27,7 +27,9 @@ module.exports = {
         const actionLogChannelID = client.data.get("ACTION_LOG");
 		if (actionLogChannelID == undefined) {
 			return message.channel.send("The GM needs to set the action log!");
-		}
+        }
+        
+        const channeldata = client.data.get("CHANNEL_DATA");
 
         var nonDoers = players.filter(p => (p.action == undefined) && (p.area != undefined));
         if (nonDoers.length > 0) {
@@ -62,15 +64,15 @@ module.exports = {
                             if (player.area != undefined){
                                 
                                 //get current channel
-                                channelName = "p" + phaseCount + "-" + player.area;
-                                playerChannel = message.guild.channels.find(c => c.name == channelName);
+                                channelID = channeldata["p" + phaseCount + "-" + player.area];
+                                playerChannel = message.guild.channels.find(c => c.id == channelID);
 
                                 if (player.move != undefined) {
                                     // move the player normally
                                     player.area = player.move;
                                     //Post about it
                                     areaToMove = areas.find(a => a.id == player.move);
-                                    if (areaToMove != undefined) {
+                                    if (areaToMove != undefined && playerChannel != undefined) {
                                         playerChannel.send(player.character + " moved to: " + areaToMove.id).catch(console.log());
                                     }
                                     
@@ -89,7 +91,10 @@ module.exports = {
                                         playerChannel.send(player.character + " couldn't decide where to go, so they went to: " + areaToMove.name);
                                     }
                                     // otherwise, the player doesn't move
-                                    //playerChannel.send(player.character + " stayed here.");
+                                    if (playerChannel != undefined) {
+                                        playerChannel.send(player.character + " stayed here.");
+                                    }
+                        
                                 }
 
                                 //Update Area's "Player Present" value
@@ -112,7 +117,7 @@ module.exports = {
 
                         //CreateChannels
                         areas.forEach(area => {
-                            createChannel(message.guild, area, category.id, phaseCount); 
+                            createChannel(client, message.guild, area, category.id, phaseCount); 
                         });
 
                         //Updtate data
