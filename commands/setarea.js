@@ -40,9 +40,13 @@ module.exports = {
         });
 
         //Find area
-        let areaToSet = areas.find(area => area.id.includes(args[0]));
+        var areaToSet;
+        areaToSet = areas.find(area => area.id == args[0]);
         if (areaToSet == undefined) {
-            return message.channel.send("No area exists with that ID.");
+            areaToSet = areas.find(area => area.id.includes(args[0]));
+            if (areaToSet == undefined) {
+                return message.channel.send("No area exists with that ID.");
+            }
         }
 
         //Set the area

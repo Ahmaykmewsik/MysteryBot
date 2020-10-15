@@ -40,6 +40,7 @@ module.exports = {
         players.push({
             name: playerobject.username, //string
             character: characterName, //string
+            alive: true, //bool
             area: undefined, //id
             action: undefined, //string
             move: undefined, //id

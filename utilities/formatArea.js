@@ -15,6 +15,17 @@ module.exports = {
             playersPresentString = area.playersPresent.join(", ");
         }
 
+        var descriptionString;
+        if (area.description == undefined){
+            descriptionString = "Nothing is here.";
+        } else {
+            descriptionString = area.description;
+        }
+        
+        if (descriptionString.length > (1024)){
+            descriptionString = descriptionString.substring(0, 1024-3) + "...";
+        }
+
         // var itemsString
         // if (area.items.length == 0) {
         //     itemsString = "*None*" ;
@@ -31,7 +42,7 @@ module.exports = {
         return new Discord.RichEmbed()
             .setTitle(area.id)
             .addField('Name', area.name)
-            .addField('Description', area.description)
+            .addField('Description', descriptionString)
             //.addField('Items', itemsString)
             .addField('Connected to', reachable)
             .addField('Players Present', playersPresentString)

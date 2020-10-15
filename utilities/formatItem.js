@@ -6,17 +6,20 @@ module.exports = {
 
         if (item.primary) infoStringArray.push("Primary");
 
+        if (item.big) infoStringArray.push("`BIG`");
+
         if (item.use_capacity != -1) infoStringArray.push("(" + item.use_count + " of " + item.use_capacity + " uses)");
 
         if (item.success != 100) infoStringArray.push(item.success + "% Success")
-            
-        if (item.big) infoStringArray.push("BIG");
 
-        var returnstring = "`" + item.id + "` " + item.description
+        var returnstring = "`" + item.id + "` ";
 
         if (infoStringArray.length > 0) {
             returnstring += " *" + infoStringArray.join(", ") + "*";
         } 
+
+        returnstring += " " + item.description
+
         return returnstring;
     }
 };

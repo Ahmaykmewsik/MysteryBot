@@ -1,3 +1,5 @@
+const updateAvatarsUtil = require('../utilities/updateAvatarsUtil.js');
+
 const createChannel = require('../utilities/createChannel.js').createChannel;
 const sendPassMessages = require('../utilities/sendPassMessages.js').sendPassMessages;
 
@@ -73,7 +75,13 @@ module.exports = {
                                     //Post about it
                                     areaToMove = areas.find(a => a.id == player.move);
                                     if (areaToMove != undefined && playerChannel != undefined) {
-                                        playerChannel.send(player.character + " moved to: " + areaToMove.id).catch(console.log());
+                                        if (areaToMove.id == player.area) {
+                                            playerChannel.send(player.character + " stayed here.").catch(console.log);
+                                        } else {
+                                            playerChannel.send(player.character + " moved to: " + areaToMove.id).catch(console.log());
+                                        }
+                                    } else {
+                                        console.log("Did not post movement message for: " + player.name + " to " + areaToMove.id);
                                     }
                                     
                         
@@ -93,6 +101,8 @@ module.exports = {
                                     // otherwise, the player doesn't move
                                     if (playerChannel != undefined) {
                                         playerChannel.send(player.character + " stayed here.");
+                                    } else {
+                                        console.log("Did not post movement message for: " + player.name + " when no movement action was given");
                                     }
                         
                                 }
@@ -135,5 +145,6 @@ module.exports = {
                 })
                 .catch(console.error);
         });
+        updateAvatarsUtil(client);
     }
 };

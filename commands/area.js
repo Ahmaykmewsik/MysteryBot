@@ -24,9 +24,13 @@ module.exports = {
             items = [];
         }
 
-        var areaToDisplay = areas.find(area => area.id.includes(args[0]));
-        if (areaToDisplay == undefined) {
-            return message.channel.send("No area exists with that ID. Use !areas to view all areas, or !addarea <id> to create a new area.");
+        var areaToDisplay;
+		areaToDisplay = areas.find(area => area.id == args[0]);
+		if (areaToDisplay == undefined){
+            areaToDisplay = areas.find(area => area.id.includes(args[0]));
+            if (areaToDisplay == undefined) {
+                return message.channel.send("No area exists with that ID. Use !areas to view all areas, or !addarea <id> to create a new area.");
+            }
         }
 
         message.channel.send(formatArea(areaToDisplay, items));

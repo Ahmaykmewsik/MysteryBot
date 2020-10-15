@@ -26,13 +26,13 @@ module.exports = {
 		if (player.area == undefined) {
 			return message.channel.send("You're not alive! No movement actions for you.");
 		}
+
+		const currentArea = areas.find(a => a.id == player.area);
 		
 		if (args.length === 0) {
 			return message.channel.send("Please specify the ID of the area you wish to move to. Valid options: `"
 				+ currentArea.reachable.join('`, `') + '`.');
 		}
-
-		const currentArea = areas.find(a => a.id == player.area);
 
 		//Changes "stay" to current location
 		if (args[0].toLowerCase() == ("stay")) {
@@ -43,11 +43,14 @@ module.exports = {
 			return message.channel.send("Sorry, `" + args.join(' ') + "` is not a valid movement option. Valid options: `"
 				+ currentArea.reachable.join('`, `') + '`.');
 		}
-		// TODO: consider supporting hidden movement options
 
 		const ifUpdated = (player.move == undefined) ? false : true;
 
-		const moveid = currentArea.reachable.find(id => id.includes(args[0]));
+		var moveid;
+		moveid = currentArea.reachable.find(id => id == args[0]);
+		if (moveid == undefined){
+			moveid = currentArea.reachable.find(id => id.includes(args[0]));
+		}
 		player.move = moveid;
 
 		client.data.set("PLAYER_DATA", players);

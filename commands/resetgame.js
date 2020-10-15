@@ -43,6 +43,7 @@ module.exports = {
                        client.data.set("AREA_DATA", areas);
                        client.data.set("PHASE_COUNT", phaseCount);
                        client.data.set("EARLOG_DATA", undefined);
+                       client.data.set("CHANNEL_DATA", undefined);
 
                        message.channel.send("The game has been reset.");
 

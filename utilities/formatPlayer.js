@@ -3,7 +3,7 @@ const formatItem = require('../utilities/formatItem').formatItem;
 
 module.exports = {
     formatPlayer(player, items) {
-        const status = (player.area == undefined) ? 'Dead' : '**ALIVE**';
+        const status = (player.alive) ? '**ALIVE**' : 'Dead';
 
         const color = (status == "Dead") ? 0xff0000 : 0x00ff11; // RED : GREEN
 

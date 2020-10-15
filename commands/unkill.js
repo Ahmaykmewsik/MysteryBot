@@ -1,9 +1,9 @@
 const formatPlayer = require('../utilities/formatPlayer').formatPlayer;
 
 module.exports = {
-	name: 'kill',
-	description: 'Kills a player. Leaves their body in their current location.',
-    format: "!kill <username>",
+	name: 'unkill',
+	description: 'Resurrects a player and makes them alive.',
+    format: "!unkill <username>",
     guildonly: true,
     gmonly: true,
 	execute(client, message, args) {
@@ -13,7 +13,7 @@ module.exports = {
         var items = client.data.get("ITEM_DATA");
 
         if (players == undefined) {
-            return message.channel.send("You don't have any players. There's no one to kill!");
+            return message.channel.send("You don't have any players. There's no one to unkill!");
         }
 
         if (args.length == 0) {
@@ -39,7 +39,7 @@ module.exports = {
         players.forEach(function(p) {
             if (p.name == playerToDie.username) {
                 playerObject = p;
-                p.alive = false;
+                p.alive = true;
             }
         });
 

@@ -20,6 +20,10 @@ module.exports = {
             return message.channel.send("You need to enter a player.");
         }
 
+        if (items == undefined){
+            return message.channel.send("You have no items! Add some items first with !additem")
+        }
+
         const inputusername = args.shift().toLowerCase();
 
         //find player based on input
