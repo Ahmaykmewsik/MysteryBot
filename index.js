@@ -1,5 +1,4 @@
 const fs = require("fs");
-const request = require(`request`);
 const https = require("https");
 const Discord = require("discord.js");
 require("dotenv").config();

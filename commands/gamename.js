@@ -14,7 +14,8 @@ module.exports = {
               .then((categoryObject) => {
                   category = {
                       id: categoryObject.id,
-                      name: categoryObject.name
+                      name: categoryObject.name,
+                      num: 1
                   };
 
                   client.data.set("CATEGORY_DATA", category);
