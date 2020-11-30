@@ -5,7 +5,7 @@ const https = require("https");
 
 module.exports = {
     updateAvatars(client) {
-
+        console.log("Updating Avatars...");
         var avatar_data = client.data.get("AVATAR_DATA");
         var sum = 0;
 
@@ -33,6 +33,6 @@ module.exports = {
         client.data.set("AVATAR_DATA", avatar_data);
         const logMessage = sum + " avatars were updated."
         console.log(logMessage);
-        return (logMessage);
+        //return (logMessage);
     }
 }

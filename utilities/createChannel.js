@@ -62,7 +62,7 @@ module.exports = {
                     if (playerObject.items != undefined){
                         playerObject.items.forEach(item => {
                             itemObject = items.find(i=> i.name == item);
-                            if (itemObject.big) {
+                            if (itemObject.big || itemObject.clothing) {
                                 bigItemsText += "\n**" + playerObject.character + "** has: " + formatItem(itemObject);
                             }
                         })
@@ -98,9 +98,8 @@ module.exports = {
                         pingMessage += "<@" + member.user.id + ">\n" 
                     } 
                 })
-
-                await channel.send(pingMessage);
-
+                channel.send(pingMessage);
+                
             }).catch(console.error);
     }
 };

@@ -30,7 +30,6 @@ module.exports = {
         const phaseCount = 1;
 
         const nonAreas = players.filter(p => (p.area == undefined))
-
         if (nonAreas.length > 0) {
             return message.channel.send("The following players do not have an area set:\n"
                 + "`" + nonAreas.map(p => p.name).join('\n') + "`"
@@ -52,7 +51,7 @@ module.exports = {
         console.log("Game Start!");
 
 
-        //create earlog
+        //create earlogs and channels
         areas.forEach(area => {
             message.guild.createChannel("earlog-" + area.id, {
                 type: 'text',
@@ -61,14 +60,13 @@ module.exports = {
                     deny: ['SEND_MESSAGES', 'READ_MESSAGES']
                     }]
             }).then(channel => {
-                console.log(area.id + " created");
+                //console.log(area.id + " created");
                 var earlog_data = client.data.get("EARLOG_DATA");
                 if (earlog_data == undefined) {
                     earlog_data = [];
                 }
                 earlog_data.push({areaid: area.id, channelid: channel.id});
                 client.data.set("EARLOG_DATA", earlog_data);
-                console.log("Making channel for: " + area.id);
                 //create channel
                 createChannel(client, message.guild, area, category.id, phaseCount);
             }).catch(console.error())

@@ -100,9 +100,10 @@ client.on("message", async (message) => {
 			var filename;
 			const defaultFile = "./avatars/questionMark.png";
 
-			if (filenameCurrent != filenameStored) {
+			if (filenameCurrent != filenameStored && !message.author.bot) {
 				filename = defaultFile;
 				//update all avatars
+				console.log("Triggering this!");
 				updateAvatars(client);
 			} else {
 				filename = filenameStored;
@@ -111,10 +112,10 @@ client.on("message", async (message) => {
 			//Copy to Ear Log
 			if (!postName || message.author.bot) {
 				//Message Only
-				await client.channels.get(earlogChannel.channelid).send(messageContent);
+				client.channels.get(earlogChannel.channelid).send(messageContent);
 			} else {
 				//Avatar
-				await client.channels
+				client.channels
 					.get(earlogChannel.channelid)
 					.send({ files: [filename] })
 					.then(async () => {

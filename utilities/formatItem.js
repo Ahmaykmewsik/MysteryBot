@@ -8,6 +8,8 @@ module.exports = {
 
         if (item.big) infoStringArray.push("`BIG`");
 
+        if (item.clothing) infoStringArray.push("`CLOTHING`");
+
         if (item.use_capacity != -1) infoStringArray.push("(" + item.use_count + " of " + item.use_capacity + " uses)");
 
         if (item.success != 100) infoStringArray.push(item.success + "% Success")

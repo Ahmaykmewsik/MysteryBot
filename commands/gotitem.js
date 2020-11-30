@@ -5,6 +5,7 @@ module.exports = {
 	name: 'gotitem',
 	description: 'Gives an item to a player.',
     format: "!gotitem <player> <item id> <item description>",
+    aliases: ['giveitem'],
     guildonly: true,
     gmonly: true,
 	execute(client, message, args) {

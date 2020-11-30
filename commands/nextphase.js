@@ -48,7 +48,11 @@ module.exports = {
                 + "\nIf you proceed, they will stay still if possible. Otherwise, they will move at random.");
         }
 
+        
+
         message.channel.send("Are you sure you would like to proceed with the movement phase?").then(() => {
+            updateAvatars(client);
+
             const filter = m => message.author.id === m.author.id;
             message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })
                 .then(messages => {
@@ -62,7 +66,7 @@ module.exports = {
                         channelTotal = 0;
                         newAreas = 0;
                         categoryObject = message.guild.channels.find(c => c.name == category.name);
-                        
+
                         categoryObject.children.forEach(c => {
                             channelTotal++;
                         });
@@ -96,7 +100,7 @@ module.exports = {
                                 })
                                 .catch(console.error);;
                         }
-                        
+
                         //Clear playersPresent data
                         areas.forEach(area => {
                             area.playersPresent = [];
@@ -118,9 +122,9 @@ module.exports = {
                                     areaToMove = areas.find(a => a.id == player.move);
                                     if (areaToMove != undefined && playerChannel != undefined) {
                                         if (areaToMove.id == player.area) {
-                                            playerChannel.send(player.character + " stayed here.").catch(console.log);
-                                        } else {
                                             playerChannel.send(player.character + " moved to: " + areaToMove.id).catch(console.log());
+                                        } else {
+                                            playerChannel.send(player.character + " stayed here.").catch(console.log);
                                         }
                                     } else {
                                         console.log("Did not post movement message for: " + player.name + " to " + areaToMove.id);
@@ -186,7 +190,6 @@ module.exports = {
                     }
                 })
                 .catch(console.error);
-                updateAvatars(client);
         });
     }
 };

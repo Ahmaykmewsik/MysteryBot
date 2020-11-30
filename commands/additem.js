@@ -2,8 +2,8 @@ const formatItem = require('../utilities/formatItem').formatItem;
 
 module.exports = {
 	name: 'additem',
-	description: 'Creates a new item with specified ID string. The item ID cannot contain whitespace. Must include -d tag and a description. Other tags: -b for big, -p for primary, -u for number of uses.',
-    format: "!additem <id> <tag> <tagitem>",
+	description: 'Creates a new item with specified ID string. The item ID cannot contain whitespace. Must include -d tag and a description. Other tags: -b for Big, -c for Clothing.',
+    format: "!additem <id> [-c] [-b] -d <description>",
     gmonly: true,
 	execute(client, message, args) {
 
@@ -23,7 +23,8 @@ module.exports = {
         const id = args[0];
 
         const isBig = (args.includes('-b')); 
-        const isPrimary = (args.includes('-p')); 
+        const isPrimary = (args.includes('-p'));
+        const isClothing = (args.includes('-c')); 
 
         var uses = -1;
         if (args.includes('-u')) {
@@ -61,7 +62,8 @@ module.exports = {
             use_capacity: uses,
             primary: isPrimary,
             success: success,
-            big: isBig
+            big: isBig,
+            clothing: isClothing
         };
 
         items.push(newItem);

@@ -35,9 +35,11 @@ module.exports = {
         }
 
         //remove from areas
-        areas.forEach(area => {
-            area.playersPresent.filter(p => p != playerToRemove.username);
-        });
+        if (areas != undefined){
+            areas.forEach(area => {
+                area.playersPresent.filter(p => p != playerToRemove.username);
+            });
+        }
 
         players = players.filter(p => p.name != playerToRemove.username);
   

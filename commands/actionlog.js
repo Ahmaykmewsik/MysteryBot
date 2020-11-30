@@ -7,12 +7,14 @@ module.exports = {
 	execute(client, message, args) {
 
 		const actionLogChannelID = args[0];
+		const channel = client.channels.get(actionLogChannelID)
+		if (!channel){
+			message.channel.send("Invalid channel id.");
+			return;
+		}
 		
-		client.data.set("ACTION_LOG", actionLogChannelID);
-
-		const actionLogString = client.channels.get(actionLogChannelID).toString();
-
 		client.channels.get(actionLogChannelID).send("What will they do? Where will they go? Find out here!");
-		message.channel.send("Action Log set to: " + actionLogString);
+		client.data.set("ACTION_LOG", actionLogChannelID);
+		message.channel.send("Action Log set to: " + channel.toString());
 	}
 };

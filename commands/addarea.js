@@ -25,6 +25,8 @@ module.exports = {
             items = [];
         }
 
+        const phaseCount = client.data.get("PHASE_COUNT");
+
         if (areas.some(area => area.id == id)) {
             return message.channel.send("An area with that ID already exists!");
         }
@@ -41,8 +43,32 @@ module.exports = {
         };
         areas.push(newArea);
         client.data.set("AREA_DATA", areas);
-        message.channel.send("Successfully created new area: `" + id + "`.");
+        message.channel.send("Successfully created new area: `" + id 
+            + "`.\nUse !areaname, !areadesc, and !connect to edit this area's properties.");
         message.channel.send(formatArea(newArea, items));
-        message.channel.send("Use !areaname, !areadesc, and !connect to edit this area's properties.");
+
+        
+        if (phaseCount != undefined) {
+            area = newArea;
+            
+            message.guild.createChannel("earlog-" + area.id, {
+                type: 'text',
+                permissionOverwrites: [{
+                    id: message.guild.id,
+                    deny: ['SEND_MESSAGES', 'READ_MESSAGES']
+                    }]
+            }).then(channel => {
+                //console.log(area.id + " created");
+                var earlog_data = client.data.get("EARLOG_DATA");
+                if (earlog_data == undefined) {
+                    earlog_data = [];
+                }
+                earlog_data.push({areaid: area.id, channelid: channel.id});
+                client.data.set("EARLOG_DATA", earlog_data);
+                
+            }).catch(console.error())
+
+            message.channel.send("Earlog Channel Created");    
+        }
     }
 };
