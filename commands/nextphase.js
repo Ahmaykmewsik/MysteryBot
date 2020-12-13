@@ -59,7 +59,7 @@ module.exports = {
                     if (messages.first().content == 'y') {
 
                         //Send DMs to players that pass each other on the map
-                        sendPassMessages(message.guild.members, players);
+                        sendPassMessages(message.guild.members, players, message.channel);
 
                         //Check that we aren't going to overflow the category
                         //If it will, create new category
@@ -127,7 +127,7 @@ module.exports = {
                                             playerChannel.send(player.character + " stayed here.").catch(console.log);
                                         }
                                     } else {
-                                        console.log("Did not post movement message for: " + player.name + " to " + areaToMove.id);
+                                        message.channel.send("Did not post movement message for: " + player.name + " to " + areaToMove.id);
                                     }
 
 
@@ -148,7 +148,7 @@ module.exports = {
                                     if (playerChannel != undefined) {
                                         playerChannel.send(player.character + " stayed here.");
                                     } else {
-                                        console.log("Did not post movement message for: " + player.name + " when no movement action was given");
+                                        message.channel.send("Did not post movement message for: " + player.name + " when no movement action was given");
                                     }
 
                                 }

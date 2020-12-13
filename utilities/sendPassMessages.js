@@ -1,9 +1,7 @@
-
 module.exports = {
-    sendPassMessages(members, players) {
+    sendPassMessages(members, players, channel) {
         players.forEach(player => {
             //find players who are swapping locations
-            console.log("Looking for passerbys.");
             swappers = players.filter(p => (player.area == p.move) && (player.move == p.area) && (player.move != player.area) && (player.area != undefined));
             if (swappers.length > 0) {
                 const swappersString = swappers.map(s => s.character).join(', ');
@@ -13,7 +11,7 @@ module.exports = {
                     playerobject.send("On your way to " + player.move + " you pass by: " + swappersString)
                 }
                 else {
-                    console.log("Failed to print passing message for " + player.username + " to " + player.move);
+                    channel.send("Failed to print passing message for " + player.username + " to " + player.move);
                 }
             }
         });

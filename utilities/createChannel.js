@@ -70,11 +70,13 @@ module.exports = {
                 })
 
                 //Post the thing
-                const outputString1 =
-                    ">>> *-----Phase " + phaseNumber + "-----*\n" +
-                    "**" + area.name+ "**\n\n" + area.description
+                const pinIndicator = ">>> *-----Phase ";
 
-                const outputString2 = bigItemsText + "\n\n" + area.image
+                const outputString1 =
+                    pinIndicator + phaseNumber + "-----*\n" +
+                    "**" + area.name+ "**\n\n" + area.description;
+
+                const outputString2 = bigItemsText + "\n\n" + area.image;
                 
                 SendMessageChannel(outputString1, channel);
                 if (outputString2 != "\n\n") {

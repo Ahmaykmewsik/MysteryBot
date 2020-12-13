@@ -1,6 +1,7 @@
 module.exports = {
     async SendMessageChannel_Failsafe(text, channel) { 
-        if (text == ""){
+       
+        if (text == undefined){
             return;
         }
 
@@ -16,7 +17,7 @@ module.exports = {
 
         channel.send(toSend)
             .then(m => {
-                m.pin().catch(console.error);
+                m.pin();
             })
             .catch(console.error);
     }

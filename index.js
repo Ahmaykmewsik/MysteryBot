@@ -13,12 +13,8 @@ client.commands = new Discord.Collection();
 
 //Enmap
 const Enmap = require("enmap");
-const sharp = require("sharp");
-const { updateAvatars } = require("./utilities/updateAvatarsUtil");
-const updateAvatarsUtil = require("./utilities/updateAvatarsUtil");
 
-//const EnmapLevel = require("enmap-level");
-//const EnmapRethink = require('enmap-rethink');
+
 
 client.data = new Enmap({
 	name: "data",
@@ -26,7 +22,6 @@ client.data = new Enmap({
 	fetchAll: false,
 	cloneLevel: "deep",
 });
-//const votes = new Enmap({provider: provider});
 
 //Commands
 const commandFiles = fs
@@ -38,101 +33,25 @@ for (const file of commandFiles) {
 	client.commands.set(command.name, command);
 }
 
+//Earlog
+const { EarlogListener } = require("./EarlogListener");
+
 client.on("ready", () => {
 	console.log("It's time to get mysterious!");
 });
 
-client.on("message", async (message) => {
+client.on("message", message => {
 	// ///EARLOG---------------------------------------------------------
 	if (message.channel.type != "dm" && message.channel.name[0] == "p") {
-		const earlog_data = client.data.get("EARLOG_DATA");
-		var avatar_data = client.data.get("AVATAR_DATA");
-		var earlog_history = client.data.get("EARLOG_HISTORY");
-
-		const areaid = message.channel.name.split("-").pop();
-
-		const earlogChannel = earlog_data.find((c) => {
-			return c.areaid == areaid;
-		});
-
-		if (earlog_data != undefined && earlogChannel != undefined) {
-			//find channel
-
-			if (avatar_data == undefined) {
-				avatar_data = {}; //dictionary of username - filename
-				updateAvatars(client);
-			}
-			if (earlog_history == undefined) {
-				earlog_history = {}; //dictionary of username - filename
-			}
-
-			var postName = true;
-
-			if (earlogChannel.channelid in earlog_history) {
-				const lastTalker = earlog_history[earlogChannel.channelid];
-				if (lastTalker == message.author.username) {
-					postName = false;
-				}
-			}
-
-			earlog_history[earlogChannel.channelid] = message.author.username;
-			client.data.set("EARLOG_HISTORY", earlog_history);
-
-			if (postName) {
-				if (message.member.nickname != undefined) {
-					var messageContent =
-						"**" +
-						message.member.nickname +
-						":** `[" +
-						message.author.username.toUpperCase() +
-						"]` \n" +
-						message.content;
-				} else {
-					var messageContent =
-						"**" + message.author.username + ":** " + message.content;
-				}
-			} else {
-				var messageContent = message.content;
-			}
-
-			var filenameCurrent = "./avatars/" + message.author.username + "_" + message.author.avatar + ".png";
-			var filenameStored = avatar_data[message.author.username];
-			var filename;
-			const defaultFile = "./avatars/questionMark.png";
-
-			if (filenameCurrent != filenameStored && !message.author.bot) {
-				filename = defaultFile;
-				//update all avatars
-				console.log("Triggering this!");
-				updateAvatars(client);
-			} else {
-				filename = filenameStored;
-			}
-
-			//Copy to Ear Log
-			if (!postName || message.author.bot) {
-				//Message Only
-				client.channels.get(earlogChannel.channelid).send(messageContent);
-			} else {
-				//Avatar
-				client.channels
-					.get(earlogChannel.channelid)
-					.send({ files: [filename] })
-					.then(async () => {
-						//Message
-						client.channels.get(earlogChannel.channelid).send(messageContent);
-					});
-			}
-
-			//Attachments
-			if (message.attachments.array().length != 0) {
-				client.channels
-					.get(earlogChannel.channelid)
-					.send(message.attachments.array()[0].url);
-			}
-			return;
+		try {
+			EarlogListener(client, message);
+		} catch (error) {
+			console.error(error);
 		}
+		return;
 	}
+
+	
 
 	///COMMANDS ---------------------------------------------------------------------------
 	if (!message.content.startsWith(prefix) || message.author.bot) return;
