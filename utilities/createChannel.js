@@ -37,7 +37,6 @@ module.exports = {
                 deny: ['READ_MESSAGES']
               }]
           }).then(async channel => {
-
                 //Put in the catagory
                 await channel.setParent(categoryID)
                     .then(channel => {
@@ -50,6 +49,8 @@ module.exports = {
                     })
                     .catch(console.error);
 
+                
+                    
                 //If there's no image then don't try and put one
                 if (area.image == undefined) {
                     area.image = "";
@@ -83,24 +84,27 @@ module.exports = {
                     SendMessageChannel(outputString2, channel);
                 }
 
-                //Add players and ping them
-                var pingMessage = "";
-                guild.members.forEach(member => {
+                //Add players
+                //var pingMessage = "";
+                await guild.members.forEach(member => {
                     playername = area.playersPresent.find(p => p == member.user.username);
                     playerObject = players.find(p => playername == p.name);
                     if (playername != undefined || playerObject != undefined) {
                         
+                        //pingMessage += "<@" + member.user.id + ">\n" 
+
                         if (playerObject.alive) {
-                            channel.overwritePermissions(member.user, {READ_MESSAGES: true}).catch(console.error);
+                            channel.overwritePermissions(member.user, {READ_MESSAGES: true})
+                                .then(channel.send("<@" + member.user.id + ">"))
+                                .catch(console.error);
                         }
                         else {
-                            channel.overwritePermissions(member.user, {READ_MESSAGES: true, SEND_MESSAGES: false}).catch(console.error);
+                            channel.overwritePermissions(member.user, {READ_MESSAGES: true, SEND_MESSAGES: false})
+                                .then(channel.send("<@" + member.user.id + ">"))
+                                .catch(console.error);
                         }
-                    
-                        pingMessage += "<@" + member.user.id + ">\n" 
                     } 
                 })
-                channel.send(pingMessage);
                 
             }).catch(console.error);
     }

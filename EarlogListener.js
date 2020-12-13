@@ -93,10 +93,13 @@ module.exports = {
 
 			//If reuploaded is outdated, use stored local image
 			var outdatedReuploaded = false;
-			if (!filenameReuploaded.includes(message.author.avatar)) {
-				filename = filenameStored;
-				outdatedReuploaded = true;
+			if (filenameReuploaded != undefined){
+				if (!filenameReuploaded.includes(message.author.avatar)) {
+					filename = filenameStored;
+					outdatedReuploaded = true;
+				}
 			}
+			
 
 			//Copy to Ear Log
 			if (!postName || message.author.bot) {
