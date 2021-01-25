@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const formatItem = require('../utilities/formatItem').formatItem;
+const getHeartImage = require('../utilities/getHeartImage').getHeartImage;
 
 module.exports = {
     formatPlayer(player, items) {
@@ -12,6 +13,10 @@ module.exports = {
         const actionString = (player.action == undefined) ? "-" : player.action;
 
         const moveString = (player.move == undefined) ? "-" : player.move;
+
+        const spyActionString = (player.spyAction.length == 0) ? "-" : player.spyAction;
+
+        const spyCurrentString = (player.spyCurrent.length == 0) ? "-" : player.spyCurrent;
         
         var itemString = "*No Items.*" 
         if (player.items.length > 0) {
@@ -24,15 +29,23 @@ module.exports = {
             });
         }
 
+        const heartImageURL = getHeartImage(player.health); 
+        const attachment = new Discord.Attachment(heartImageURL, "hearts.png");
+
         return new Discord.RichEmbed()
             .setColor(color)
             .setTitle("**" + player.name + "**")
             .addField(status,
                 "__Character:__ **" + player.character + "**" +
+                "\n__Health:__ **" + player.health + "**" +
                 "\n__Area:__ **" + areaString + "**" +
+                "\n__Spy Action:__ *" + spyActionString + "*" +
+                "\n__Spy Current:__ *" + spyCurrentString + "*" +
                 "\n__Phase Action:__ *" + actionString + "*" +
                 "\n__Movement Action:__ *" + moveString + "*"
                 )
             .addField("Items:", itemString)
+            .attachFile(attachment)
+            .setThumbnail("attachment://hearts.png")
     }
 };

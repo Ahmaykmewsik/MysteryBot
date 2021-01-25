@@ -40,6 +40,7 @@ module.exports = {
             if (p.name == playerToDie.username) {
                 playerObject = p;
                 p.alive = false;
+                p.health = 0;
             }
         });
 

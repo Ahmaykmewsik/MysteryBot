@@ -1,4 +1,4 @@
-const formatPlayer = require('../utilities/formatPlayer').formatPlayer;
+
 
 module.exports = {
 	name: 'removeplayer',

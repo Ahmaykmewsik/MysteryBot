@@ -1,4 +1,4 @@
-const prefix = process.env.prefix;
+
 const formatPlayer = require('../utilities/formatPlayer').formatPlayer;
 
 module.exports = {
@@ -40,19 +40,25 @@ module.exports = {
         }
 
         //drop Item
-        const areaid = args.shift().toLowerCase();
+        var newAreas = [];
+        while (args.length > 0) {
+            const areaid = args.shift().toLowerCase();
 
-        //Check that input for area is valid
-        const area = areas.find(a => a.id == areaid);
-        if (area == undefined) {
-            return message.channel.send("Invalid area ID.");
+            //Check that input for area is valid
+            const area = areas.find(a => a.id == areaid);
+            if (area == undefined) {
+                return message.channel.send("Invalid area ID.");
+            }
+            newAreas.push(areaid);
         }
+        
+        playerToMove.move = newAreas;
 
-        playerToMove.move = areaid;
+        console.log(newAreas);
 
         client.data.set("PLAYER_DATA", players);
 
-        message.channel.send(playerToMove.name + " will move to: `" + areaid + "`");
+        message.channel.send(playerToMove.name + " will move to: `" + newAreas + "`");
 
         message.channel.send(formatPlayer(playerToMove, items));
 	}

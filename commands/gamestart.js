@@ -1,12 +1,12 @@
-const createChannel = require('../utilities/createChannel.js').createChannel;
+const createChannels = require('../utilities/createChannels.js').createChannels;
 
 module.exports = {
-	name: 'gamestart',
-	description: 'Assigns each player a random starting area',
+    name: 'gamestart',
+    description: 'Assigns each player a random starting area',
     format: "!gamestart",
     gmonly: true,
-	execute(client, message, args) {
-        
+    execute(client, message, args) {
+
         var players = client.data.get("PLAYER_DATA");
         if (players == undefined || players.length === 0) {
             return message.channel.send("No players found. Use !addplayers <role> to set up a game with players in a given role.");
@@ -23,9 +23,9 @@ module.exports = {
         }
 
         const actionLogChannelID = client.data.get("ACTION_LOG");
-		if (actionLogChannelID == undefined) {
-			return message.channel.send("You need to set the action log!");
-		}
+        if (actionLogChannelID == undefined) {
+            return message.channel.send("You need to set the action log!");
+        }
 
         const phaseCount = 1;
 
@@ -58,29 +58,44 @@ module.exports = {
                 permissionOverwrites: [{
                     id: message.guild.id,
                     deny: ['SEND_MESSAGES', 'READ_MESSAGES']
-                    }]
+                }]
             }).then(channel => {
                 //console.log(area.id + " created");
                 var earlog_data = client.data.get("EARLOG_DATA");
                 if (earlog_data == undefined) {
                     earlog_data = [];
                 }
-                earlog_data.push({areaid: area.id, channelid: channel.id});
+                earlog_data.push({ areaid: area.id, channelid: channel.id });
                 client.data.set("EARLOG_DATA", earlog_data);
                 //create channel
-                createChannel(client, message.guild, area, category.id, phaseCount);
-            }).catch(console.error())
-        })
 
-        client.data.set("PLAYER_DATA", players);
+            }).catch(console.error())
+        });
+
+        //Create spy category and store it
+
+        message.guild.createChannel("SPY CHANNELS", {
+            type: 'category'
+        }).then((categoryObject) => {
+            spyCategory = {
+                id: categoryObject.id,
+                name: categoryObject.name
+            };
+            client.data.set("SPY_CATEGORY", spyCategory);
+            //Make the channels
+            createChannels(client, message.guild, areas, players, category.id, phaseCount);
+        }).catch(console.error);
+
+
+
+        //client.data.set("PLAYER_DATA", players);
         client.data.set("PHASE_COUNT", phaseCount);
-        client.data.set("AREA_DATA", areas);
+        //client.data.set("AREA_DATA", areas);
 
 
         client.channels.get(actionLogChannelID).send("----------------------------\n---------**PHASE " + phaseCount + "**---------\n----------------------------");
 
-        message.channel.send("**The game has begun!**\n"
-            + players.map(player => player.name + ": " + player.area).join('\n'));
+        message.channel.send("**The game has begun!**\n" + players.map(player => player.name + ": " + player.area).join('\n'));
 
     }
 };

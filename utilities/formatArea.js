@@ -1,5 +1,4 @@
 const Discord = require('discord.js');
-const formatItem = require('../utilities/formatItem').formatItem;
 
 module.exports = {
     formatArea(area, items) {

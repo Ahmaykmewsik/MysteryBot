@@ -1,6 +1,3 @@
-const Discord = require('discord.js');
-const fs = require("fs");
-const https = require("https");
 const { updateAvatars } = require('../utilities/updateAvatarsUtil');
 
 module.exports = {

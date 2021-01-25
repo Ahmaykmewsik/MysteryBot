@@ -1,4 +1,4 @@
-const createChannel = require('../utilities/createChannel.js').createChannel;
+const createChannels = require('../utilities/createChannels.js').createChannels;
 
 module.exports = {
 	name: 'createareachannel',
@@ -34,7 +34,7 @@ module.exports = {
             return message.channel.send("Aborting. There's nobody here! Put someone here first with `!setarea`.");
         }
 
-        createChannel(client, message.guild, areas[areaIndexToUpdate], category.id, phaseNumber);
+        createChannels(client, message.guild, [areas[areaIndexToUpdate]], category.id, phaseNumber);
 
         return message.channel.send("Channel for `" + areas[areaIndexToUpdate].name + "` created.")
     }

@@ -20,13 +20,15 @@ module.exports = {
 		const players = client.data.get("PLAYER_DATA");
 		const items = client.data.get("ITEM_DATA");
 
-		var player = players.filter(p => p.name == message.author.username);
+		var player = players.find(p => p.name == message.author.username);
 
-		if (player == undefined) {
+		if (player == undefined ) {
 			return message.channel.send("You don't seem to be on the list of players. If you think this is a mistake, ask your GM.");
 		}
 
-		player = player[0];
+		//console.log(player);
+
+		//player = player[0];
 
 		if (player.area == undefined) {
 			return message.channel.send("You're not alive! No action for you.");

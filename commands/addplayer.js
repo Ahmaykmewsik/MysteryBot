@@ -30,7 +30,6 @@ module.exports = {
             return message.channel.send("Invalid username: " + inputusername);
         }
 
-
         let players = client.data.get("PLAYER_DATA");
 
         if (players == undefined) {
@@ -41,10 +40,14 @@ module.exports = {
             name: playerobject.username, //string
             character: characterName, //string
             alive: true, //bool
+            health: 3.0, //float
             area: undefined, //id
             action: undefined, //string
             move: undefined, //id
-            items: [] //list of strings
+            items: [], //list of strings
+            spyAction: [],
+            spyCurrent: [],
+            discordid: playerobject.id
         });
         
         client.data.set("PLAYER_DATA", players);

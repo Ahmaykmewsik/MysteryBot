@@ -1,6 +1,6 @@
 module.exports = {
 	name: 'resetgame',
-	description: 'Clears all game data, keeps player and area setup data.',
+	description: 'Clears all game data, keeps player and area setup data. Mostly only needed for debugging purposes',
     format: "!resetgame",
     guildonly: true,
     gmonly: true,
@@ -30,6 +30,10 @@ module.exports = {
                            player.move = undefined;
                            player.action = undefined;
                            player.items = [];
+                           player.alive = true;
+                           player.health = 3.0;
+                           player.spyAction = [];
+                           player.spyCurrent =  [];
                        })
 
                        areas.forEach(area => {
@@ -43,7 +47,9 @@ module.exports = {
                        client.data.set("AREA_DATA", areas);
                        client.data.set("PHASE_COUNT", phaseCount);
                        client.data.set("EARLOG_DATA", undefined);
+                       client.data.set("EARLOG_HISTORY", undefined);
                        client.data.set("CHANNEL_DATA", undefined);
+                       client.data.set("SPY_CHANNEL_DATA", undefined);
 
                        message.channel.send("The game has been reset.");
 

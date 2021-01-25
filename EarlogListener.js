@@ -3,20 +3,27 @@ const { updateAvatars } = require("./utilities/updateAvatarsUtil");
 module.exports = {
 	EarlogListener(client, message) {
 		const earlog_data = client.data.get("EARLOG_DATA");
-		var avatar_data = client.data.get("AVATAR_DATA");
-		var earlog_history = client.data.get("EARLOG_HISTORY");
-		var avatar_uploads = client.data.get("AVATAR_UPLOADS");
 
 		const areaid = message.channel.name.split("-").pop();
 
 		if (earlog_data == undefined) {
-			//No earlogs setup
+			//No earlogs exist
 			return;
 		}
 
-		if (message.content == undefined || message.system){
+		if (message.content == undefined || message.system) {
 			return;
 		}
+
+		var avatar_data = client.data.get("AVATAR_DATA");
+		var earlog_history = client.data.get("EARLOG_HISTORY");
+		var avatar_uploads = client.data.get("AVATAR_UPLOADS");
+		const players = client.data.get("PLAYER_DATA");
+		var spyChannelData = client.data.get("SPY_CHANNEL_DATA");
+
+		if (spyChannelData == undefined) {
+            spyChannelData = [];
+        }
 
 		const earlogChannel = earlog_data.find((c) => {
 			return c.areaid == areaid;
@@ -29,7 +36,7 @@ module.exports = {
 				avatar_data = {}; //dictionary of username - local filename
 				updateAvatars(client);
 			}
-			if (avatar_uploads == undefined){
+			if (avatar_uploads == undefined) {
 				avatar_uploads = {}; //dictionary of username - avatar discord upload
 			}
 			if (earlog_history == undefined) {
@@ -48,23 +55,20 @@ module.exports = {
 			earlog_history[earlogChannel.channelid] = message.author.username;
 			client.data.set("EARLOG_HISTORY", earlog_history);
 
+
 			//Format message
+			var userHandle;
 			if (postName) {
 				if (message.member.nickname != undefined) {
-					var messageContent =
-						"**" +
-						message.member.nickname +
-						":** `[" +
-						message.author.username.toUpperCase() +
-						"]` \n" +
-						message.content;
+					userHandle = "**" + message.member.nickname + ":** `[" + message.author.username.toUpperCase() + "]` \n";
 				} else {
-					var messageContent =
-						"**" + message.author.username + ":** " + message.content;
+					userHandle = "**" + message.author.username + ":** \n";
 				}
 			} else {
-				var messageContent = message.content;
+				userHandle = "";
 			}
+
+			const messageContent = userHandle + message.content;
 
 			var filenameCurrent = "./avatars/" + message.author.username + "_" + message.author.avatar + ".png";
 			var filenameStored = avatar_data[message.author.username];
@@ -78,12 +82,12 @@ module.exports = {
 				updateAvatars(client)
 			}
 
-			
 
-			if ((filenameReuploaded == undefined || updateAvatarFlag) && filenameStored != undefined){
+
+			if ((filenameReuploaded == undefined || updateAvatarFlag) && filenameStored != undefined) {
 				//if an avatar hasn't been uploaded in an earlog yet
 				filename = filenameStored;
-			} else if (filenameReuploaded != undefined){
+			} else if (filenameReuploaded != undefined) {
 				//if any avatar has already been uploaded, use it
 				filename = filenameReuploaded;
 			} else {
@@ -93,21 +97,45 @@ module.exports = {
 
 			//If reuploaded is outdated, use stored local image
 			var outdatedReuploaded = false;
-			if (filenameReuploaded != undefined){
+			if (filenameReuploaded != undefined) {
 				if (!filenameReuploaded.includes(message.author.avatar)) {
 					filename = filenameStored;
 					outdatedReuploaded = true;
 				}
 			}
-			
 
+			//Copy the message to Earlog
+
+			CopyMessage(client, message, messageContent, earlogChannel, filename, postName);
+
+			//Post to Spy Channels
+			spyChannelData.forEach(spyData => {
+				
+				if (spyData.area == areaid) {
+					const playerObject = players.find(p => p.name == spyData.player);
+					if (playerObject.spyCurrent.length > 0 ) {
+						const spyMessage = EncryptSpyMessage(message.content, parseFloat(playerObject.spyCurrent[0][1]));
+						CopyMessage(client, message, userHandle + spyMessage, spyData, filename, postName)
+					}
+				}
+			});
+
+
+			if (outdatedReuploaded) {
+				avatar_uploads[message.author.username] = m.attachments.array()[0].url;
+				client.data.set("AVATAR_UPLOADS", avatar_uploads);
+			}
+
+		}
+
+		function CopyMessage(client, message, messageContent, earlogChannel, filename, postName) {
 			//Copy to Ear Log
 			if (!postName || message.author.bot) {
 				//Message Only
 				client.channels.get(earlogChannel.channelid).send(messageContent)
 					//Pin phase starts
 					.then(message => {
-						if (message.content.includes(">>> *-----Phase ")){
+						if (message.content.includes(">>> *-----Phase ")) {
 							message.pin();
 						};
 					})
@@ -118,10 +146,7 @@ module.exports = {
 					.send({ files: [filename] })
 					.then(m => {
 						client.channels.get(earlogChannel.channelid).send(messageContent);
-						if (outdatedReuploaded) {
-							avatar_uploads[message.author.username] = m.attachments.array()[0].url;
-							client.data.set("AVATAR_UPLOADS", avatar_uploads);
-						}
+						//Avatars used to be updated here
 					});
 			}
 
@@ -131,7 +156,21 @@ module.exports = {
 					.get(earlogChannel.channelid)
 					.send(message.attachments.array()[0].url);
 			}
-        }
+		}
 
+		function EncryptSpyMessage(message, accuracy) {
+			var messageWords = message.split(" ");
+			for (let i=0; i < messageWords.length; i++){
+				const rand = Math.random();
+				if (rand >= accuracy) {
+					messageWords[i] = "---";
+				};
+			}
+			const newMessage = messageWords.join(" ");
+			return newMessage;
+		}
 	}
 };
+
+
+

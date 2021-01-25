@@ -46,6 +46,7 @@ client.on("message", message => {
 		try {
 			EarlogListener(client, message);
 		} catch (error) {
+			console.log("Earlog Error!");
 			console.error(error);
 		}
 		return;

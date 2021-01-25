@@ -1,4 +1,4 @@
-const prefix = process.env.prefix;
+
 const formatPlayer = require('../utilities/formatPlayer').formatPlayer;
 
 module.exports = {

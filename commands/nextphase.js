@@ -1,6 +1,6 @@
 const updateAvatarsUtil = require('../utilities/updateAvatarsUtil.js');
 
-const createChannel = require('../utilities/createChannel.js').createChannel;
+const createChannels = require('../utilities/createChannels.js').createChannels;
 const sendPassMessages = require('../utilities/sendPassMessages.js').sendPassMessages;
 const { updateAvatars } = require('../utilities/updateAvatarsUtil');
 
@@ -48,7 +48,7 @@ module.exports = {
                 + "\nIf you proceed, they will stay still if possible. Otherwise, they will move at random.");
         }
 
-        
+
 
         message.channel.send("Are you sure you would like to proceed with the movement phase?").then(() => {
             updateAvatars(client);
@@ -57,6 +57,8 @@ module.exports = {
             message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })
                 .then(messages => {
                     if (messages.first().content == 'y') {
+
+                        message.channel.send("Beginning Phase " + (phaseCount + 1) + "...");
 
                         //Send DMs to players that pass each other on the map
                         sendPassMessages(message.guild.members, players, message.channel);
@@ -111,54 +113,69 @@ module.exports = {
                             //Check that the player isn't dead
                             if (player.area != undefined) {
 
-                                //get current channel
-                                channelID = channeldata["p" + phaseCount + "-" + player.area];
-                                playerChannel = message.guild.channels.find(c => c.id == channelID);
-
                                 if (player.move != undefined) {
                                     // move the player normally
-                                    player.area = player.move;
-                                    //Post about it
-                                    areaToMove = areas.find(a => a.id == player.move);
-                                    if (areaToMove != undefined && playerChannel != undefined) {
-                                        if (areaToMove.id == player.area) {
-                                            playerChannel.send(player.character + " moved to: " + areaToMove.id).catch(console.log());
-                                        } else {
-                                            playerChannel.send(player.character + " stayed here.").catch(console.log);
-                                        }
-                                    } else {
-                                        message.channel.send("Did not post movement message for: " + player.name + " to " + areaToMove.id);
+                                    var moved = true;
+                                    if (player.area == player.move) {
+                                        moved = false;
                                     }
 
+                                    var areaOld;
+                                    if (!Array.isArray(player.area)) {
+                                        areaOld = [player.area];
+                                    } else {
+                                        areaOld = player.area;
+                                    }
+                                    
+                                    player.area = player.move; //moves the player
+                                    //Post about it
+                                    areaOld.forEach(area => {
+                                        //get current channel
+                                        const channelID = channeldata["p" + phaseCount + "-" + area];
+                                        const playerChannel = message.guild.channels.find(c => c.id == channelID);
+                                        if (playerChannel != undefined) {
+                                            if (moved) {
+                                                playerChannel.send(player.character + " moved to: " + area).catch(console.log());
+                                            } else {
+                                                playerChannel.send(player.character + " stayed here.").catch(console.log);
+                                            }
+                                        } else {
+                                            message.channel.send("Did not post movement message for: " + player.name + " to " + area);
+                                        }
+                                    });
 
                                     //if player didnt' submit movement:
                                 } else {
 
                                     let currentArea = areas.find(a => a.id == player.area);
-
-                                    //check if they can stay still
-                                    if (!currentArea.reachable.includes(currentArea.id)) {
-                                        // if the player can't stay still, they move at random
-                                        var randomIndex = Math.floor(Math.random() * currentArea.reachable.length);
-                                        player.area = currentArea.reachable[randomIndex];
-                                        areaToMove = areas.find(a => a.id == player.area);
-                                        playerChannel.send(player.character + " couldn't decide where to go, so they went to: " + areaToMove.name);
+                                    //check that we're not in multi-area mode, cause it doesn't really make sense to post a stay message if we are
+                                    if (currentArea != undefined) {
+                                        //check if they can stay still
+                                        const channelID = channeldata["p" + phaseCount + "-" + player.area];
+                                        const playerChannel = message.guild.channels.find(c => c.id == channelID);
+                                        if (!currentArea.reachable.includes(currentArea.id)) {
+                                            // if the player can't stay still, they move at random
+                                            var randomIndex = Math.floor(Math.random() * currentArea.reachable.length);
+                                            player.area = currentArea.reachable[randomIndex];
+                                            playerChannel.send(player.character + " couldn't decide where to go, so they went to: " + player.area);
+                                        }
+                                        // otherwise, the player doesn't move
+                                        if (playerChannel != undefined) {
+                                            playerChannel.send(player.character + " stayed here.");
+                                        } else {
+                                            message.channel.send("Did not post movement message for: " + player.name + " when no movement action was given");
+                                        }
                                     }
-                                    // otherwise, the player doesn't move
-                                    if (playerChannel != undefined) {
-                                        playerChannel.send(player.character + " stayed here.");
-                                    } else {
-                                        message.channel.send("Did not post movement message for: " + player.name + " when no movement action was given");
-                                    }
-
                                 }
 
                                 //Update Area's "Player Present" value
-                                let newarea = areas.find(a => a.id == player.area);
-                                if (newarea != undefined) {
-                                    newarea.playersPresent.push(player.name);
-                                }
 
+                                var newarea = [];
+                                newarea = areas.filter(a => player.area.includes(a.id));
+
+                                newarea.forEach(a => {
+                                    a.playersPresent.push(player.name);
+                                });
 
                                 //reset movement and actions
                                 player.move = undefined;
@@ -172,16 +189,15 @@ module.exports = {
                         client.channels.get(actionLogChannelID).send("--------------------------------------------------------\n-------------------------------------**PHASE " + phaseCount + "**-------------------------------------\n--------------------------------------------------------");
 
                         //CreateChannels
-                        areas.forEach(area => {
-                            createChannel(client, message.guild, area, category.id, phaseCount);
-                        });
+                        
+                        createChannels(client, message.guild, areas, players, category.id, phaseCount);
+                        
 
                         //Updtate data
-                        client.data.set("PLAYER_DATA", players);
+                        //players are set in createChannels
                         client.data.set("PHASE_COUNT", phaseCount);
                         client.data.set("AREA_DATA", areas);
-                        message.channel.send("Phase " + phaseCount + " hase begun. Use !players to view current locations.");
-
+                        message.channel.send("Phase " + phaseCount + " hase begun.\n" + players.map(player => player.name + ": " + player.area).join('\n'));
 
                     } else if (messages.first().content == 'n') {
                         message.channel.send("Okay, never mind then :)");
