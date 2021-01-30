@@ -14,6 +14,8 @@ module.exports = {
 
         const moveString = (player.move == undefined) ? "-" : player.move;
 
+        const moveSpecialString = (player.moveSpecial == undefined) ? "-" : player.moveSpecial;
+        
         const spyActionString = (player.spyAction.length == 0) ? "-" : player.spyAction;
 
         const spyCurrentString = (player.spyCurrent.length == 0) ? "-" : player.spyCurrent;
@@ -42,7 +44,8 @@ module.exports = {
                 "\n__Spy Action:__ *" + spyActionString + "*" +
                 "\n__Spy Current:__ *" + spyCurrentString + "*" +
                 "\n__Phase Action:__ *" + actionString + "*" +
-                "\n__Movement Action:__ *" + moveString + "*"
+                "\n__Movement Action:__ *" + moveString + "*" + 
+                "\n__MoveSpecial:__ *" + moveSpecialString + "*"
                 )
             .addField("Items:", itemString)
             .attachFile(attachment)

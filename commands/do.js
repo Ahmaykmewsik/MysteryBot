@@ -43,20 +43,22 @@ module.exports = {
 		const ifUpdated = (player.action == undefined) ? false : true;
 
 		player.action = action;
+		player.roll = d20roll();
 		client.data.set("PLAYER_DATA", players);
+		//CHANGE THIS!
 
 		if (ifUpdated){
 			client.channels.get(actionLogChannelID).send(
 				"----------------------------------------" +
 				"\n**ACTION UPDATED** by `" + message.author.username + "` ```" + action + "```" +
-				"ROLL: " + d20roll() //d20 roll ftw
+				"ROLL: " + player.roll //d20 roll ftw
 				);
 			message.reply("Action updated.");
 		} else {
 			client.channels.get(actionLogChannelID).send(
 				"----------------------------------------" +
 				"\nACTION by `" + message.author.username + "` ```" + action + "```" +
-				"ROLL: " + d20roll() //d20 roll ftw
+				"ROLL: " + player.roll //d20 roll ftw
 				);
 			message.reply("Action sent.");
 		}

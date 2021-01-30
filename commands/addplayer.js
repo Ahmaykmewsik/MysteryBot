@@ -42,8 +42,9 @@ module.exports = {
             alive: true, //bool
             health: 3.0, //float
             area: undefined, //id
-            action: undefined, //string
+            action: undefined, //user input string
             move: undefined, //id
+            moveSpecial: undefined, //user input string
             items: [], //list of strings
             spyAction: [],
             spyCurrent: [],

@@ -48,7 +48,45 @@ module.exports = {
                 + "\nIf you proceed, they will stay still if possible. Otherwise, they will move at random.");
         }
 
+        //Check that we aren't going to overflow the category
+        //If it will, create new category
+        var channelTotal = 0;
+        var newAreas = 0;
+        const categoryObject = message.guild.channels.find(c => c.name == category.name);
 
+        categoryObject.children.forEach(c => {
+            channelTotal++;
+        });
+        areas.forEach(area => {
+            //This is an overestimate since it also includes areas with
+            //dead players that are not created
+            if (area.playersPresent.length > 0) {
+                newAreas++;
+            }
+        });
+        if (channelTotal + newAreas > 50) {
+            console.log("Hammer time.");
+            //clone category and set as new active category
+            newName = category.name;
+            category.num++;
+            if (category.num == 1) {
+                categoryObject.name += " (1)";
+                newName += " (2)";
+            } else {
+                newName = newName.split(" (" + (category.num - 1) + ")")[0] + " (" + category.num + ")";
+            }
+            categoryObject.clone({ name: newName })
+                .then((categoryObjectNew) => {
+                    category = {
+                        id: categoryObjectNew.id,
+                        name: newName,
+                        num: category.num
+                    };
+
+                    client.data.set("CATEGORY_DATA", category);
+                })
+                .catch(console.error);;
+        }
 
         message.channel.send("Are you sure you would like to proceed with the movement phase?").then(() => {
             updateAvatars(client);
@@ -62,46 +100,6 @@ module.exports = {
 
                         //Send DMs to players that pass each other on the map
                         sendPassMessages(message.guild.members, players, message.channel);
-
-                        //Check that we aren't going to overflow the category
-                        //If it will, create new category
-                        channelTotal = 0;
-                        newAreas = 0;
-                        categoryObject = message.guild.channels.find(c => c.name == category.name);
-
-                        categoryObject.children.forEach(c => {
-                            channelTotal++;
-                        });
-                        areas.forEach(area => {
-                            //This is an overestimate since it also includes areas with
-                            //dead players that are not created
-                            if (area.playersPresent.length > 0) {
-                                newAreas++;
-                            }
-                        });
-                        if (channelTotal + newAreas > 50) {
-                            console.log("Hammer time.");
-                            //clone category and set as new active category
-                            newName = category.name;
-                            category.num++;
-                            if (category.num == 1) {
-                                categoryObject.name += " (1)";
-                                newName += " (2)";
-                            } else {
-                                newName = newName.split(" (" + (category.num - 1) + ")")[0] + " (" + category.num + ")";
-                            }
-                            categoryObject.clone({ name: newName })
-                                .then((categoryObjectNew) => {
-                                    category = {
-                                        id: categoryObjectNew.id,
-                                        name: newName,
-                                        num: category.num
-                                    };
-
-                                    client.data.set("CATEGORY_DATA", category);
-                                })
-                                .catch(console.error);;
-                        }
 
                         //Clear playersPresent data
                         areas.forEach(area => {
@@ -126,20 +124,29 @@ module.exports = {
                                     } else {
                                         areaOld = player.area;
                                     }
-                                    
+
                                     player.area = player.move; //moves the player
                                     //Post about it
                                     areaOld.forEach(area => {
                                         //get current channel
+                                        let currentArea = areas.find(a => a.id == player.area);
                                         const channelID = channeldata["p" + phaseCount + "-" + area];
                                         const playerChannel = message.guild.channels.find(c => c.id == channelID);
                                         if (playerChannel != undefined) {
-                                            if (moved) {
-                                                playerChannel.send(player.character + " moved to: " + area).catch(console.log());
+                                            if (moved) { 
+                                                if (currentArea.reachable.find(c=> c==player.area)) {
+                                                    //If players can go here normally, post where they went
+                                                    playerChannel.send(player.character + " moved to: " + player.area).catch(console.log());
+                                                } else {
+                                                    //If a player goes somewhere sneaky sneaky, don't tell nuthin
+                                                    playerChannel.send(player.character + " moved to: ???").catch(console.log());
+                                                }
+
                                             } else {
                                                 playerChannel.send(player.character + " stayed here.").catch(console.log);
                                             }
                                         } else {
+                                            //If can't find the channel, tell the GM (it might not exist or something else went wrong)
                                             message.channel.send("Did not post movement message for: " + player.name + " to " + area);
                                         }
                                     });
@@ -179,7 +186,9 @@ module.exports = {
 
                                 //reset movement and actions
                                 player.move = undefined;
+                                player.moveSpecial = undefined;
                                 player.action = undefined;
+                                player.roll = undefined;
                             }
                         });
 
@@ -189,9 +198,9 @@ module.exports = {
                         client.channels.get(actionLogChannelID).send("--------------------------------------------------------\n-------------------------------------**PHASE " + phaseCount + "**-------------------------------------\n--------------------------------------------------------");
 
                         //CreateChannels
-                        
+
                         createChannels(client, message.guild, areas, players, category.id, phaseCount);
-                        
+
 
                         //Updtate data
                         //players are set in createChannels

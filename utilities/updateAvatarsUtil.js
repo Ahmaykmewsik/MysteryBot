@@ -33,6 +33,6 @@ module.exports = {
         client.data.set("AVATAR_DATA", avatar_data);
         const logMessage = sum + " avatars were updated."
         console.log(logMessage);
-        //return (logMessage);
+        return (logMessage);
     }
 }

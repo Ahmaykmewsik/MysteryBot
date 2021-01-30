@@ -21,10 +21,15 @@ module.exports = {
 		if (player.area == undefined) {
 			return message.channel.send("You're not alive! No movement actions for you.");
 		}
+		const action = args.join(" ");
 
-        client.channels.get(actionLogChannelID).send(":bangbang: :arrow_forward: MOVE SPECIAL" + message.author.username + ": `" + args.join(" ") + "`");
+		player.moveSpecial = action;
+
+		client.channels.get(actionLogChannelID).send(":bangbang: :arrow_forward: MOVE SPECIAL" + message.author.username + ": `" + action + "`");
 		
-		message.channel.send("Movement to " + player.move + " sent. The GM will process this action manually.");
+		client.data.set("PLAYER_DATA", players);
+
+		message.channel.send("Movespecial sent. The GM will process this action manually.");
 
 	}
 };

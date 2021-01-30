@@ -136,7 +136,7 @@ module.exports = {
             //Else make a new channel
             guild.createChannel("spy-" + c.playerName, {
                 type: 'text',
-                parentID: spyCategory.id,
+                //parentID: spyCategory.id,
                 permissionOverwrites: [{
                     id: guild.id,
                     deny: ['READ_MESSAGES', 'SEND_MESSAGES']
@@ -234,8 +234,6 @@ module.exports = {
         for (let area of areas) {
             const spyAreas = channelsToMake.filter(c => area.id == c.area && c.type == "spy");
             const areaArea = channelsToMake.filter(c => area.id == c.area.id && c.type == "area");
-
-            console.log(spyAreas);
 
             //No spy channels, no areas (this would never happen?)
             if (spyAreas.length == 0 && areaArea.length == 0) {
