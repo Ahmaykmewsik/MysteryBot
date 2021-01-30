@@ -17,7 +17,7 @@ module.exports = {
         var outputMessageArray = [];
         outputMessageArray.push("--------ACTIONS--------");
         players.forEach(player => {
-            var toAdd = "`" + player.name.toUpperCase() + "`: ";
+            var toAdd = ":small_orange_diamond:__" + player.name.toUpperCase() + "__: ";
             if (player.action == undefined){
                 toAdd += "**NONE**"
             } else {
@@ -28,7 +28,7 @@ module.exports = {
 
         outputMessageArray.push("--------MOVEMENT--------");
         players.forEach(player => {
-            var toAdd = "`" + player.name.toUpperCase() + "`: ";
+            var toAdd = ":small_blue_diamond:__" + player.name.toUpperCase() + "__: ";
             if (player.move == undefined && player.movespecial == undefined) {
                 toAdd += "**NONE**";
             }
@@ -46,7 +46,7 @@ module.exports = {
             var m = outputMessageArray.shift();
             if ((outputMessage + m).length > 2000) {
                 message.channel.send(outputMessage);
-                outputMessage = m;
+                outputMessage = m + "\n";
             } else {
                 outputMessage += (m + "\n");
             }
