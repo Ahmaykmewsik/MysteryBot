@@ -114,8 +114,13 @@ module.exports = {
 				if (spyData.area == areaid) {
 					const playerObject = players.find(p => p.name == spyData.player);
 					if (playerObject.spyCurrent.length > 0 ) {
-						const spyMessage = EncryptSpyMessage(message.content, parseFloat(playerObject.spyCurrent[0][1]));
-						CopyMessage(client, message, userHandle + spyMessage, spyData, filename, postName)
+						if (!message.author.bot) {
+							const spyMessage = EncryptSpyMessage(message.content, parseFloat(playerObject.spyCurrent[0][1]));
+							CopyMessage(client, message, userHandle + spyMessage, spyData, filename, postName);
+						} else {
+							CopyMessage(client, message, messageContent, spyData, filename, postName);
+						}
+						
 					}
 				}
 			});

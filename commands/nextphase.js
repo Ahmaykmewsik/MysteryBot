@@ -129,12 +129,12 @@ module.exports = {
                                     //Post about it
                                     areaOld.forEach(area => {
                                         //get current channel
-                                        let currentArea = areas.find(a => a.id == player.area);
+                                        let oldArea = areas.find(a => a.id == area);
                                         const channelID = channeldata["p" + phaseCount + "-" + area];
                                         const playerChannel = message.guild.channels.find(c => c.id == channelID);
                                         if (playerChannel != undefined) {
                                             if (moved) { 
-                                                if (currentArea.reachable.find(c=> c==player.area)) {
+                                                if (oldArea.reachable.find(c=> c==player.area)) {
                                                     //If players can go here normally, post where they went
                                                     playerChannel.send(player.character + " moved to: " + player.area).catch(console.log());
                                                 } else {
