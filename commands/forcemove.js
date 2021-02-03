@@ -54,8 +54,6 @@ module.exports = {
         
         playerToMove.move = newAreas;
 
-        console.log(newAreas);
-
         client.data.set("PLAYER_DATA", players);
 
         message.channel.send(playerToMove.name + " will move to: `" + newAreas + "`");
