@@ -1,18 +1,12 @@
 module.exports = {
 
-    formatItem(item) {
+    formatItem(client, item, showEquipped = true) {
 
         var infoStringArray = []
-
-        if (item.primary) infoStringArray.push("Primary");
 
         if (item.big) infoStringArray.push("`BIG`");
 
         if (item.clothing) infoStringArray.push("`CLOTHING`");
-
-        if (item.use_capacity != -1) infoStringArray.push("(" + item.use_count + " of " + item.use_capacity + " uses)");
-
-        if (item.success != 100) infoStringArray.push(item.success + "% Success")
 
         var returnstring = "`" + item.id + "` ";
 
@@ -20,7 +14,17 @@ module.exports = {
             returnstring += " *" + infoStringArray.join(", ") + "*";
         } 
 
-        returnstring += " " + item.description
+        returnstring += " " + item.description;
+
+        if (showEquipped) {
+            const playersWithItem = client.getPlayersOfItem.all(item.id, item.guild);
+            returnstring += `\n__Equipped by:__ `
+            var playersString = playersWithItem.map(p => p[`username`]).join(", ");
+            if (playersString == "") {
+                playersString = "None";
+            }
+            returnstring += playersString;
+        }
 
         return returnstring;
     }

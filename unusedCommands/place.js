@@ -1,4 +1,4 @@
-const formatArea = require('../utilities/formatArea').formatArea;
+const formatArea = require('../../utilities/formatArea').formatArea;
 
 module.exports = {
 	name: 'place',

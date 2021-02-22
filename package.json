@@ -15,8 +15,6 @@
   "license": "MIT",
   "dependencies": {
     "better-sqlite3": "^5.4.3",
-    "discord.js": "^11.6.4",
-    "dotenv": "^8.2.0",
-    "enmap": "^5.8.2"
+    "discord.js": "^11.6.4"
   }
 }

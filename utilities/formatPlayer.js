@@ -1,14 +1,16 @@
 const Discord = require('discord.js');
-const formatItem = require('../utilities/formatItem').formatItem;
-const getHeartImage = require('../utilities/getHeartImage').getHeartImage;
+const formatItem = require('./formatItem').formatItem;
+const getHeartImage = require('./getHeartImage').getHeartImage;
 
 module.exports = {
-    formatPlayer(player, items) {
+    formatPlayer(client, player) {
+
         const status = (player.alive) ? '**ALIVE**' : 'Dead';
 
         const color = (status == "Dead") ? 0xff0000 : 0x00ff11; // RED : GREEN
-
-        const areaString = (player.area == undefined) ? "-" : player.area;
+        
+        const playerLocation = client.getLocationOfPlayer.all(`${player.guild}_${player.username}`);
+        const areaString = (playerLocation == []) ? "-" : JSON.stringify(playerLocation);
 
         const actionString = (player.action == undefined) ? "-" : player.action;
 
@@ -16,38 +18,38 @@ module.exports = {
 
         const moveSpecialString = (player.moveSpecial == undefined) ? "-" : player.moveSpecial;
         
-        const spyActionString = (player.spyAction.length == 0) ? "-" : player.spyAction;
+        //const spyActionString = (player.spyAction.length == 0) ? "-" : player.spyAction;
 
-        const spyCurrentString = (player.spyCurrent.length == 0) ? "-" : player.spyCurrent;
+        //const spyCurrentString = (player.spyCurrent.length == 0) ? "-" : player.spyCurrent;
         
-        var itemString = "*No Items.*" 
-        if (player.items.length > 0) {
-            itemString = "";
-            player.items.forEach(item => { 
-                var itemobject = items.find(i => i.id == item);
-                if (itemobject != undefined) {
-                    itemString += formatItem(itemobject) + "\n"
-                }
-            });
-        }
+        // var itemString = "*No Items.*" 
+        // if (player.items.length > 0) {
+        //     itemString = "";
+        //     player.items.forEach(item => { 
+        //         var itemobject = items.find(i => i.id == item);
+        //         if (itemobject != undefined) {
+        //             itemString += formatItem(itemobject) + "\n"
+        //         }
+        //     });
+        // }
 
         const heartImageURL = getHeartImage(player.health); 
         const attachment = new Discord.Attachment(heartImageURL, "hearts.png");
 
         return new Discord.RichEmbed()
             .setColor(color)
-            .setTitle("**" + player.name + "**")
+            .setTitle("**" + player.username + "**")
             .addField(status,
                 "__Character:__ **" + player.character + "**" +
                 "\n__Health:__ **" + player.health + "**" +
                 "\n__Area:__ **" + areaString + "**" +
-                "\n__Spy Action:__ *" + spyActionString + "*" +
-                "\n__Spy Current:__ *" + spyCurrentString + "*" +
+                //"\n__Spy Action:__ *" + spyActionString + "*" +
+                //"\n__Spy Current:__ *" + spyCurrentString + "*" +
                 "\n__Phase Action:__ *" + actionString + "*" +
                 "\n__Movement Action:__ *" + moveString + "*" + 
                 "\n__MoveSpecial:__ *" + moveSpecialString + "*"
                 )
-            .addField("Items:", itemString)
+            //.addField("Items:", itemString)
             .attachFile(attachment)
             .setThumbnail("attachment://hearts.png")
     }

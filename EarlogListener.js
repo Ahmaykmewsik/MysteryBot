@@ -1,137 +1,198 @@
+const { Webhook } = require("discord.js");
 const { updateAvatars } = require("./utilities/updateAvatarsUtil");
 
 module.exports = {
-	EarlogListener(client, message) {
-		const earlog_data = client.data.get("EARLOG_DATA");
+	async EarlogListener(client, message) {
 
-		const areaid = message.channel.name.split("-").pop();
 
-		if (earlog_data == undefined) {
-			//No earlogs exist
+		const gameplayChannel = client.getGameplayChannel.get(message.channel.id);
+
+		if (message.content == undefined || message.system || !gameplayChannel) {
 			return;
 		}
 
-		if (message.content == undefined || message.system) {
+		if (!gameplayChannel.earlogChannelID) {
 			return;
 		}
 
-		var avatar_data = client.data.get("AVATAR_DATA");
-		var earlog_history = client.data.get("EARLOG_HISTORY");
-		var avatar_uploads = client.data.get("AVATAR_UPLOADS");
-		const players = client.data.get("PLAYER_DATA");
-		var spyChannelData = client.data.get("SPY_CHANNEL_DATA");
+		const earlogChannel = client.channels.get(gameplayChannel.earlogChannelID);
 
-		if (spyChannelData == undefined) {
-            spyChannelData = [];
-        }
+		try {
+			const webhooks = await earlogChannel.fetchWebhooks();
 
-		const earlogChannel = earlog_data.find((c) => {
-			return c.areaid == areaid;
+			var username = message.author.username;
+			if (message.member.nickname) {
+				username = `${message.member.nickname} [${message.author.username}]`;
+			}
+
+			var webhook;
+			if (!earlogChannel.lastMessage) {
+				webhook = webhooks.first();
+			} else if (!earlogChannel.lastMessage.webhookID) {
+				webhook = webhooks.first();
+			} else {
+				webhooks.sweep(w => w.id == earlogChannel.lastMessage.webhookID && w.username == username);
+				webhook = webhooks.first();
+			}
+
+		
+			await webhook.send(message.content, {
+				username: username,
+				avatarURL: message.author.displayAvatarURL
+			}).then(earlogMsg => {
+				if (message.content.includes(">>> *-----Phase ")) {
+					earlogMsg.pin();
+				};
+			})
+		} catch (error) {
+			console.error('Error trying to send: ', error);
+		}
+
+		return;
+
+
+		// webhook.edit(message.author.username,  "https://i.imgur.com/p2qNFag.png", gameplayChannel.earlogChannelID)
+		// 	.then(webhook.send(message.content))
+
+
+
+		// const tempWebhook = message.guild.channels.get(gameplayChannel.earlogChannelID)
+		// 	.createWebhook(message.author.username)
+		// 	.then(w => {
+
+		// 		w.delete();
+
+		// 	})
+		// 	.catch(console.error);
+
+
+		
+
+		console.log(tempWebhook);
+
+		tempWebhook.send(message.content);
+		tempWebhook.delete();
+
+		webhook.edit(message.author.username, message.author.displayAvatarURL)
+			.then(webhook.send(message.content));
+
+
+
+
+
+		// var avatar_data = client.data.get("AVATAR_DATA");
+		// var earlog_history = client.data.get("EARLOG_HISTORY");
+		// var avatar_uploads = client.data.get("AVATAR_UPLOADS");
+		// const players = client.data.get("PLAYER_DATA");
+		// var spyChannelData = client.data.get("SPY_CHANNEL_DATA");
+
+		// if (spyChannelData == undefined) {
+		//     spyChannelData = [];
+		// }
+
+
+		//find channel
+
+		if (avatar_data == undefined) {
+			avatar_data = {}; //dictionary of username - local filename
+			updateAvatars(client);
+		}
+		if (avatar_uploads == undefined) {
+			avatar_uploads = {}; //dictionary of username - avatar discord upload
+		}
+		if (earlog_history == undefined) {
+			earlog_history = {}; //dictionary of username - filename
+		}
+
+		//Determine if the bot should post a name
+		var postName = true;
+		if (earlogChannel.channelid in earlog_history) {
+			const lastTalker = earlog_history[earlogChannel.channelid];
+			if (lastTalker == message.author.username) {
+				postName = false;
+			}
+		}
+
+		earlog_history[earlogChannel.channelid] = message.author.username;
+		client.data.set("EARLOG_HISTORY", earlog_history);
+
+
+		//Format message
+		var userHandle;
+		if (postName) {
+			if (message.member.nickname != undefined) {
+				userHandle = "**" + message.member.nickname + ":** `[" + message.author.username.toUpperCase() + "]` \n";
+			} else {
+				userHandle = "**" + message.author.username + ":** \n";
+			}
+		} else {
+			userHandle = "";
+		}
+
+		const messageContent = userHandle + message.content;
+
+		var filenameCurrent = "./avatars/" + message.author.username + "_" + message.author.avatar + ".png";
+		var filenameStored = avatar_data[message.author.username];
+		var filenameReuploaded = avatar_uploads[message.author.username];
+		var filename;
+
+		//Update all avatars on local disk and set flag to reupload image
+		var updateAvatarFlag = false;
+		if (filenameCurrent != filenameStored && !message.author.bot) {
+			//update all avatars
+			updateAvatars(client)
+		}
+
+
+
+		if ((filenameReuploaded == undefined || updateAvatarFlag) && filenameStored != undefined) {
+			//if an avatar hasn't been uploaded in an earlog yet
+			filename = filenameStored;
+		} else if (filenameReuploaded != undefined) {
+			//if any avatar has already been uploaded, use it
+			filename = filenameReuploaded;
+		} else {
+			//this in pratice should never happen
+			filename = message.author.avatar.url;
+		}
+
+		//If reuploaded is outdated, use stored local image
+		var outdatedReuploaded = false;
+		if (filenameReuploaded != undefined) {
+			if (!filenameReuploaded.includes(message.author.avatar)) {
+				filename = filenameStored;
+				outdatedReuploaded = true;
+			}
+		}
+
+		//Copy the message to Earlog
+
+		CopyMessage(client, message, messageContent, earlogChannel, filename, postName);
+
+		//Post to Spy Channels
+		spyChannelData.forEach(spyData => {
+
+			if (spyData.area == areaid) {
+				const playerObject = players.find(p => p.name == spyData.player);
+				if (playerObject.spyCurrent.length > 0) {
+					if (!message.author.bot) {
+						const spyMessage = EncryptSpyMessage(message.content, parseFloat(playerObject.spyCurrent[0][1]));
+						CopyMessage(client, message, userHandle + spyMessage, spyData, filename, postName);
+					} else {
+						CopyMessage(client, message, messageContent, spyData, filename, postName);
+					}
+
+				}
+			}
 		});
 
-		if (earlogChannel != undefined) {
-			//find channel
 
-			if (avatar_data == undefined) {
-				avatar_data = {}; //dictionary of username - local filename
-				updateAvatars(client);
-			}
-			if (avatar_uploads == undefined) {
-				avatar_uploads = {}; //dictionary of username - avatar discord upload
-			}
-			if (earlog_history == undefined) {
-				earlog_history = {}; //dictionary of username - filename
-			}
-
-			//Determine if the bot should post a name
-			var postName = true;
-			if (earlogChannel.channelid in earlog_history) {
-				const lastTalker = earlog_history[earlogChannel.channelid];
-				if (lastTalker == message.author.username) {
-					postName = false;
-				}
-			}
-
-			earlog_history[earlogChannel.channelid] = message.author.username;
-			client.data.set("EARLOG_HISTORY", earlog_history);
-
-
-			//Format message
-			var userHandle;
-			if (postName) {
-				if (message.member.nickname != undefined) {
-					userHandle = "**" + message.member.nickname + ":** `[" + message.author.username.toUpperCase() + "]` \n";
-				} else {
-					userHandle = "**" + message.author.username + ":** \n";
-				}
-			} else {
-				userHandle = "";
-			}
-
-			const messageContent = userHandle + message.content;
-
-			var filenameCurrent = "./avatars/" + message.author.username + "_" + message.author.avatar + ".png";
-			var filenameStored = avatar_data[message.author.username];
-			var filenameReuploaded = avatar_uploads[message.author.username];
-			var filename;
-
-			//Update all avatars on local disk and set flag to reupload image
-			var updateAvatarFlag = false;
-			if (filenameCurrent != filenameStored && !message.author.bot) {
-				//update all avatars
-				updateAvatars(client)
-			}
-
-
-
-			if ((filenameReuploaded == undefined || updateAvatarFlag) && filenameStored != undefined) {
-				//if an avatar hasn't been uploaded in an earlog yet
-				filename = filenameStored;
-			} else if (filenameReuploaded != undefined) {
-				//if any avatar has already been uploaded, use it
-				filename = filenameReuploaded;
-			} else {
-				//this in pratice should never happen
-				filename = message.author.avatar.url;
-			}
-
-			//If reuploaded is outdated, use stored local image
-			var outdatedReuploaded = false;
-			if (filenameReuploaded != undefined) {
-				if (!filenameReuploaded.includes(message.author.avatar)) {
-					filename = filenameStored;
-					outdatedReuploaded = true;
-				}
-			}
-
-			//Copy the message to Earlog
-
-			CopyMessage(client, message, messageContent, earlogChannel, filename, postName);
-
-			//Post to Spy Channels
-			spyChannelData.forEach(spyData => {
-				
-				if (spyData.area == areaid) {
-					const playerObject = players.find(p => p.name == spyData.player);
-					if (playerObject.spyCurrent.length > 0 ) {
-						if (!message.author.bot) {
-							const spyMessage = EncryptSpyMessage(message.content, parseFloat(playerObject.spyCurrent[0][1]));
-							CopyMessage(client, message, userHandle + spyMessage, spyData, filename, postName);
-						} else {
-							CopyMessage(client, message, messageContent, spyData, filename, postName);
-						}
-						
-					}
-				}
-			});
-
-
-			if (outdatedReuploaded) {
-				avatar_uploads[message.author.username] = m.attachments.array()[0].url;
-				client.data.set("AVATAR_UPLOADS", avatar_uploads);
-			}
-
+		if (outdatedReuploaded) {
+			avatar_uploads[message.author.username] = m.attachments.array()[0].url;
+			client.data.set("AVATAR_UPLOADS", avatar_uploads);
 		}
+
+
 
 		function CopyMessage(client, message, messageContent, earlogChannel, filename, postName) {
 			//Copy to Ear Log
@@ -165,7 +226,7 @@ module.exports = {
 
 		function EncryptSpyMessage(message, accuracy) {
 			var messageWords = message.split(" ");
-			for (let i=0; i < messageWords.length; i++){
+			for (let i = 0; i < messageWords.length; i++) {
 				const rand = Math.random();
 				if (rand >= accuracy) {
 					messageWords[i] = "---";
