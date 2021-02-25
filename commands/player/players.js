@@ -7,11 +7,18 @@ module.exports = {
     gmonly: true,
 	execute(client, message, args) {
 
-        var table = client.countPlayers.get(message.guild.id);
-        if (table['count(*)'] == 0) {
+        const players = client.getPlayers.all(message.guild.id);
+        if (players.length == 0) {
             return message.channel.send("You haven't added any players yet. Use !addplayer <person> <character> to add players.");
         }
+
+        let outputMessage = "__**PLAYERS**__\n\n";
+
+        players.forEach(p => {
+            outputMessage += formatPlayer(client, p, false) + "\n\n";
+        })
         
-        message.channel.send("UNIMPLEMENTED");
+
+        message.channel.send(outputMessage, {split: true});
     }
 };

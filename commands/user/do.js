@@ -11,10 +11,15 @@ module.exports = {
 	execute(client, message, args) {
 		
 		let player = UtilityFunctions.GetPlayerFromDM(client, message);
+		if (!player.username) return;
 
 		const settings = UtilityFunctions.GetSettings(client, player.guild);
-		if (settings.phase == null) {
+		if (!settings.phase) {
 			return message.channel.send("No game is currently in progress.")
+		}
+
+		if (player.forceMoved) {
+			return message.channel.send("The GM has already processed your movement manually. If you wish to change your action, please consult your GM.");
 		}
 
 		if (args.length === 0) {

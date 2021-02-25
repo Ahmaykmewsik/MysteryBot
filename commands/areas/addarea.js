@@ -1,4 +1,6 @@
 const formatArea = require('../../utilities/formatArea').formatArea;
+const UtilityFunctions = require('../../utilities/UtilityFunctions');
+
 
 module.exports = {
 	name: 'addarea',
@@ -16,18 +18,6 @@ module.exports = {
         }
         const id = args[0];
 
-        // var areas = client.data.get("AREA_DATA");
-        // if (areas == undefined) {
-        //     areas = [];
-        // }
-
-        // var items = client.data.get("ITEM_DATA");
-        // if (items == undefined) {
-        //     items = [];
-        // }
-
-        //const phaseCount = client.data.get("PHASE_COUNT");
-
         const doesAreaExist = client.getArea.get(`${message.guild.id}_${id}`);
 
         if (doesAreaExist) {
@@ -39,39 +29,38 @@ module.exports = {
             id: id,
             guild: message.guild.id,
             name: id.toUpperCase(),
-            description: null, 
+            description: "Nothing is here.", 
             image: undefined
         };
 
         client.setArea.run(newArea);
+        client.setConnection.run({area1: id, area2: id, guild: message.guild.id});
 
         message.channel.send("Successfully created new area: `" + id 
             + "`.\nUse !areaname, !areadesc, and !connect to edit this area's properties.");
-        message.channel.send(formatArea(newArea));
+        message.channel.send(formatArea(client, newArea));
 
-        //TODO: implement this
+        //Create Earlog if game has started
+        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
+        if (settings.phase) {
+            const area = newArea;
+            message.guild.createChannel("earlog-" + area.id, {
+                type: 'text',
+                permissionOverwrites: [{
+                    id: message.guild.id,
+                    deny: ['SEND_MESSAGES', 'READ_MESSAGES']
+                }]
+            }).then(channel => {
 
-        // if (phaseCount != undefined) {
-        //     area = newArea;
-            
-        //     message.guild.createChannel("earlog-" + area.id, {
-        //         type: 'text',
-        //         permissionOverwrites: [{
-        //             id: message.guild.id,
-        //             deny: ['SEND_MESSAGES', 'READ_MESSAGES']
-        //             }]
-        //     }).then(channel => {
-        //         //console.log(area.id + " created");
-        //         var earlog_data = client.data.get("EARLOG_DATA");
-        //         if (earlog_data == undefined) {
-        //             earlog_data = [];
-        //         }
-        //         earlog_data.push({areaid: area.id, channelid: channel.id});
-        //         client.data.set("EARLOG_DATA", earlog_data);
-                
-        //     }).catch(console.error())
+                channel.createWebhook(`EarlogWebhook_1`);
+                channel.createWebhook(`EarlogWebhook_2`)
+                    .then(result => {
+                        client.setEarlogChannel.run({ guild_areaID: `${message.guild.id}_${area.id}`, guild: message.channel.id, channelID: channel.id });
+                        message.channel.send("Earlog Channel Created");   
+                    })
+            }).catch(console.error())
 
-        //     message.channel.send("Earlog Channel Created");    
-        // }
+             
+        }
     }
 };

@@ -1,4 +1,5 @@
-
+const UtilityFunctions = require('../../utilities/UtilityFunctions');
+const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
 
 module.exports = {
 	name: 'movespecial',
@@ -7,29 +8,39 @@ module.exports = {
 	dmonly: true,
 	execute(client, message, args) {
 		
-		const actionLogChannelID = client.data.get("ACTION_LOG");
-		const players = client.data.get("PLAYER_DATA");
+		let player = UtilityFunctions.GetPlayerFromDM(client, message);
+		if (!player.username) return;
 
-		var player = players.filter(p => p.name == message.author.username);
-
-		if (player == undefined) {
-			return message.channel.send("You don't seem to be on the list of players. If you think this is a mistake, ask your GM.");
+		const settings = UtilityFunctions.GetSettings(client, player.guild);
+		if (settings.phase == null) {
+			return message.channel.send("No game is currently in progress.")
 		}
 
-		player = player[0];
-
-		if (player.area == undefined) {
-			return message.channel.send("You're not alive! No movement actions for you.");
+		if (player.forceMoved) {
+			return message.channel.send("The GM has already processed your movement manually. If you wish to change it, please consult your GM.");
 		}
+
+		let returnMessage = "";
+
 		const action = args.join(" ");
 
+		if (player.moveSpecial) {
+			returnMessage += `Your previous \`!movespecial\` command: \`${player.moveSpecial}\` has been overwritten.\n`
+			player.move = null;
+		}
+
 		player.moveSpecial = action;
+		if (player.move) {
+			returnMessage += `Your previous \`!move\` command: \`${player.move}\` has been overwritten.\n`
+			player.move = null;
+		}
 
-		client.channels.get(actionLogChannelID).send(":bangbang: :arrow_forward: MOVE SPECIAL" + message.author.username + ": `" + action + "`");
-		
-		client.data.set("PLAYER_DATA", players);
+		client.setPlayer.run(player);
 
-		message.channel.send("Movespecial sent. The GM will process this action manually.");
-
+		const displayName = `${player.character.toUpperCase()} [${player.username.toUpperCase()}]`;
+		client.channels.get(settings.actionLogID).send(":bangbang: :arrow_forward: MOVESPECIAL " + displayName + ": `" + action + "`");
+		returnMessage += "Movespecial sent. The GM will process this action manually."
+		message.channel.send(returnMessage);
+		message.reply(formatPlayer(client, player));
 	}
 };

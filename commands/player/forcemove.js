@@ -3,7 +3,7 @@ const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
 
 module.exports = {
 	name: 'forcemove',
-	description: 'Moves a player manually on the map.',
+	description: 'Moves a player manually on the map. NOTE: Using this command will prevent the player from overriding this command by disabling `!do`, `!move`, and `!movespecial` until after the phase rollover.' ,
     format: "!forcemove <player> <area>",
     guildonly: true,
     gmonly: true,
@@ -31,12 +31,12 @@ module.exports = {
         }
 
         const area = client.getArea.get(`${message.guild.id}_${args[0]}`);
-        if (!area) {
-            return message.channel.send("No area exists with ID `" + id + "`. Use !areas to view all areas.");
+        if (area.length == 0) {
+            return message.channel.send("No area exists with ID `" + args.join(` `) + "`. Use !areas to view all areas.");
         }
 
         player.move = area.id;
-        player.forceMoved = 0; 
+        player.forceMoved = 1; 
 
         client.setPlayer.run(player);
 

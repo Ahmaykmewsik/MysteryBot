@@ -31,6 +31,6 @@ module.exports = {
         client.setArea.run(area);
 
         message.channel.send("Area image updated!");
-        message.channel.send(formatArea(area));
+        message.channel.send(formatArea(client, area));
     }
 };

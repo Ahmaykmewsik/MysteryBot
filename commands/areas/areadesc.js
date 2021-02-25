@@ -28,6 +28,6 @@ module.exports = {
         client.setArea.run(area);
 
         message.channel.send("Area description updated!");
-        message.channel.send(formatArea(area));
+        message.channel.send(formatArea(client, area));
     }
 };

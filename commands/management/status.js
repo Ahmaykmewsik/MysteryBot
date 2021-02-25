@@ -1,4 +1,4 @@
-const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
+const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
 	name: 'status',
@@ -7,36 +7,43 @@ module.exports = {
     gmonly: true,
 	execute(client, message, args) {
 
-        var players = client.data.get("PLAYER_DATA");
+        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
+		if (!settings.phase) {
+			return message.channel.send("No game is currently in progress.");
+		}
+
+        let players = client.getPlayers.all(message.guild.id);
         if (players == undefined || players.length === 0) {
-            return message.channel.send("You haven't added any players yet. Use !addplayer <person> <character> to add players.");
+            return message.channel.send("No players found. Use !addplayers <role> to set up a game with players in a given role.");
         }
 
-        var areas = client.data.get("AREA_DATA");
-        if (areas == undefined || areas.length === 0) {
-            return message.channel.send("No areas found. Use !addarea to create an area.");
+        let locations = client.getLocations.all(message.guild.id);
+        if (locations.length == 0) {
+            return message.channel.send("No locations found. (What the hell have you been doing?)");
         }
 
         if (args.length == 0) {
             const outputMessage = CreateStatusMessage(players);
-            message.channel.send(outputMessage);
+            message.channel.send(outputMessage, {split: true});
             return;
         }
 
-        if (args.length == 1) {
-            var areaToDisplay;
-            areaToDisplay = areas.find(area => area.id == args[0]);
-            if (areaToDisplay == undefined){
-                areaToDisplay = areas.find(area => area.id.includes(args[0]));
-                if (areaToDisplay == undefined) {
-                    return message.channel.send("No area exists with that ID.");
-                }
-            }
+        else if (args.length == 1) {
 
-            const playersInArea = players.filter(p => areaToDisplay.playersPresent.includes(p.name));
-            const outputMessage = CreateStatusMessage(playersInArea);
+            const id = args[0];
+            const area = client.getArea.get(`${message.guild.id}_${id}`);
+            if (!area) {
+                return message.channel.send("No area exists with ID `" + id + "`.");
+            }
+            const playersInArea = client.getPlayersOfArea.all(id, message.guild.id);
+            if (playersInArea.length > 0) {
+                let outputMessage = CreateStatusMessage(playersInArea);
+                outputMessage = "__**" + area.name + "**__\n" + outputMessage;
+                message.channel.send(outputMessage, {split: true});
+            } else {
+                message.channel.send(`No players are currently in \`${id}\``);
+            }
             
-            message.channel.send("__**" + areaToDisplay.name + "**__\n" + outputMessage);
             return;
         }
 
@@ -46,10 +53,10 @@ module.exports = {
 
 
         function CreateStatusMessage(players) {
-            var outputMessageArray = [];
+            let outputMessageArray = [];
             outputMessageArray.push("--------ACTIONS--------");
             players.forEach(player => {
-                var toAdd = ":small_orange_diamond:__" + player.name.toUpperCase() + "__: ";
+                let toAdd = `:small_orange_diamond:__${player.character.toUpperCase()}__ [${player.username}]: `;
                 if (player.action == undefined){
                     toAdd += "**NONE**"
                 } else {
@@ -60,7 +67,7 @@ module.exports = {
     
             outputMessageArray.push("--------MOVEMENT--------");
             players.forEach(player => {
-                var toAdd = ":small_blue_diamond:__" + player.name.toUpperCase() + "__: ";
+                let toAdd = ":small_blue_diamond:__" + player.character.toUpperCase() + "__: ";
                 
                 if (player.move == undefined && player.moveSpecial == undefined) {
                     toAdd += "**NONE**";

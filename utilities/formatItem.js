@@ -2,7 +2,7 @@ module.exports = {
 
     formatItem(client, item, showEquipped = true) {
 
-        var infoStringArray = []
+        var infoStringArray = [];
 
         if (item.big) infoStringArray.push("`BIG`");
 

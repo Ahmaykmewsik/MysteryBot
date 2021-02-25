@@ -23,7 +23,7 @@ module.exports = {
             return message.channel.send("No area found with that ID. Use !areas to view the list of existing areas.");
         }
 
-        message.channel.send(formatArea(areaToRemove));
+        message.channel.send(formatArea(client, areaToRemove));
         message.channel.send("Are you sure you want to delete this area? (y or n)").then(() => {
             const filter = m => message.author.id === m.author.id;
             message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })

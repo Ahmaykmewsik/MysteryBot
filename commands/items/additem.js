@@ -17,8 +17,8 @@ module.exports = {
 
         const id = args[0];
 
-        const isBig = parseInt(args.includes('-b')); 
-        const isClothing = parseInt(args.includes('-c')); 
+        const isBig = args.includes('-b') ? 1 : 0;
+        const isClothing = args.includes('-c') ? 1 : 0; 
         
         const description = args.slice(args.indexOf('-d') + 1).join(' ');
         if (description.length == 0) {

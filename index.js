@@ -199,12 +199,10 @@ client.on("ready", () => {
 
 	// -------Player Functions------
 
-	//Find if a username exists in the database among all guilds.
 	client.getUserInDatabase = sql.prepare(
 		`SELECT * from players WHERE username = ?`
 	)
 
-	//Sets or Updates a player
 	client.setPlayer = sql.prepare(
 		`INSERT OR REPLACE INTO players
 		(guild_username, username, guild, character, discordID, alive, health, action, roll, move, moveSpecial, forceMoved)
@@ -212,19 +210,20 @@ client.on("ready", () => {
 		(@guild_username, @username, @guild, @character, @discordID, @alive, @health, @action, @roll, @move, @moveSpecial, @forceMoved);`
 	);
 
-	//Returns all players in guild
 	client.getPlayers = sql.prepare(
 		"SELECT * FROM players WHERE guild = ?"
 	);
 
-	//Counts number of players in guild
 	client.countPlayers = sql.prepare(
 		"SELECT count(*) FROM players WHERE guild = ?;"
 	);
 
-	//Removes player
 	client.deletePlayer = sql.prepare(
 		`DELETE FROM players WHERE guild_username = ?`
+	);
+
+	client.deleteAllPlayers = sql.prepare(
+		`DELETE FROM players WHERE guild = ?`
 	);
 
 	// -------Area Functions------
@@ -245,11 +244,20 @@ client.on("ready", () => {
 		`DELETE FROM areas 
 		WHERE guild_id = ?;`
 	);
+
+	client.deleteAllAreas = sql.prepare(
+		`DELETE FROM areas
+		WHERE guild = ?`
+	);
 	
 	// -------Connection Functions------
 
 	client.getConnections = sql.prepare(
 		`SELECT area2 FROM connections WHERE area1 = ? AND guild = ?`
+	);
+
+	client.getAllConnections = sql.prepare(
+		`SELECT * FROM connections WHERE guild = ?`
 	);
 
 	client.setConnection = sql.prepare(
@@ -285,8 +293,9 @@ client.on("ready", () => {
 	);
 
 	client.getPlayersOfArea = sql.prepare(
-		`SELECT username FROM locations
-		WHERE areaID = ? and guild = ?`
+		`SELECT * FROM locations
+		INNER JOIN players ON locations.guild_username == players.guild_username
+		WHERE locations.areaID = ? and locations.guild = ?`
 	);
 
 	client.setLocation = sql.prepare(
@@ -368,6 +377,14 @@ client.on("ready", () => {
 		WHERE guild = ? AND guild_username NOT IN (SELECT guild_username FROM locations)`
 	);
 
+	client.deleteAllItems = sql.prepare(
+		`DELETE FROM items WHERE guild = ?`
+	);
+
+	client.deleteAllInventories = sql.prepare(
+		`DELETE FROM inventories WHERE guild = ?`
+	);
+
 	// -------Spy Functions------
 	
 	client.getSpyActions = sql.prepare(
@@ -423,6 +440,10 @@ client.on("ready", () => {
 		VALUES (@guild, @categoryName, @categoryID, @categoryNum, @spyCategoryID, @phase, @actionLogID, @healthSystemActivated, @defaultHealth, @maxHealth)`
 	);
 
+	client.deleteSettings = sql.prepare(
+		`DELETE from settings WHERE guild = ?`
+	);
+
 	// -------Earlog & Spy Channel Functions------
 
 	client.getSpyChannels = sql.prepare(
@@ -440,6 +461,11 @@ client.on("ready", () => {
 		WHERE channelID = ?`
 	);
 
+	client.getGameplayChannels = sql.prepare(
+		`SELECT * FROM gameplayChannels
+		WHERE guild = ?`
+	);
+
 	client.setEarlogChannel = sql.prepare(
 		`INSERT OR REPLACE INTO earlogChannels (guild_areaID, guild, channelID)
 		VALUES (@guild_areaID, @guild, @channelID)`
@@ -455,8 +481,18 @@ client.on("ready", () => {
 		VALUES (@guild_areaID, @areaID, @guild, @channelName, @channelID, @earlogChannelID)`
 	);
 
-	client.deleteAllEarlogData = sql.prepare(
+	client.deleteAllEarlogChannelData = sql.prepare(
 		`DELETE FROM earlogChannels 
+		WHERE guild = ?`
+	);
+
+	client.deleteAllSpyChannelData = sql.prepare(
+		`DELETE FROM spyChannels 
+		WHERE guild = ?`
+	);
+
+	client.deleteAllGameplayChannelData = sql.prepare(
+		`DELETE FROM gameplayChannels 
 		WHERE guild = ?`
 	);
 

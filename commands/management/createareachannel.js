@@ -1,4 +1,5 @@
-//const createChannels = require('../../utilities/createChannels.js').createChannels;
+const createChannels = require('../../utilities/createChannels.js').createChannels;
+const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
 	name: 'createareachannel',
@@ -7,37 +8,35 @@ module.exports = {
     gmonly: true,
     guildonly: true,
 	execute(client, message, args) {
-
-        return message.channel.send("UNIMPLEMENTED");
         
-        var areas = client.data.get("AREA_DATA");
-        if (areas == undefined) {
-            areas = [];
-        }
-        
-        const category = client.data.get("CATEGORY_DATA");
-        const phaseNumber = client.data.get("PHASE_COUNT");
-
-        if (phaseNumber < 0 || phaseNumber == undefined){
-            return message.channel.send("Aborting. The game hasn't started yet. Please use !gamestart first to begin the game.")
-        }
+        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
+		if (settings.phase == null) {
+			return message.channel.send("Aborting. The game hasn't started yet. Please use !gamestart first to begin the game.");
+		}
 
         if (args.length === 0) {
             return message.channel.send("No arguments given. Please specify area ID and desired area description.");
         }
 
-        const areaID = args[0];
-        var areaIndexToUpdate = areas.findIndex(area => area.id == areaID);
-        if (areaIndexToUpdate === -1) {
-            return message.channel.send("No area exists with ID `" + areaID + "`. Use !areas to view all areas.");
+        const id = args.join(" ");
+
+        const area = client.getArea.get(`${message.guild.id}_${id}`);
+        if (!area) {
+            return message.channel.send("No area exists with ID `" + id + "`. Use !areas to view all areas.");
         }
 
-        if (areas[areaIndexToUpdate].playersPresent.length == 0) {
-            return message.channel.send("Aborting. There's nobody here! Put someone here first with `!setarea`.");
+        const location = client.getPlayersOfArea.all(area.id, area.guild);
+
+        if (location.length == 0) {
+            return message.channel.send(`Aborting. There's nobody in ${area.id}! Put someone here first with \`!setarea\`.`);
         }
 
-        //createChannels(client, message.guild, [areas[areaIndexToUpdate]], category.id, phaseNumber);
+        const areas = client.getAreas.all(message.guild.id);
+        const players = client.getPlayers.all(message.guild.id);
+        const locations = client.getLocations.all(message.guild.id);
 
-        return message.channel.send("Channel for `" + areas[areaIndexToUpdate].name + "` created.")
+        createChannels(client, message.guild, areas, players, locations, settings.catetoryID, settings.phase);
+
+        return message.channel.send("Channel for `" + area.id + "` created.");
     }
 }

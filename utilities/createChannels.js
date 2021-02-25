@@ -24,8 +24,6 @@ module.exports = {
 
                 const player = players.find(p=> p.username == spyAction.username);
 
-
-
                 channelsToMake.push({
                     type: "spy",
                     username: spyAction.username,
@@ -54,17 +52,21 @@ module.exports = {
             client.addSpyCurrent.run(spyCurrent);
         });
 
+        let activeAreas = areas.filter(a =>{
+            let areaLocations = locations.filter(l => l.areaID == a.id);
+            //This won't work for multiareas
+            let livingPlayersPresent = players.filter(p => p.alive && areaLocations.find(l => l.username == p.username))
+            if (livingPlayersPresent.length > 0) {
+                return true;
+            }
+            return false;
+        });
+
         //Manage Area Channels
         for (let area of areas) {
 
             //If nobody is there, don't make a channel for it
-            var active = true;
-            const livingPlayersPresent = players.filter(p => locations.find(l => (l.username == p.username) && p.alive).areaID == area.areaID);
-            //const livingPlayersPresent = playersPresent.filter(p => p.alive);
-
-            if (!livingPlayersPresent) {
-                active = false;
-            }
+            let active = (activeAreas.find(a => area.id == a.id)) ? true : false;
 
             //If there's no image then don't try and put one
             if (area.image == undefined) {
@@ -167,8 +169,7 @@ module.exports = {
                 return;
             }
 
-            
-
+        
             //Make da channel
             guild.createChannel(c.channelname, {
                 type: 'text',
@@ -178,43 +179,8 @@ module.exports = {
                     deny: ['READ_MESSAGES']
                 }]
             }).then(channel => {
-                SendMessageChannel(c.outputString1, channel);
-                if (c.outputString2 != "\n\n") {
-                    SendMessageChannel(c.outputString2, channel);
-                }
-
-                //Figure out who's here
-                const locationsHere = locations.filter(l => c.areaID == l.areaID);
-
-                locationsHere.forEach(location => {
-
-                    const member = guild.members.find(m => m.user.username == location.username);
-                    const playerObject = players.find(p => location.username == p.name);
-
-                    if (member != undefined || playerObject != undefined) {
-
-                        //pingMessage += "<@" + member.user.id + ">\n" 
-
-                        if (playerObject.alive) {
-
-                            channel.overwritePermissions(member.user, { READ_MESSAGES: true })
-                                .then(channel.send("<@" + member.user.id + ">  --  HEALTH: " + playerObject.health, { files: [getHeartImage(playerObject.health)] }))
-                                .catch(console.error);
-                        }
-                        else {
-                            channel.overwritePermissions(member.user, { READ_MESSAGES: true, SEND_MESSAGES: false })
-                                .then(channel.send("<@" + member.user.id + ">"))
-                                .catch(console.error);
-                        }
-                    } else {
-                        console.log("Failed to open area " + area.name + " for " + location.username);
-                    }
-                })
-
                 channel.setParent(categoryID)
                     .then(channel => {
-
-                        
 
                         const earlogChannel = client.getEarlogChannel.get(`${guild.id}_${c.area.id}`); 
 
@@ -229,6 +195,38 @@ module.exports = {
 
                         client.setGameplayChannel.run(newGameplayChannel);
 
+                        SendMessageChannel(c.outputString1, channel);
+                        if (c.outputString2 != "\n\n") {
+                            SendMessageChannel(c.outputString2, channel);
+                        }
+        
+                        //Figure out who's here
+                        const locationsHere = locations.filter(l => c.area.id == l.areaID);
+        
+                        locationsHere.forEach(location => {
+        
+                            const member = guild.members.find(m => m.user.username == location.username);
+                            const playerObject = players.find(p => location.username == p.username);
+        
+                            if (member != undefined || playerObject.length != 0) {
+        
+                                //pingMessage += "<@" + member.user.id + ">\n" 
+        
+                                if (playerObject.alive) {
+        
+                                    channel.overwritePermissions(member.user, { READ_MESSAGES: true })
+                                        .then(channel.send("<@" + member.user.id + ">  --  HEALTH: " + playerObject.health, { files: [getHeartImage(playerObject.health)] }))
+                                        .catch(console.error);
+                                }
+                                else {
+                                    channel.overwritePermissions(member.user, { READ_MESSAGES: true, SEND_MESSAGES: false })
+                                        .then(channel.send("<@" + member.user.id + ">"))
+                                        .catch(console.error);
+                                }
+                            } else {
+                                console.log("Failed to open area " + area.name + " for " + location.username);
+                            }
+                        })
                     })
                     .catch(console.error);
             })

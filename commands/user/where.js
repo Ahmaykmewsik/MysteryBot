@@ -1,4 +1,5 @@
 const formatArea = require('../../utilities/formatArea').formatArea;
+const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
 	name: 'where',
@@ -8,24 +9,23 @@ module.exports = {
     dmonly: true,
 	execute(client, message, args) {
 
-        var players = client.data.get("PLAYER_DATA");
-        var areas = client.data.get("AREA_DATA");
+        let player = UtilityFunctions.GetPlayerFromDM(client, message);
+        if (!player.username) return;
 
-        var items = client.data.get("ITEM_DATA");
-        if (items == undefined) {
-            items = [];
-        }
-		var player = players.find(p => p.name == message.author.username);
-
-		if (player == undefined) {
-			return message.channel.send("You don't seem to be on the list of players. If you think this is a mistake, ask your GM.");
+		const settings = UtilityFunctions.GetSettings(client, player.guild);
+		if (settings.phase == null) {
+			return message.channel.send("No game is currently in progress.");
 		}
 
-		if (player.area == undefined) {
-			return message.channel.send("You're not alive! The dead have no place in this cruel world.");
+        const location = client.getLocationOfPlayer.get(player.guild_username);
+        if (!location) {
+            return message.channel.send("The bot can't find where you are! Ask your GM for assistance. (Location not found)");
+        }
+        const currentArea = client.getArea.get(`${player.guild}_${location.areaID}`);
+        if (!currentArea) {
+            return message.channel.send("The bot can't find where you are! Ask your GM for assistance. (Area not found)");
         }
         
-        const currentArea = areas.find(a => a.id == player.area);
-        message.channel.send(formatArea(currentArea, items));
+        message.channel.send(formatArea(client, currentArea));
     }
 };

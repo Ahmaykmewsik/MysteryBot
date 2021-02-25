@@ -1,25 +1,38 @@
 module.exports = {
-    sendPassMessages(members, players, channel) {
+    sendPassMessages(members, players, location, channel) {
+        let passingMessagesArray = [];
         players.forEach(player => {
-            //Don't do anything if we're in or going to multiarea mode
-            if ((Array.isArray(player.area) && player.area.length > 1) || player.area == undefined) {return;}
-            if ((Array.isArray(player.move) && player.move.length > 1) || player.area == undefined) {return;}
+            //Don't do anything if the player didn't send movement
             if (player.move == undefined) {return;}
 
             //find players where they're passing each other and send them a notification DM that it happened
-            swappers = players.filter(p => (player.area.includes(p.move)) && (player.move.includes(p.area)));
+            let playerLocation = location.find(l => l.username == player.username);
+            swappers = players.filter(mover => {
+                let moverLocation = location.find(l => l.username == mover.username);
+                return playerLocation.areaID == mover.move && player.move == moverLocation.areaID;
+            });
             if (swappers.length > 0) {
                 const swappersString = swappers.map(s => s.character).join(', ');
-                playerobject = members.find(m => m.user.username == player.name)
+                playerobject = members.find(m => m.user.username == player.username)
 
                 try {
-                    playerobject.send("On your way to `" + player.move + "` you pass by: " + swappersString)
+                    const swapMessage = "On your way to `" + player.move + "` you pass by: " + swappersString;
+                    playerobject.send(swapMessage);
+                    passingMessagesArray.push({
+                        username: player.username,
+                        message: swapMessage
+                    });
                 } catch(error) {
                     channel.send("Failed to print passing message for " + player.username + " to " + player.move);
                     console.error(error);
                 }
-                  
             }
-        });
+        })
+
+        if (passingMessagesArray.length == 0) {
+            return "No passing messages sent";
+        } else {
+            return "Passing messages sent:\n" + passingMessagesArray.map(m => `${m.username}: ${m.message}`).join("\n");
+        }
     }
 };

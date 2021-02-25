@@ -22,7 +22,7 @@ module.exports = {
 
 			var username = message.author.username;
 			if (message.member.nickname) {
-				username = `${message.member.nickname} [${message.author.username}]`;
+				username = `${message.member.nickname}   [${message.author.username}]`;
 			}
 
 			var webhook;
@@ -35,15 +35,27 @@ module.exports = {
 				webhook = webhooks.first();
 			}
 
-		
-			await webhook.send(message.content, {
+			let content = " ";
+
+			if (message.content) {
+				content = message.content;
+			}
+
+			if (message.attachments.array().length != 0) {
+				content += "\n" + message.attachments.array()[0].url
+			}
+
+			await webhook.send(content, {
 				username: username,
-				avatarURL: message.author.displayAvatarURL
+				avatarURL: message.author.displayAvatarURL,
+				embed: message.embed
 			}).then(earlogMsg => {
-				if (message.content.includes(">>> *-----Phase ")) {
+
+				if (content.includes(">>> *-----Phase ")) {
 					earlogMsg.pin();
-				};
+				}
 			})
+			
 		} catch (error) {
 			console.error('Error trying to send: ', error);
 		}

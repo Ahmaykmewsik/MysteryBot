@@ -3,8 +3,8 @@ const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
 
 module.exports = {
     name: 'spy',
-    description: 'Gives a player the ability to discretley view another channel. Includes an accuraccy value, limiting the number of words that are copied.',
-    format: "!spy <player> <area> <accuracy> [current]",
+    description: 'Gives a player the ability to discretley view another channel. Includes an accuraccy value, limiting the number of words that are copied. Include -p to make the spy action permanent.',
+    format: "!spy <player> <area> <accuracy> [-c] [-p]",
     guildonly: true,
     gmonly: true,
     execute(client, message, args) {

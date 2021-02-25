@@ -2,7 +2,7 @@ const createChannels = require('../../utilities/createChannels.js').createChanne
 
 module.exports = {
     name: 'gamestart',
-    description: 'Assigns each player a random starting area',
+    description: 'Starts the game! In order to use, you need to have:\nPlayers\nAreas\nRun `!gamename`\nrRun `!actionlog`\nPut all players in a starting location (use `!setarea` or `!setarearandom`).',
     format: "!gamestart",
     gmonly: true,
     execute(client, message, args) {
@@ -39,9 +39,8 @@ module.exports = {
 
         settings.phase = 1;
 
-        //If you're running !gamestart you probably don't have any earlogs you care about, so delete them
-        //(might be a better implementation for this?)
-        //client.deleteAllEarlogData.run(message.guild.id);
+        //If you're running !gamestart you probably don't have any earlogs you care about, so delete them.
+        client.deleteAllEarlogChannelData.run(message.guild.id);
 
         //create earlogs and channels
         areas.forEach(area => {
@@ -55,27 +54,25 @@ module.exports = {
 
                 channel.createWebhook(`EarlogWebhook_1`);
                 channel.createWebhook(`EarlogWebhook_2`)
-                    .then(result => {
+                    .then(() => {
                         client.setEarlogChannel.run({ guild_areaID: `${message.guild.id}_${area.id}`, guild: message.channel.id, channelID: channel.id });
 
                         //Create spy category and store it
                         message.guild.createChannel("SPY CHANNELS", {
                             type: 'category'
                         }).then((categoryObject) => {
-        
+
                             settings.spyCategoryID = categoryObject.id;
                             client.setSettings.run(settings);
-        
-                            //Make the channels
-                            createChannels(client, message.guild, areas, players, locations, settings.categoryID, settings.phase);
+
                         }).catch(console.error);
                     })
                     .catch(console.error);
             }).catch(console.error())
-        });
+        })
 
-
-
+        //Make the channels
+        createChannels(client, message.guild, areas, players, locations, settings.categoryID, settings.phase);
         client.channels.get(settings.actionLogID).send("----------------------------\n---------**PHASE " + settings.phase + "**---------\n----------------------------");
 
         message.channel.send("**The game has begun!**\n" + players.map(player => player.username + ": " + player.area).join('\n'));

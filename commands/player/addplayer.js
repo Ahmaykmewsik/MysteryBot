@@ -15,10 +15,6 @@ module.exports = {
         const inputusername = args.shift().toLowerCase();
         const characterName = args.join(" ");
 
-        if (characterName.length == 0) {
-            return message.channel.send("You need to enter a character name.");
-        }
-
         //find player based on input
         var playerobject;
         message.guild.members.forEach(function(member) {
@@ -42,6 +38,10 @@ module.exports = {
                 //TODO: Check if game is in progress. If it isn't, delete it!
                 return message.channel.send(`Adding player failed. ${playerobject.username} is currently in a game on another server!`);
             }
+        }
+
+        if (characterName.length == 0) {
+            return message.channel.send("You need to enter a character name.");
         }
 
         const settings = UtilityFunctions.GetSettings(client, message.guild.id);

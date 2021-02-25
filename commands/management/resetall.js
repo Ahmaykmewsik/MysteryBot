@@ -14,16 +14,24 @@ module.exports = {
 					if (messages.first().content == "y") {
 
 						//CLEAR IT
-						client.data.fetchEverything();
-						const keys = client.data.indexes;
-						for (i in keys) {
-							client.data.set(keys[i], undefined);
-						}
-						message.channel.send("All data has been cleared.");
+						client.deleteAllPlayers.run(message.guild.id);
+						client.deleteAllAreas.run(message.guild.id);
+						client.deleteAllConnections.run(message.guild.id);
+						client.deleteAllLocations.run(message.guild.id);
+						client.deleteAllItems.run(message.guild.id);
+						client.deleteAllInventories.run(message.guild.id);
+						client.deleteAllSpyActions.run(message.guild.id);
+						client.deleteAllSpyCurrent.run(message.guild.id);
+						client.deleteAllEarlogChannelData.run(message.guild.id);
+						client.deleteAllSpyChannelData.run(message.guild.id);
+						client.deleteAllGameplayChannelData.run(message.guild.id);
+						client.deleteSettings.run(message.guild.id);
+
+						message.channel.send("Goodbye DATA. https://youtu.be/oIscL-Bjsq4");
 					} else if (messages.first().content == "n") {
-						message.channel.send("Well fuck you then.");
+						message.channel.send("Your DATA will thank you later.");
 					} else {
-						message.channel.send("...uh, okay.");
+						message.channel.send("...damn, you just gonna scare you data like that? Shameful.");
 					}
 				})
 				.catch(() => {

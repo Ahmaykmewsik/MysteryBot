@@ -1,4 +1,3 @@
-const formatArea = require('../../utilities/formatArea').formatArea;
 
 module.exports = {
 	name: 'areas',
@@ -14,27 +13,30 @@ module.exports = {
             message.channel.send("You haven't defined any areas yet.");
         }
 
-        var outputMessage = `-----AREAS-----\n`;
+        let outputMessage = `-----AREAS-----\n`;
+        let imageMessageHeader = `-----IMAGES-----\n`;
+        let imageMessage = imageMessageHeader;
         
-        
-
         areas.forEach(area=>{
             const connections = client.getConnections.all(area.id, message.guild.id);
-            const connectionsString = (connections.length == 0) ? "None" : connections;
-            const descriptionString = (area.description == undefined) ? "-" : area.description;
-            const imageString = (area.image == undefined) ? "-" : area.image;
-            outputMessage += 
-                `__**${area.name}**__
-                __ID__: ${area.id}
-                __Connections__: *${JSON.stringify(connectionsString)}*
-                __Players Present__: UNIMPLEMENTED
-                __Description__:
-                ${descriptionString}
-                ${imageString}\n`
+            const connectionsString = (connections.length == 0) ? "None" : connections.map(c => c.area2).join(", ");
+
+            const playersPresent = client.getPlayersOfArea.all(area.id, message.guild.id);
+            const playerPresentString = (playersPresent.length == 0) ? "None": playersPresent.map(p => p.username).join(", "); 
+
+            const descriptionString = (area.description == null) ? "-" : area.description;
+            const imageString = (area.image == null) ? "NO IMAGE" : "IMAGE INCLUDED";
+            outputMessage += `:small_blue_diamond: __**${area.name}**__ :small_blue_diamond:\n__ID__: ${area.id}\n__Connections__: *${connectionsString}*\n__Players Present__: *${playerPresentString}*\n__Image__: ${imageString}\n\n__Description__:\n${descriptionString}\n\n`;
+            if (area.image != null) {
+                imageMessage += `_ _\n${area.image}`
+            }
         })
 
-        message.channel.send(outputMessage, {"split": true})
-
-            
+        message.channel.send(outputMessage, {split: true})
+            .then(r => {
+                if (imageMessage != imageMessageHeader) {
+                    message.channel.send(imageMessage, {split: true});
+                }
+            })
     }
 };

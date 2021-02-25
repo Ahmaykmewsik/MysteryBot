@@ -39,7 +39,7 @@ module.exports = {
             guild_username: `${message.guild.id}_${player.username}`,
             username: player.username,
             guild: message.guild.id,
-            area: area.id
+            areaID: area.id
         });
 
         message.channel.send(player.username + "'s area has been manually set.\n");

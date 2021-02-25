@@ -1,4 +1,4 @@
-const { updateAvatars } = require('../../utilities/updateAvatarsUtil');
+const { updateAvatars } = require('../utilities/updateAvatarsUtil');
 
 module.exports = {
     name: 'updateavatars',
@@ -7,6 +7,7 @@ module.exports = {
     guildonly: true,
     gmonly: true,
     execute(client, message, args) {
+        return message.channel.send("DEPRICATED");
         message.channel.send("Updating Avatars...");
         const log = updateAvatars(client);
         message.channel.send(log);

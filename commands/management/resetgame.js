@@ -1,57 +1,38 @@
+const UtilityFunctions = require('../../utilities/UtilityFunctions');
+
 module.exports = {
-	name: 'resetgame',
-	description: 'Clears all game data, keeps player and area setup data. Mostly only needed for debugging purposes',
+    name: 'resetgame',
+    description: 'Clears all game data, keeps player and area setup data. Mostly only needed for debugging purposes',
     format: "!resetgame",
     guildonly: true,
     gmonly: true,
-	execute(client, message, args) {
+    execute(client, message, args) {
 
-        var players = client.data.get("PLAYER_DATA");
-        if (players == undefined) { 
-            return message.channel.send("No players found. Please set the game up first.");
-        }
-        var areas = client.data.get("AREA_DATA");
-        if (areas == undefined) { 
-            return message.channel.send("No areas found. Please set the game up first.");
-        }
-        var phaseCount = client.data.get("PHASE_COUNT");
-        if (phaseCount == undefined){
+        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
+        if (settings.phase == null) {
             message.channel.send("The game has not started yet FYI.");
         }
 
-        message.channel.send("Are you sure you want to reset the game? All player and area data will be kept.").then(() => {
+        message.channel.send("Are you sure you want to reset the game? All player, area, and item data will be kept. (y or n)").then(() => {
             const filter = m => message.author.id === m.author.id;
             message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })
                 .then(messages => {
                     if (messages.first().content == 'y') {
 
-                       players.forEach(player => {
-                           player.area = undefined;
-                           player.move = undefined;
-                           player.action = undefined;
-                           player.items = [];
-                           player.alive = true;
-                           player.health = 3.0;
-                           player.spyAction = [];
-                           player.spyCurrent =  [];
-                       })
+                        //CLEAR IT
+                        client.deleteAllLocations.run(message.guild.id);
+                        client.deleteAllInventories.run(message.guild.id);
+                        client.deleteAllSpyActions.run(message.guild.id);
+                        client.deleteAllSpyCurrent.run(message.guild.id);
+                        client.deleteAllEarlogChannelData.run(message.guild.id);
+                        client.deleteAllSpyChannelData.run(message.guild.id);
+                        client.deleteAllGameplayChannelData.run(message.guild.id);
+                        
+                        //Settings is a special case. Only one thing needs to change
+                        settings.phase = null;
+                        client.setSettings.run(settings);
 
-                       areas.forEach(area => {
-                           area.playersPresent = [];
-                           area.description = undefined;
-                       })
-
-                       phaseCount = undefined;
-
-                       client.data.set("PLAYER_DATA", players);
-                       client.data.set("AREA_DATA", areas);
-                       client.data.set("PHASE_COUNT", phaseCount);
-                       client.data.set("EARLOG_DATA", undefined);
-                       client.data.set("EARLOG_HISTORY", undefined);
-                       client.data.set("CHANNEL_DATA", undefined);
-                       client.data.set("SPY_CHANNEL_DATA", undefined);
-
-                       message.channel.send("The game has been reset.");
+                        message.channel.send("The game has been reset.");
 
                     } else if (messages.first().content == 'n') {
                         message.channel.send("Okay, never mind then :)");
@@ -60,8 +41,7 @@ module.exports = {
                     }
                 })
                 .catch(console.error);
-            });
-        }
-    };
+        });
+    }
+};
 
-    
