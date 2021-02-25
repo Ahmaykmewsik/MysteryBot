@@ -303,6 +303,11 @@ client.on("ready", () => {
 		VALUES (@guild_username, @username, @guild, @areaID)`
 	);
 
+	client.getPlayersWithoutLocation = sql.prepare(
+		`SELECT username FROM players
+		WHERE guild = ? AND guild_username NOT IN (SELECT guild_username FROM locations)`
+	);
+
 	client.deleteLocationsOfPlayer = sql.prepare(
 		`DELETE FROM locations
 		WHERE guild_username = ?`
@@ -345,6 +350,11 @@ client.on("ready", () => {
 		WHERE itemID = ? AND guild = ?`
 	)
 
+	client.getInventories = sql.prepare(
+		`SELECT * FROM inventories
+		WHERE guild = ?`
+	);
+
 	client.getItemsAndInventories = sql.prepare(
 		`SELECT items.id, items.guild, items.description, items.big, items.clothing, inventories.username FROM items
 		INNER JOIN inventories ON items.id = inventories.itemID
@@ -370,11 +380,6 @@ client.on("ready", () => {
 	client.deleteItemFromInventory = sql.prepare(
 		`DELETE FROM inventories
 		WHERE itemID = ? AND guild = ?`
-	);
-
-	client.getPlayersWithoutLocation = sql.prepare(
-		`SELECT username FROM players
-		WHERE guild = ? AND guild_username NOT IN (SELECT guild_username FROM locations)`
 	);
 
 	client.deleteAllItems = sql.prepare(
@@ -451,6 +456,11 @@ client.on("ready", () => {
 		WHERE guild = ?`
 	);
 
+	client.countEarlogChannels = sql.prepare(
+		`SELECT count(*) FROM earlogChannels
+		WHERE guild = ?`
+	);
+
 	client.getEarlogChannel = sql.prepare(
 		`SELECT * FROM earlogChannels
 		WHERE guild_areaID = ?`
@@ -503,6 +513,14 @@ client.on("ready", () => {
 client.on("message", message => {
 	///EARLOG---------------------------------------------------------
 	if (message.channel.type != "dm" && message.channel.name[0] == "p") {
+		try {
+			if ((message.content.toLowerCase() == "lock") && (message.member.hasPermission('ADMINISTRATOR'))) {
+				message.channel.overwritePermissions(message.channel.guild.defaultRole, { SEND_MESSAGES: false });
+			}
+		} catch (error) {
+			console.error("LOCK error!" + error);
+		}
+		
 		try {
 			EarlogListener(client, message);
 		} catch (error) {

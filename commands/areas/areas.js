@@ -28,7 +28,7 @@ module.exports = {
             const imageString = (area.image == null) ? "NO IMAGE" : "IMAGE INCLUDED";
             outputMessage += `:small_blue_diamond: __**${area.name}**__ :small_blue_diamond:\n__ID__: ${area.id}\n__Connections__: *${connectionsString}*\n__Players Present__: *${playerPresentString}*\n__Image__: ${imageString}\n\n__Description__:\n${descriptionString}\n\n`;
             if (area.image != null) {
-                imageMessage += `_ _\n${area.image}`
+                imageMessage += `\n${area.image}`
             }
         })
 

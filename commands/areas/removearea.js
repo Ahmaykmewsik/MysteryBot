@@ -36,7 +36,10 @@ module.exports = {
                         //remove connections to other areas
                         client.deleteConnectionsOfArea.run(id, id, message.guild.id);
 
-                        message.channel.send("Area `" + id + "` removed.");
+                        //remove locations
+                        client.deleteLocationsOfArea.run(id, message.guild.id);
+
+                        message.channel.send("Area `" + id + "` removed. All connection and location data has also been deleted.");
                     } else if (messages.first().content == 'n') {
                         message.channel.send("Okay, never mind then :)");
                     } else {

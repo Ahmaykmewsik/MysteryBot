@@ -19,6 +19,8 @@ module.exports = {
             return message.channel.send("You need to enter a player.");
         }
 
+        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
+
         const inputusername = args.shift().toLowerCase();
 
         const player = UtilityFunctions.GetPlayerFronInput(client, message.guild.id, inputusername);
@@ -44,8 +46,8 @@ module.exports = {
         if (player.health > 0) {
             player.alive = 1;
         }
-        if (player.health > 3) {
-            player.health = 3;
+        if (player.health > settings.maxHealth) {
+            player.health = settings.maxHealth;
         }
 
         var deltaHealth = healthValueOld - player.health;
