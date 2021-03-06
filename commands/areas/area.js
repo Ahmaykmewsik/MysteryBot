@@ -23,7 +23,7 @@ module.exports = {
         const full = args.shift();
 
         if (full) {
-            message.channel.send(formatArea(client, area, true));
+            message.channel.send(formatArea(client, area, true), {split: true});
         } else {
             message.channel.send(formatArea(client, area));
         }

@@ -25,15 +25,11 @@ module.exports = {
             client.deleteSpyActions.run(`${message.guild.id}_${player.username}`);
         } else if (args.length == 1) {
             if (args[0] == "-c" || "current") {
-                return message.channel.send("UNIMPLEMENTED");
-                const spyChannelData = client.data.get("SPY_CHANNEL_DATA");
-                spyChannelData.forEach(d=>{
-                    if (d.player == player.name) {
-                        d.area = undefined;
-                    }
-                })
-                player.spyCurrent = [];
-                client.data.set("SPY_CHANNEL_DATA", spyChannelData);
+                
+                client.deleteSpyCurrent.run(`${message.guild.id}_${player.username}`);
+                message.channel.send(player.username + "'s Current spy actions has been cleared. They are no longer spying anything.");
+                message.channel.send(formatPlayer(client, player));
+                return;
             }
             else {
                 message.channel.send("Invalid final tolken.");

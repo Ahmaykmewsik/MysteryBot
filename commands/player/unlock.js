@@ -1,10 +1,9 @@
-const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
-	name: 'unkill',
-	description: 'Resurrects a player and makes them alive. Does not change their health, only their living status.',
-    format: "!unkill <username>",
+	name: 'unlock',
+	description: 'Gives players access to update their action or movement (`!forcemove` locks access)',
+    format: "!unlock <username>",
     guildonly: true,
     gmonly: true,
 	execute(client, message, args) {
@@ -26,15 +25,14 @@ module.exports = {
             return message.channel.send("Invalid username: " + inputusername);
         }
 
-        if (player.alive == 1) {
-            return message.channel.send(`Huh? But ${player.username} is already alive!`);
+        if (player.forceMoved == 0) {
+            return message.channel.send(`${player.username} is already unlocked!`);
         }
         
-        player.alive = 1;
+        player.forceMoved = 0;
 
         client.setPlayer.run(player);
 
-        message.channel.send(player.username + " has risen from the dead!\n If they should have health other than 0 change it with `!sethealth` or `!heal`");
-        message.channel.send(formatPlayer(client, player));
+        message.channel.send(player.username + " has been unlocked! They can now update their action.");
 	}
 };

@@ -397,9 +397,19 @@ client.on("ready", () => {
 		WHERE guild_username = ?`
 	);
 
+	client.getSpyActionsAll = sql.prepare(
+		`SELECT * FROM spyActions
+		WHERE guild = ?`
+	)
+
 	client.getSpyCurrent = sql.prepare(
 		`SELECT * FROM spyCurrent
 		WHERE guild_username = ?`
+	);
+
+	client.getSpyCurrentAll = sql.prepare(
+		`SELECT * FROM spyCurrent
+		WHERE guild = ?`
 	);
 
 	client.addSpyAction = sql.prepare(
@@ -483,7 +493,7 @@ client.on("ready", () => {
 
 	client.setSpyChannel = sql.prepare(
 		`INSERT INTO spyChannels (guild_username, guild, username, areaID, channelID)
-		VALUES (@guild_areaID_username, @guild, @username, @areaID, @channelID)`
+		VALUES (@guild_username, @guild, @username, @areaID, @channelID)`
 	);
 
 	client.setGameplayChannel = sql.prepare(
@@ -575,7 +585,7 @@ client.on("message", message => {
 	}
 
 	//Notify if this can only be sent in dm
-	if (command.dmonly && message.channel.type === "text" && command.name != "do") {
+	if (command.dmonly && message.channel.type === "text" && command.name) {
 		message.reply(
 			"This command cannot be sent in the server. Send it as a DM instead."
 		);

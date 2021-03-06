@@ -3,14 +3,19 @@ module.exports = {
         let passingMessagesArray = [];
         players.forEach(player => {
             //Don't do anything if the player didn't send movement
-            if (player.move == undefined) {return;}
+            if (player.move == undefined) return;
 
             //find players where they're passing each other and send them a notification DM that it happened
             let playerLocation = location.find(l => l.username == player.username);
+
+            //Don't do anything if player is staying still
+            if (player.move == playerLocation.areaID) return;
+
             swappers = players.filter(mover => {
                 let moverLocation = location.find(l => l.username == mover.username);
-                return playerLocation.areaID == mover.move && player.move == moverLocation.areaID;
+                return playerLocation.areaID == mover.move && player.move == moverLocation.areaID && mover.username != playerLocation.username;
             });
+            
             if (swappers.length > 0) {
                 const swappersString = swappers.map(s => s.character).join(', ');
                 playerobject = members.find(m => m.user.username == player.username)

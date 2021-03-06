@@ -31,11 +31,10 @@ module.exports = {
             return message.channel.send(`Aborting. There's nobody in ${area.id}! Put someone here first with \`!setarea\`.`);
         }
 
-        const areas = client.getAreas.all(message.guild.id);
         const players = client.getPlayers.all(message.guild.id);
         const locations = client.getLocations.all(message.guild.id);
 
-        createChannels(client, message.guild, areas, players, locations, settings.catetoryID, settings.phase);
+        createChannels(client, message.guild, [area], players, locations, settings);
 
         return message.channel.send("Channel for `" + area.id + "` created.");
     }

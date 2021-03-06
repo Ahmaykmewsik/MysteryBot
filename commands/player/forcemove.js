@@ -31,7 +31,7 @@ module.exports = {
         }
 
         const area = client.getArea.get(`${message.guild.id}_${args[0]}`);
-        if (area.length == 0) {
+        if (!area) {
             return message.channel.send("No area exists with ID `" + args.join(` `) + "`. Use !areas to view all areas.");
         }
 

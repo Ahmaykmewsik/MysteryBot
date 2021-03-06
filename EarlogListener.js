@@ -17,14 +17,15 @@ module.exports = {
 
 		const earlogChannel = client.channels.get(gameplayChannel.earlogChannelID);
 
-		try {
-			const webhooks = await earlogChannel.fetchWebhooks();
 
+		const webhooks = await earlogChannel.fetchWebhooks();
+
+		async function PostMessage(webhooks, accuracy = 1.0) {
 			var username = message.author.username;
 			if (message.member.nickname) {
-				username = `${message.member.nickname}   [${message.author.username}]`;
+				username = `${message.member.nickname}  [${message.author.username}]`;
 			}
-
+	
 			var webhook;
 			if (!earlogChannel.lastMessage) {
 				webhook = webhooks.first();
@@ -34,31 +35,51 @@ module.exports = {
 				webhooks.sweep(w => w.id == earlogChannel.lastMessage.webhookID && w.username == username);
 				webhook = webhooks.first();
 			}
-
+	
 			let content = " ";
-
+	
 			if (message.content) {
-				content = message.content;
+				content = EncryptSpyMessage(message.content, accuracy);
 			}
-
+	
 			if (message.attachments.array().length != 0) {
 				content += "\n" + message.attachments.array()[0].url
 			}
-
+	
 			await webhook.send(content, {
 				username: username,
 				avatarURL: message.author.displayAvatarURL,
 				embed: message.embed
 			}).then(earlogMsg => {
-
+	
 				if (content.includes(">>> *-----Phase ")) {
 					earlogMsg.pin();
 				}
 			})
-			
-		} catch (error) {
-			console.error('Error trying to send: ', error);
 		}
+
+		PostMessage(webhooks);
+
+		//Post in Spy Channels
+		
+		let spyCurrentData = client.getSpyCurrentAll.all(message.guild.id);
+
+		if (spyCurrentData.length == 0 ) return;
+		
+		let spyChannels = client.getSpyChannels.all(message.guild.id);
+
+		spyChannels = spyChannels.filter(c => c.areaID == gameplayChannel.areaID);
+
+		if (spyChannels.length == 0) return;
+
+		spyCurrentData.forEach(async spyCurrent => {
+
+			const spyChannelData = spyChannels.find(c => c.areaID == spyCurrent.spyArea);
+			const spyChannel = client.channels.get(spyChannelData.channelID);
+
+			const webhooks = await spyChannel.fetchWebhooks();
+			PostMessage(webhooks, spyCurrent.accuracy);
+		});
 
 		return;
 
@@ -78,7 +99,7 @@ module.exports = {
 		// 	.catch(console.error);
 
 
-		
+
 
 		console.log(tempWebhook);
 

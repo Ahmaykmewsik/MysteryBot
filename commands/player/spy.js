@@ -64,8 +64,6 @@ module.exports = {
             permanent: permanent
         };
 
-        console.log(spyAction);
-
         client.addSpyAction.run(spyAction);
 
         message.channel.send(player.username + " next phase will spy: `" + area.id + "` with `" + accuracy + "` accuracy.");

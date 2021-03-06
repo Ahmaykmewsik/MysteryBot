@@ -37,7 +37,7 @@ module.exports = {
         client.setConnection.run({area1: id, area2: id, guild: message.guild.id});
 
         message.channel.send("Successfully created new area: `" + id 
-            + "`.\nUse !areaname, !areadesc, and !connect to edit this area's properties.");
+            + "`.\nUse `!areaname`, `!areadesc`, `!connect`, and `!areaimage` to edit this area's properties.");
         message.channel.send(formatArea(client, newArea));
 
         //Create Earlog if game has started

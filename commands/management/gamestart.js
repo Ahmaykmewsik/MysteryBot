@@ -52,30 +52,32 @@ module.exports = {
                 }]
             }).then(channel => {
 
-                channel.createWebhook(`EarlogWebhook_1`);
-                channel.createWebhook(`EarlogWebhook_2`)
+                channel.createWebhook(`EarlogWebhook_${area.id}_1`);
+                channel.createWebhook(`EarlogWebhook_${area.id}_2`)
                     .then(() => {
                         client.setEarlogChannel.run({ guild_areaID: `${message.guild.id}_${area.id}`, guild: message.channel.id, channelID: channel.id });
-
-                        //Create spy category and store it
-                        message.guild.createChannel("SPY CHANNELS", {
-                            type: 'category'
-                        }).then((categoryObject) => {
-
-                            settings.spyCategoryID = categoryObject.id;
-                            client.setSettings.run(settings);
-
-                        }).catch(console.error);
                     })
                     .catch(console.error);
             }).catch(console.error())
         })
 
-        //Make the channels
-        createChannels(client, message.guild, areas, players, locations, settings.categoryID, settings.phase);
-        client.channels.get(settings.actionLogID).send("----------------------------\n---------**PHASE " + settings.phase + "**---------\n----------------------------");
+        //Create spy category and store it
+        message.guild.createChannel("SPY CHANNELS", {
+            type: 'category'
+        }).then((categoryObject) => {
 
-        message.channel.send("**The game has begun!**\n" + players.map(player => player.username + ": " + player.area).join('\n'));
+            settings.spyCategoryID = categoryObject.id;
+            client.setSettings.run(settings);
+
+            createChannels(client, message.guild, areas, players, locations, settings);
+            client.channels.get(settings.actionLogID).send("----------------------------\n---------**PHASE " + settings.phase + "**---------\n----------------------------");
+
+        }).catch(console.error);
+
+
+        //Make the channels
+        
+        message.channel.send("**The game has begun!**\n" + locations.map(l => l.username + ": " + l.areaID).join('\n'));
 
     }
 };

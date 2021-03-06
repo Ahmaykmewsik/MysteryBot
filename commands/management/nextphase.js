@@ -90,14 +90,14 @@ module.exports = {
         //         .catch(console.error);;
         // }
 
-        warningMessage += "Are you sure you would like to proceed with the movement phase?";
+        warningMessage += "Are you sure you would like to proceed with the movement phase? (y/n)";
 
         message.channel.send(warningMessage).then(() => {
 
             const filter = m => message.author.id === m.author.id;
             message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })
                 .then(messages => {
-                    if (messages.first().content == 'y') {
+                    if (messages.first().content == 'y' || messages.first().content == 'yes') {
 
                         message.channel.send("Beginning Phase " + (settings.phase + 1) + "...");
 
@@ -109,6 +109,9 @@ module.exports = {
 
                         //Move players
                         players.forEach(player => {
+
+                            player.forceMoved = 0;
+
                             let playerLocation = locations.find(l => l.username == player.username);
 
                             if (!playerLocation) return;
@@ -173,7 +176,7 @@ module.exports = {
                             player.moveSpecial = undefined;
                             player.action = undefined;
                             player.roll = undefined;
-
+                            
                         });
 
                         //Iterate Phase
@@ -183,7 +186,7 @@ module.exports = {
 
                         //CreateChannels
                         try {
-                            createChannels(client, message.guild, areas, players, locations, settings.categoryID, settings.phase)
+                            createChannels(client, message.guild, areas, players, locations, settings);
 
                             //Set all the data in place after the channels are created!
                             message.channel.send("All channels created successfully!");
@@ -192,11 +195,11 @@ module.exports = {
 
                             players.forEach(p => {
                                 client.setPlayer.run(p);
-                            })
+                            });
 
                             locations.forEach(l => {
                                 client.setLocation.run(l);
-                            })
+                            });
 
                             message.channel.send("Phase processed successfully. Phase " + settings.phase + " has begun!");
 
