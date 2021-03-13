@@ -3,7 +3,7 @@ const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
 
 module.exports = {
     name: 'spy',
-    description: 'Gives a player the ability to discretley view another channel. Includes an accuraccy value, limiting the number of words that are copied. Include -p to make the spy action permanent.',
+    description: 'Gives a player the ability to discretley view another channel. Includes an accuraccy value, limiting the number of words that are copied. Include -p to make the spy action permanent unless removed manually. Include -c to set the current spy action.',
     format: "!spy <player> <area> <accuracy> [-c] [-p]",
     guildonly: true,
     gmonly: true,
@@ -43,17 +43,25 @@ module.exports = {
             return message.channel.send("Invalid accuracy: " + accuracyInput + ". Please enter a number between 0 and 1.");
         }
 
-        var permanent = 0;
-        if (args.length > 1) {
-            if (args[0] == "-c") {
-                return message.channel.send("UNIMPLEMENTED");
+        let permanent = 0;
+        let current = 0;
+        let settings = UtilityFunctions.GetSettings(client, message.guild.id);
+
+
+
+        if (args.includes("-c")) {
+            //check that a game is running
+            if (!settings.phase) {
+                return message.channel.send("You can't make someone spy yet using \"-c\". The game hasn't started yet!");
             }
-            else if (args[0] == "-p") {
-                permanent = 1;
-            } else {
-                return message.channel.send("Invalid final tolken.");
-            }
+
+            current = 1;
+        } else if (args.includes("-p")) {
+            permanent = 1;
+        } else if (args.length > 0){
+            return message.channel.send("Invalid final tolken.");
         }
+
 
         const spyAction = {
             guild_username: `${message.guild.id}_${player.username}`,
@@ -64,67 +72,81 @@ module.exports = {
             permanent: permanent
         };
 
-        client.addSpyAction.run(spyAction);
+        if (current) {
 
-        message.channel.send(player.username + " next phase will spy: `" + area.id + "` with `" + accuracy + "` accuracy.");
-        message.channel.send(formatPlayer(client, player));
-
-        //TODO: IMPLEMENT
-
-        // if (args[0] == "current") {
-        //     const spyCategory = client.data.get("SPY_CATEGORY");
-        //     const spyChannelData = client.data.get("SPY_CHANNEL_DATA");
-
-        //     const spyArea = {
-        //         type: "spy",
-        //         playerName: playerObject.name,
-        //         playerDiscordid: playerObject.discordid,
-        //         area: areaid
-        //     }
-
-        //     CreateNewSpyChannelsRecursive(message.guild, spyArea, spyChannelData, spyCategory);
-        //     playerObject.spyCurrent.push([areaid, accuracy]);
-
-        //     message.channel.send("Current spy replaced.");
-        // }
-        // else {
-        //     message.channel.send("Invalid final tolken.");
-        // }
-
-        function CreateNewSpyChannelsRecursive(guild, spyArea, spyChannelData, spyCategory) {
-
-            const c = spyArea;
-
-            //if a spyChannel is free, use it
-            const freeSpyChannels = spyChannelData.filter(d => d.player == c.player && d.area == undefined);
-            if (freeSpyChannels.length > 0) {
-                freeSpyChannels[0].area = c.area;
-                client.data.set("SPY_CHANNEL_DATA", spyChannelData);
+            let spyCurrent = client.getSpyCurrent.all(player.guild_username);
+            if (spyCurrent.some(a => a.spyArea == area.id)) {
+                message.channel.send(`:warning: **${player.username} is already currently spying ${area.id}!** If you want to clear it, use \`!spyclear\` with the -c tag.`);
+                return message.channel.send(formatPlayer(client, player));
+            } else {
+                client.addSpyCurrent.run(spyAction);
+                message.channel.send(player.username + " will now spy: `" + area.id + "` with `" + accuracy + "` accuracy.");
             }
 
-            //Else make a new channel
-            guild.createChannel("spy-" + c.playerName, {
-                type: 'text',
-                parentID: spyCategory.id,
-                permissionOverwrites: [{
-                    id: guild.id,
-                    deny: ['READ_MESSAGES', 'SEND_MESSAGES']
-                },
-                {
-                    id: c.playerDiscordid,
-                    allow: ['VIEW_CHANNEL']
-                }]
-            }).then(channel => {
-                //Add new spychannel to database
-                channel.setParent(spyCategory.id);
-                spyChannelData.push({
-                    player: c.playerName,
-                    channelid: channel.id,
-                    area: c.area
-                });
-                client.data.set("SPY_CHANNEL_DATA", spyChannelData);
-            })
-        };
+        } else {
+
+            let spyActions = client.getSpyActions.all(player.guild_username);
+            if (spyActions.some(a => a.spyArea == area.id)) {
+                message.channel.send(`:warning: **${player.username} already has a spy action to spy ${area.id} next phase!** If you want to clear it, use \`!spyclear\``);
+            } else {
+                client.addSpyAction.run(spyAction);
+                message.channel.send(player.username + " next phase will spy: `" + area.id + "` with `" + accuracy + "` accuracy.");
+            }
+
+        }
+
+        message.channel.send(formatPlayer(client, player));
+
+
+        if (current) {
+
+            let spyChannels = client.getSpyChannels.all(message.guild.id);
+
+            const freeSpyChannels = spyChannels.filter(d => d.username == spyAction.username && !d.spyArea);
+
+            if (freeSpyChannels.length > 0) {
+                //if a spy channel is free use it
+                freeSpyChannels[0].areaID = spyAction.areaID;
+                client.setSpyChannel.run(freeSpyChannels[0]);
+                return message.channel.send(`Spy channel updated.`);
+            } else {
+                //Else make a new channel
+                message.guild.createChannel("spy-" + spyAction.username, {
+                    type: 'text',
+                    permissionOverwrites: [{
+                        id: message.guild.id,
+                        deny: ['READ_MESSAGES', 'SEND_MESSAGES']
+                    },
+                    {
+                        id: player.discordID,
+                        allow: ['VIEW_CHANNEL']
+                    }]
+                }).then(channel => {
+
+                    //Create Webhooks
+                    channel.createWebhook(`SpyWebhook_${spyAction.username}_1`);
+                    channel.createWebhook(`SpyWebhook_${spyAction.username}_2`)
+                        .then(() => {
+                            channel.setParent(settings.spyCategoryID)
+                                .then(() => {
+                                    newSpyChannel = {
+                                        guild_username: `${message.guild.id}_${spyAction.username}`,
+                                        guild: message.guild.id,
+                                        username: spyAction.username,
+                                        areaID: spyAction.areaID,
+                                        channelID: channel.id
+                                    };
+                                    client.setSpyChannel.run(newSpyChannel);
+                                    message.channel.send(`New channel created: ${channel.name}`);
+                                })
+                        })
+                        .catch(console.error);
+                })
+            }
+
+
+
+        }
     }
 
 

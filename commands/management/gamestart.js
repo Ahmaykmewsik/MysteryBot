@@ -1,4 +1,5 @@
 const createChannels = require('../../utilities/createChannels.js').createChannels;
+const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
     name: 'gamestart',
@@ -19,7 +20,7 @@ module.exports = {
 
         let locations = client.getLocations.all(message.guild.id);
 
-        let settings = client.getSettings.get(message.guild.id);
+        let settings = UtilityFunctions.GetSettings(client, message.guild.id);
         if (!settings.categoryName) {
             return message.channel.send("You need to name the game! Use `!gamename` to name the game. (This will set the catagory name)");
         }
@@ -68,6 +69,17 @@ module.exports = {
 
             settings.spyCategoryID = categoryObject.id;
             client.setSettings.run(settings);
+
+            //set position underneath game category
+            let position = message.guild.channels.get(settings.categoryID).position;
+
+            console.log(position);
+
+            if (position) {
+                categoryObject.setPosition(position + 1).then(c => {
+                    console.log(c.position);
+                });
+            }
 
             createChannels(client, message.guild, areas, players, locations, settings);
             client.channels.get(settings.actionLogID).send("----------------------------\n---------**PHASE " + settings.phase + "**---------\n----------------------------");

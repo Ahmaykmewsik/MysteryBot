@@ -1,4 +1,5 @@
 const updateAvatarsUtil = require('../../utilities/updateAvatarsUtil.js');
+const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 const createChannels = require('../../utilities/createChannels.js').createChannels;
 const sendPassMessages = require('../../utilities/sendPassMessages.js').sendPassMessages;
@@ -21,7 +22,7 @@ module.exports = {
             return message.channel.send("No areas found. Use !addarea to create an area.");
         }
 
-        let settings = client.getSettings.get(message.guild.id);
+        let settings = UtilityFunctions.GetSettings(client, message.guild.id);
         if (!settings.phase) {
             return message.channel.send("You need to start the game first with !gamestart.");
         }
@@ -167,7 +168,7 @@ module.exports = {
                                     }
                                 } catch (error) {
                                     console.error(error);
-                                    message.channel.send("Did not post movement message for: " + player.name);
+                                    message.channel.send("Did not post movement message for: " + player.username);
                                 }
                             }
 

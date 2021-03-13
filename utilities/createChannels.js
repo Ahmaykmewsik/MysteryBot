@@ -122,7 +122,7 @@ module.exports = {
             const c = spyAreas.pop();
 
             //if a spyChannel is free, use it
-            const freeSpyChannels = spyChannels.filter(d => d.player == c.player && d.areaID == undefined);
+            const freeSpyChannels = spyChannels.filter(d => d.username == c.username && !d.areaID);
             if (freeSpyChannels.length > 0) {
                 freeSpyChannels[0].areaID = c.areaID;
                 client.setSpyChannel.run(freeSpyChannels[0]);

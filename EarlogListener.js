@@ -74,11 +74,16 @@ module.exports = {
 
 		spyCurrentData.forEach(async spyCurrent => {
 
-			const spyChannelData = spyChannels.find(c => c.areaID == spyCurrent.spyArea);
+			const spyChannelData = spyChannels.find(c => c.areaID == spyCurrent.spyArea && c.username == spyCurrent.username);
 			const spyChannel = client.channels.get(spyChannelData.channelID);
 
-			const webhooks = await spyChannel.fetchWebhooks();
-			PostMessage(webhooks, spyCurrent.accuracy);
+			try {
+				const webhooksSpy = await spyChannel.fetchWebhooks();
+				PostMessage(webhooksSpy, spyCurrent.accuracy);
+			} catch(error) {
+				console.error(error);
+			}
+			
 		});
 
 		return;
