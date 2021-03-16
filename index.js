@@ -12,8 +12,6 @@ const sql = new SQLite('./data.sqlite');
 
 const token = process.env.token;
 const prefix = process.env.prefix;
-const webhook_tolken = process.env.webhooktolken;
-const webhook_ID = process.env.webhookid;
 
 const Discord = require("discord.js");
 const client = new Discord.Client();
@@ -24,14 +22,11 @@ const commandFolders = fs.readdirSync('./commands');
 for (const folder of commandFolders) {
 	const commandFiles = fs.readdirSync(`./commands/${folder}`).filter(file => file.endsWith('.js'));
 	for (const file of commandFiles) {
-		const command = require(`./commands/${folder}/${file}`);
+		let command = require(`./commands/${folder}/${file}`);
+		command.category = folder;
 		client.commands.set(command.name, command);
 	}
 }
-
-//Webhook
-
-//const webhook = new Discord.WebhookClient(webhook_ID, webhook_tolken);
 
 client.on("ready", () => {
 	
@@ -346,8 +341,9 @@ client.on("ready", () => {
 	);
 
 	client.getPlayersOfItem = sql.prepare(
-		`SELECT username FROM inventories
-		WHERE itemID = ? AND guild = ?`
+		`SELECT * FROM players
+		INNER JOIN inventories ON players.username == inventories.username
+		WHERE inventories.itemID = ? AND inventories.guild = ?`
 	)
 
 	client.getInventories = sql.prepare(
@@ -521,6 +517,7 @@ client.on("ready", () => {
 });
 
 client.on("message", message => {
+
 	///EARLOG---------------------------------------------------------
 	if (message.channel.type != "dm" && message.channel.name[0] == "p") {
 		try {

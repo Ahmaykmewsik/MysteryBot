@@ -69,6 +69,7 @@ module.exports = {
 
         if (messageToPlayer != ""){
             client.users.get(player.discordID).send(messageToPlayer, {files: [getHeartImage(player.health)]});
+            message.channel.send(`:exclamation:${player.username} was notified.`);
         }
 	}
 };

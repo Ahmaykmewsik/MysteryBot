@@ -18,8 +18,18 @@ module.exports = {
 		const { commands } = message.client;
 
 		if (!args.length) {
-			data.push('**------ALL COMMANDS------**');
-			data.push(commands.map(command => command.name).join(', '));
+
+			data.push('**:exclamation:------ALL COMMANDS------:exclamation: **');
+
+			let categories = new Set(commands.map(command => command.category));
+
+			categories.forEach(category => {
+				data.push(`:small_orange_diamond:**__${category.toUpperCase()}__:small_orange_diamond:**`);
+				data.push(commands.filter(command => command.category == category).map(command => command.name).join(`, `));
+			})
+
+			data.push(`\n:book: __DOCUMENTATION:__ :book: <https://docs.google.com/document/d/1_aF2M3hEbcCTNj-d9jwDk5PKLALTj8J5Qvh1RxIKsEY/edit?usp=sharing>\n`);
+
 			return message.channel.send(data, { split: true });
 		}
 

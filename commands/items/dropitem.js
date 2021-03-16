@@ -46,5 +46,6 @@ module.exports = {
         message.channel.send(formatPlayer(client, player));
 
         client.users.get(player.discordID).send("You no longer have the `" + itemid + "`");
+        message.channel.send(`:exclamation:${player.username} was notified.`);
 	}
 };

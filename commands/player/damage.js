@@ -64,5 +64,6 @@ module.exports = {
 
         message.channel.send(player.username + " has taken `" + damageValue + "` damage!\nCurrent health: " + player.health);
         message.channel.send(formatPlayer(client, player));
+        message.channel.send(`:exclamation:${player.username} was notified.`);
 	}
 };

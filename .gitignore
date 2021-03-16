@@ -5,3 +5,6 @@ config.json
 .env
 jsconfig.json
 /avatars
+data.sqlite
+data.sqlite-shm
+data.sqlite-wal
