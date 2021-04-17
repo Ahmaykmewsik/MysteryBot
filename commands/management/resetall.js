@@ -17,6 +17,7 @@ module.exports = {
 						client.deleteAllPlayers.run(message.guild.id);
 						client.deleteAllAreas.run(message.guild.id);
 						client.deleteAllConnections.run(message.guild.id);
+						client.deleteAllInstantConnections.run(message.guild.id);
 						client.deleteAllLocations.run(message.guild.id);
 						client.deleteAllItems.run(message.guild.id);
 						client.deleteAllInventories.run(message.guild.id);
@@ -26,12 +27,13 @@ module.exports = {
 						client.deleteAllSpyChannelData.run(message.guild.id);
 						client.deleteAllGameplayChannelData.run(message.guild.id);
 						client.deleteSettings.run(message.guild.id);
+						
 
 						message.channel.send("Goodbye DATA. https://youtu.be/oIscL-Bjsq4");
 					} else if (messages.first().content == "n") {
 						message.channel.send("Your DATA will thank you later.");
 					} else {
-						message.channel.send("...damn, you just gonna scare you data like that? Shameful.");
+						message.channel.send("...damn, you just gonna scare your data like that? Shameful.");
 					}
 				})
 				.catch(() => {

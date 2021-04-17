@@ -2,9 +2,8 @@ const formatArea = require('../../utilities/formatArea').formatArea;
 
 module.exports = {
     name: 'area',
-    category: `area`,
-    description: 'Displays details of the area with a given ID. Include "full" after the areaID for a full unembeded post.',
-    format: "!area <id> [full]",
+    description: 'Displays details of the area with a given ID. Include "-e" after the areaID for an embeded post (this is what a player sees).',
+    format: "!area <id> [-e]",
     gmonly: true,
     execute(client, message, args) {
 
@@ -20,9 +19,7 @@ module.exports = {
             return message.channel.send("No area exists with that ID. Use !areas to view all areas, or !addarea <id> to create a new area.");
         }
 
-        const full = args.shift();
-
-        if (full) {
+        if (!args.includes("-e")) {
             message.channel.send(formatArea(client, area, true), {split: true});
         } else {
             message.channel.send(formatArea(client, area));

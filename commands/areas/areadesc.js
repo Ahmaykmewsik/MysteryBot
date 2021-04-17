@@ -2,7 +2,6 @@ const formatArea = require('../../utilities/formatArea').formatArea;
 
 module.exports = {
 	name: 'areadesc',
-    category:  `area`,
 	description: 'Updates the description of a specified area.',
     format: "!areadesc <id> <description>",
     gmonly: true,

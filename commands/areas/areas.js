@@ -1,7 +1,6 @@
 
 module.exports = {
 	name: 'areas',
-    category:  `area`,
 	description: 'Lists all created areas.',
     format: "!areas",
     gmonly: true,

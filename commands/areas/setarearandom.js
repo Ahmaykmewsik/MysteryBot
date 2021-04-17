@@ -2,7 +2,6 @@
 
 module.exports = {
 	name: 'setarearandom',
-    category:  `area`,
 	description: 'Set each player\'s area to a random location',
     format: "!setarearandom",
     guildonly: true,

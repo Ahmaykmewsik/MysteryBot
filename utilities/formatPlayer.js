@@ -5,6 +5,8 @@ const getHeartImage = require('./getHeartImage').getHeartImage;
 module.exports = {
     formatPlayer(client, player, embed = 1) {
 
+        embed = 0;
+
         const status = (player.alive) ? '**Alive**' : 'Dead';
 
         const color = (status == "Dead") ? 0xff0000 : 0x00ff11; // RED : GREEN

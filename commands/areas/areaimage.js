@@ -2,7 +2,6 @@ const formatArea = require('../../utilities/formatArea').formatArea;
 
 module.exports = {
 	name: 'areaimage',
-    category:  `area`,
 	description: 'Updates the image of a specified area.',
     format: "!areaimage <id> <imageURL>",
     gmonly: true,

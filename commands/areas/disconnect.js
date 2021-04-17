@@ -1,6 +1,5 @@
 module.exports = {
 	name: 'disconnect',
-    category:  `area`,
 	description: 'Removes a connection between two areas.',
     format: "!disconnect <id1> <id2>",
     gmonly: true,

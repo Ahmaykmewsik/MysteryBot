@@ -211,7 +211,9 @@ module.exports = {
                             guild: guild.id,
                             channelName: channel.name,
                             channelID: channel.id,
-                            earlogChannelID: earlogChannel.channelID
+                            earlogChannelID: earlogChannel.channelID,
+                            active: 1,
+                            locked: 0
                         }
 
                         client.setGameplayChannel.run(newGameplayChannel);

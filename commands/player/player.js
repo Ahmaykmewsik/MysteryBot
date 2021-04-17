@@ -25,6 +25,6 @@ module.exports = {
             return message.channel.send("Invalid username: " + inputusername);
         }
 
-        message.channel.send(formatPlayer(client, player));
+        message.channel.send(formatPlayer(client, player), {split: true});
     }
 };

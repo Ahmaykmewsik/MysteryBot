@@ -2,7 +2,6 @@ const formatArea = require('../../utilities/formatArea').formatArea;
 
 module.exports = {
 	name: 'removearea',
-    category:  `area`,
 	description: 'Removes the area with specified ID string.',
     format: "!removearea <id>",
     gmonly: true,

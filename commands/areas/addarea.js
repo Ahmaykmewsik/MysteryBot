@@ -4,7 +4,6 @@ const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
 	name: 'addarea',
-    category:  `area`,
 	description: 'Creates a new area with specified ID string. The area ID cannot contain whitespace.',
     format: "!addarea <id>",
     gmonly: true,
@@ -13,7 +12,7 @@ module.exports = {
         if (args.length === 0) {
             return message.channel.send("No area ID provided. Please specify an ID string for the new area.");
         }
-        if (args.length > 1) { 
+        if ((args.length > 1) && !args.includes(`-i`)) { 
             return message.channel.send("Area ID cannot contain whitespace.");
         }
         const id = args[0];
@@ -21,7 +20,7 @@ module.exports = {
         const doesAreaExist = client.getArea.get(`${message.guild.id}_${id}`);
 
         if (doesAreaExist) {
-            return message.channel.send("An area with that ID already exists!");
+            return message.channel.send(`An area with the ID \`${id}\`already exists!`);
         }
 
         const newArea = {

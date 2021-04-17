@@ -17,6 +17,7 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
 
+
 //Commands
 const commandFolders = fs.readdirSync('./commands');
 for (const folder of commandFolders) {
@@ -73,6 +74,15 @@ client.on("ready", () => {
 				area2 TEXT,
 				guild TEXT
 			);`
+		).run();
+
+		//InstantConnections
+		sql.prepare(
+			`CREATE TABLE instantConnections (
+				area1 TEXT,
+				area2 TEXT,
+				guild TEXT
+			)`
 		).run();
 
 		//PlayerLocations
@@ -155,12 +165,14 @@ client.on("ready", () => {
 		//Gameplay Channels
 		sql.prepare(
 			`CREATE TABLE gameplayChannels(
+				channelID TEXT PRIMARY KEY,
 				guild_areaID TEXT,
 				areaID TEXT,
 				guild TEXT,
 				channelName TEXT,
-				channelID TEXT,
-				earlogChannelID TEXT
+				earlogChannelID TEXT,
+				active BOOL,
+				locked BOOL
 			)`
 		).run();
 
@@ -275,6 +287,32 @@ client.on("ready", () => {
 		WHERE guild = ?`
 	);
 
+	// -------Instant Connection Functions------
+
+	client.getInstantConnections = sql.prepare(
+		`SELECT * FROM instantConnections WHERE guild = ?`
+	);
+
+	client.deleteInstantConnection = sql.prepare(
+		`DELETE FROM instantConnections 
+		WHERE area1 = ? AND area2 = ? AND guild = ?`
+	);
+
+	client.setInstantConnection = sql.prepare(
+		`INSERT OR REPLACE INTO instantConnections (area1, area2, guild)
+		VALUES (@area1, @area2, @guild)`
+	);
+
+	client.deleteInstantConnectionsOfArea = sql.prepare(
+		`DELETE FROM instantConnections
+		WHERE (area1 = ? OR area2 = ?) AND guild = ?`
+	);
+
+	client.deleteAllInstantConnections = sql.prepare(
+		`DELETE FROM instantConnections
+		WHERE guild = ?`
+	);
+
 	// -------PlayerLocation Functions------
 
 	client.getLocationOfPlayer = sql.prepare(
@@ -322,7 +360,8 @@ client.on("ready", () => {
 
 	client.getItems = sql.prepare(
 		`SELECT * FROM items
-		WHERE guild = ?`
+		WHERE guild = ?
+		ORDER BY items.id`
 	);
 
 	client.getItem = sql.prepare(
@@ -354,7 +393,8 @@ client.on("ready", () => {
 	client.getItemsAndInventories = sql.prepare(
 		`SELECT items.id, items.guild, items.description, items.big, items.clothing, inventories.username FROM items
 		INNER JOIN inventories ON items.id = inventories.itemID
-		WHERE items.guild = ?`
+		WHERE items.guild = ?
+		ORDER BY items.id`
 	)
 
 	client.givePlayerItem = sql.prepare(
@@ -493,8 +533,8 @@ client.on("ready", () => {
 	);
 
 	client.setGameplayChannel = sql.prepare(
-		`INSERT INTO gameplayChannels (guild_areaID, areaID, guild, channelName, channelID, earlogChannelID)
-		VALUES (@guild_areaID, @areaID, @guild, @channelName, @channelID, @earlogChannelID)`
+		`INSERT OR REPLACE INTO gameplayChannels (guild_areaID, areaID, guild, channelName, channelID, earlogChannelID, active, locked)
+		VALUES (@guild_areaID, @areaID, @guild, @channelName, @channelID, @earlogChannelID, @active, @locked)`
 	);
 
 	client.deleteAllEarlogChannelData = sql.prepare(
@@ -523,6 +563,18 @@ client.on("message", message => {
 		try {
 			if ((message.content.toLowerCase() == "lock") && (message.member.hasPermission('ADMINISTRATOR'))) {
 				message.channel.overwritePermissions(message.channel.guild.defaultRole, { SEND_MESSAGES: false });
+
+				let gameplayChannel = client.getGameplayChannel.get(message.channel.id);
+				
+				gameplayChannel.locked = 1;
+				client.setGameplayChannel.run(gameplayChannel);
+			}
+			if ((message.content.toLowerCase() == "unlock") && (message.member.hasPermission('ADMINISTRATOR'))) {
+				message.channel.overwritePermissions(message.channel.guild.defaultRole, { SEND_MESSAGES: true });
+
+				let gameplayChannel = client.getGameplayChannel.get(message.channel.id);
+				gameplayChannel.locked = 0;
+				client.setGameplayChannel.run(gameplayChannel);
 			}
 		} catch (error) {
 			console.error("LOCK error!" + error);

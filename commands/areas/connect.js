@@ -1,6 +1,5 @@
 module.exports = {
 	name: 'connect',
-    category:  `area`,
 	description: 'Creates a connection between two areas. Use "!connect -o" to make the connection one-way.',
     format: "!connect [-o] <id1> <id2>",
     gmonly: true,

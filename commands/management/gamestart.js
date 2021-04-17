@@ -73,8 +73,6 @@ module.exports = {
             //set position underneath game category
             let position = message.guild.channels.get(settings.categoryID).position;
 
-            console.log(position);
-
             if (position) {
                 categoryObject.setPosition(position + 1).then(c => {
                     console.log(c.position);

@@ -3,7 +3,6 @@ const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
 
 module.exports = {
 	name: 'setarea',
-    category:  `area`,
 	description: 'Manually sets the area for a player.',
     format: "!setarea <username> <areaid>",
     guildonly: true,

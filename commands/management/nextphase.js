@@ -202,6 +202,11 @@ module.exports = {
                                 client.setLocation.run(l);
                             });
 
+                            gameplayChannels.forEach(g => {
+                                g.active = 0;
+                                client.setGameplayChannel.run(g);
+                            })
+
                             message.channel.send("Phase processed successfully. Phase " + settings.phase + " has begun!");
 
                         } catch (error) {
