@@ -28,14 +28,23 @@ module.exports = {
         const location = client.getPlayersOfArea.all(area.id, area.guild);
 
         if (location.length == 0) {
-            return message.channel.send(`Aborting. There's nobody in ${area.id}! Put someone here first with \`!setarea\`.`);
+            message.channel.send(`There's nobody in ${area.id}! But I love you, so I'll make it anyway. Just for you :)`);
         }
 
         const players = client.getPlayers.all(message.guild.id);
         const locations = client.getLocations.all(message.guild.id);
 
-        createChannels(client, message.guild, [area], players, locations, settings);
+        try {
+            createChannels(client, message.guild, [area], players, locations, settings);
+            return message.channel.send("Channel for `" + area.id + "` created.");
+   
+        } catch (error) {
+            console.error(error);
+            message.channel.send("WARNING: Something went wrong in the bot during that command. You may need to try again. Give this info to Ahmayk: \n\n" + error, { split: true });
+        }
+        
+        
 
-        return message.channel.send("Channel for `" + area.id + "` created.");
+        
     }
 }

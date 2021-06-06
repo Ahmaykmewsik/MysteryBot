@@ -170,7 +170,6 @@ module.exports = {
                                 }
                             })
                     })
-                    .catch(console.error);
             })
         };
 
@@ -239,19 +238,18 @@ module.exports = {
         
                                     channel.overwritePermissions(member.user, { READ_MESSAGES: true })
                                         .then(channel.send("<@" + member.user.id + ">  --  HEALTH: " + playerObject.health, { files: [getHeartImage(playerObject.health)] }))
-                                        .catch(console.error);
+                                        
                                 }
                                 else {
                                     channel.overwritePermissions(member.user, { READ_MESSAGES: true, SEND_MESSAGES: false })
                                         .then(channel.send("<@" + member.user.id + ">"))
-                                        .catch(console.error);
+                                        
                                 }
                             } else {
                                 console.log("Failed to open area " + area.name + " for " + location.username);
                             }
                         })
                     })
-                    .catch(console.error);
             })
 
         }

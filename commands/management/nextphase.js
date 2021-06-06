@@ -12,26 +12,34 @@ module.exports = {
     gmonly: true,
     execute(client, message, args) {
 
-        let players = client.getPlayers.all(message.guild.id);
-        if (players == undefined || players.length === 0) {
-            return message.channel.send("No players found. Use !addplayers <role> to set up a game with players in a given role.");
+
+        let settings = UtilityFunctions.GetSettings(client, message.guild.id);
+        if (!settings.phase) {
+            return message.channel.send("You need to start the game first with !gamestart. (Aborting)");
         }
 
         let areas = client.getAreas.all(message.guild.id);
         if (areas == undefined || areas.length === 0) {
-            return message.channel.send("No areas found. Use !addarea to create an area.");
+            return message.channel.send("Where the hell are your areas? (Aborting)");
         }
 
-        let settings = UtilityFunctions.GetSettings(client, message.guild.id);
-        if (!settings.phase) {
-            return message.channel.send("You need to start the game first with !gamestart.");
-        }
-
+        
         let warningMessage = "";
 
         let locations = client.getLocations.all(message.guild.id);
         let gameplayChannels = client.getGameplayChannels.all(message.guild.id);
         let connections = client.getAllConnections.all(message.guild.id);
+
+        const lonelyPlayers = client.getPlayersWithoutLocation.all(message.guild.id);
+        if (lonelyPlayers.length > 0) {
+            return message.channel.send("The following players do not have an area set:\n"
+                + "`" + lonelyPlayers.map(p => p.username).join('\n') + "`"
+                + "\nAborting game start.");
+        }
+
+        if (players == undefined || players.length === 0) {
+            return message.channel.send("Umm....not sure how to say this...but your game doesn't have any players? How the hell did you mess up this bad????? (Aborting).");
+        }
 
         var nonDoers = players.filter(p => !p.action && p.alive);
         if (nonDoers.length > 0) {

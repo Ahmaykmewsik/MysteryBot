@@ -1,6 +1,24 @@
 TODO LIST
 
 
-UPDATE ALL COMMANDS TO SQL
+BUGS
 
-IMPLEMENT WEBHOOK EARLOGS
+Fix catch issue in createchannel - remove all of them, becuase they hide the error messeges!
+
+fix implementation so that bot doesn't break when a player changes their username
+
+
+
+FEATURES
+Post big items on !moveinstant
+Add show all channels command
+
+Add reactions feature to earlogs
+!me - lists player
+
+
+
+
+
+FIXED BUGS
+Crash on !nextphase when no area set for a player? (happend on phase 7 of music game) (Cannot read property 'areaID' of undefined. passmessages line 16:92)
