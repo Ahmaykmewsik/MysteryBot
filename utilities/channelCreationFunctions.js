@@ -1,6 +1,7 @@
 const postErrorMessage = require('./errorHandling').postErrorMessage;
 const SendMessageChannel = require('./SendMessageChannel_Failsafe').SendMessageChannel_Failsafe;
 const getHeartImage = require('./getHeartImage').getHeartImage;
+const formatItem = require('./formatItem').formatItem;
 
 module.exports = {
 
@@ -15,16 +16,6 @@ module.exports = {
                 deny: [`VIEW_CHANNEL`]
             }]
         })
-
-
-        // const channel = await guild.channels.create(channelInfoObject.channelname, {
-        //     type: 'text',
-        //     parentID: categoryID,
-        //     permissionOverwrites: [{
-        //         id: guild.id,
-        //         deny: ['VIEW_CHANNEL']
-        //     }]
-        // })
 
         await channel.setParent(categoryID);
         await channel.overwritePermissions([{
@@ -99,12 +90,7 @@ module.exports = {
         let playersPresent = players.filter(p => locations.find(l => l.username == p.username && l.areaID == area.id))
 
         //Determine who has big items
-        var bigItemsText = "";
-        const itemsHereToPost = inventoryData.filter(d => playersPresent.find(p => p.username == d.username) && (d.big || d.clothing));
-        itemsHereToPost.forEach(item => {
-            const player = players.find(p => p.username == item.username);
-            bigItemsText += "\n**" + player.character + "** has: " + formatItem(client, item, false);
-        });
+        const bigItemsText = this.GetBigItemString(client, playersPresent, inventoryData);
 
         //Area Description Messages
         const pinIndicator = ">>> *-----Phase ";
@@ -131,6 +117,16 @@ module.exports = {
         const channelInfoObject = this.CreateChannelInfoObject(client, area, players, locations, inventoryData, settings);
         const channel = await this.CreateSingleChannel(client, message, settings.categoryID, guild, channelInfoObject, locations, players);
         return channel;
+    },
+
+    GetBigItemString(client, players, inventoryData) {
+        let bigItemsText = "";
+        const itemsHereToPost = inventoryData.filter(d => players.find(p => p.username == d.username) && (d.big || d.clothing));
+        itemsHereToPost.forEach(item => {
+            const player = players.find(p => p.username == item.username);
+            bigItemsText += "\n**" + player.character + "** has: " + formatItem(client, item, false);
+        });
+        return bigItemsText;
     }
 
 

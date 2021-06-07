@@ -1,4 +1,4 @@
-const formatItem = require('./formatItem').formatItem;
+
 const SendMessageChannel = require('./SendMessageChannel_Failsafe').SendMessageChannel_Failsafe;
 const ChannelCreationFunctions = require('./channelCreationFunctions.js');
 
