@@ -23,8 +23,6 @@ module.exports = {
             return message.channel.send("Where the hell are your areas? (Aborting)");
         }
 
-        
-        let warningMessage = "";
 
         let locations = client.getLocations.all(message.guild.id);
         let gameplayChannels = client.getGameplayChannels.all(message.guild.id);
@@ -37,10 +35,12 @@ module.exports = {
                 + "\nAborting game start.");
         }
 
+        let players = client.getPlayers.all(message.guild.id);
         if (players == undefined || players.length === 0) {
             return message.channel.send("Umm....not sure how to say this...but your game doesn't have any players? How the hell did you mess up this bad????? (Aborting).");
         }
 
+        let warningMessage = "";
         var nonDoers = players.filter(p => !p.action && p.alive);
         if (nonDoers.length > 0) {
             message.channel.send("The following players have not sent their main **action**:\n"
@@ -104,14 +104,14 @@ module.exports = {
         message.channel.send(warningMessage).then(() => {
 
             const filter = m => message.author.id === m.author.id;
-            message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })
+            message.channel.awaitMessages(filter, { time: 60000, max: 1, errors: ['time'] })
                 .then(messages => {
                     if (messages.first().content == 'y' || messages.first().content == 'yes') {
 
                         message.channel.send("Beginning Phase " + (settings.phase + 1) + "...");
 
                         //Send DMs to players that pass each other on the map
-                        const passingMessages = sendPassMessages(message.guild.members, players, locations, message.channel);
+                        const passingMessages = sendPassMessages(message.guild.members.cache, players, locations, message.channel);
 
                         message.channel.send(passingMessages, { split: true });
 
@@ -140,14 +140,14 @@ module.exports = {
                                     if (moved) {
                                         if (connectionExists) {
                                             //If players can go here normally, post where they went
-                                            message.guild.channels.get(gameplayChannel.channelID).send(player.character + " moved to: " + player.move).catch(console.error());
+                                            message.guild.channels.cache.get(gameplayChannel.channelID).send(player.character + " moved to: " + player.move).catch(console.error());
                                         } else {
                                             //If a player goes somewhere sneaky sneaky, don't tell nuthin
-                                            message.guild.channels.get(gameplayChannel.channelID).send(player.character + " moved to: ???").catch(console.error());
+                                            message.guild.channels.cache.get(gameplayChannel.channelID).send(player.character + " moved to: ???").catch(console.error());
                                         }
 
                                     } else {
-                                        message.guild.channels.get(gameplayChannel.channelID).send(player.character + " stayed here.").catch(console.error);
+                                        message.guild.channels.cache.get(gameplayChannel.channelID).send(player.character + " stayed here.").catch(console.error);
                                     }
                                 } catch (error) {
                                     //If can't find the channel, tell the GM (it might not exist or something else went wrong)
@@ -170,9 +170,9 @@ module.exports = {
                                 // otherwise, the player doesn't move
                                 try {
                                     if (!canStayStill) {
-                                        message.guild.channels.get(gameplayChannel.channelID).send(player.character + " couldn't decide where to go, so they went to: " + player.area);
+                                        message.guild.channels.cache.get(gameplayChannel.channelID).send(player.character + " couldn't decide where to go, so they went to: " + player.area);
                                     } else {
-                                        message.guild.channels.get(gameplayChannel.channelID).send(player.character + " stayed here.");
+                                        message.guild.channels.cache.get(gameplayChannel.channelID).send(player.character + " stayed here.");
                                     }
                                 } catch (error) {
                                     console.error(error);
@@ -185,17 +185,17 @@ module.exports = {
                             player.moveSpecial = undefined;
                             player.action = undefined;
                             player.roll = undefined;
-                            
+
                         });
 
                         //Iterate Phase
                         settings.phase += 1;
 
-                        client.channels.get(settings.actionLogID).send("--------------------------------------------------------\n-------------------------------------**PHASE " + settings.phase + "**-------------------------------------\n--------------------------------------------------------");
+                        client.channels.cache.get(settings.actionLogID).send("--------------------------------------------------------\n-------------------------------------**PHASE " + settings.phase + "**-------------------------------------\n--------------------------------------------------------");
 
                         //CreateChannels
                         try {
-                            createChannels(client, message.guild, areas, players, locations, settings);
+                            createChannels(client, message, areas, players, locations, settings);
 
                             //Set all the data in place after the channels are created!
                             message.channel.send("All channels created successfully!");

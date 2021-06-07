@@ -45,11 +45,11 @@ module.exports = {
 
         //create earlogs and channels
         areas.forEach(area => {
-            message.guild.createChannel("earlog-" + area.id, {
+            message.guild.channels.create("earlog-" + area.id, {
                 type: 'text',
                 permissionOverwrites: [{
                     id: message.guild.id,
-                    deny: ['SEND_MESSAGES', 'READ_MESSAGES']
+                    deny: ['SEND_MESSAGES', 'VIEW_CHANNEL']
                 }]
             }).then(channel => {
 
@@ -63,7 +63,7 @@ module.exports = {
         })
 
         //Create spy category and store it
-        message.guild.createChannel("SPY CHANNELS", {
+        message.guild.channels.create("SPY CHANNELS", {
             type: 'category'
         }).then((categoryObject) => {
 
@@ -71,7 +71,7 @@ module.exports = {
             client.setSettings.run(settings);
 
             //set position underneath game category
-            let position = message.guild.channels.get(settings.categoryID).position;
+            let position = message.guild.channels.cache.get(settings.categoryID).position;
 
             if (position) {
                 categoryObject.setPosition(position + 1).then(c => {
@@ -79,8 +79,8 @@ module.exports = {
                 });
             }
 
-            createChannels(client, message.guild, areas, players, locations, settings);
-            client.channels.get(settings.actionLogID).send("----------------------------\n---------**PHASE " + settings.phase + "**---------\n----------------------------");
+            createChannels(client, message, areas, players, locations, settings);
+            client.channels.cache.get(settings.actionLogID).send("----------------------------\n---------**PHASE " + settings.phase + "**---------\n----------------------------");
 
         }).catch(console.error);
 

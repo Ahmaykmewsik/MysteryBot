@@ -6,6 +6,7 @@ const path = require("path");
 require("dotenv").config();
 
 const { EarlogListener } = require("./EarlogListener");
+const postErrorMessage = require('./Utilities/errorHandling').postErrorMessage;
 
 const SQLite = require("better-sqlite3");
 const sql = new SQLite('./data.sqlite');
@@ -585,6 +586,7 @@ client.on("message", message => {
 		} catch (error) {
 			console.log("Earlog Error!");
 			console.error(error);
+			postErrorMessage(message.channel);
 		}
 		return;
 	}
@@ -645,8 +647,7 @@ client.on("message", message => {
 	try {
 		command.execute(client, message, args);
 	} catch (error) {
-		console.error(error);
-		message.reply("There was an error trying to execute that command!");
+		postErrorMessage(error, message.channel);
 	}
 });
 

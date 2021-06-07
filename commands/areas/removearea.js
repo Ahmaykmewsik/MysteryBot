@@ -25,7 +25,7 @@ module.exports = {
         message.channel.send(formatArea(client, areaToRemove));
         message.channel.send("Are you sure you want to delete this area? (y or n)").then(() => {
             const filter = m => message.author.id === m.author.id;
-            message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })
+            message.channel.awaitMessages(filter, { time: 60000, max: 1, errors: ['time'] })
                 .then(messages => {
                     if (messages.first().content == 'y') {
 

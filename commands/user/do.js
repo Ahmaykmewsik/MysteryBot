@@ -37,14 +37,14 @@ module.exports = {
 		const displayName = `${player.character} [${player.username}]`;
 
 		if (ifUpdated){
-			client.channels.get(settings.actionLogID).send(
+			client.channels.cache.get(settings.actionLogID).send(
 				"----------------------------------------" +
 				"\n**ACTION UPDATED** by `" + displayName + "` ```" + action + "```" +
 				"ROLL: " + player.roll //d20 roll ftw
 				);
 			message.reply("Action updated.");
 		} else {
-			client.channels.get(settings.actionLogID).send(
+			client.channels.cache.get(settings.actionLogID).send(
 				"----------------------------------------" +
 				"\nACTION by `" + displayName + "` ```" + action + "```" +
 				"ROLL: " + player.roll //d20 roll ftw

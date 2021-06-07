@@ -59,7 +59,7 @@ module.exports = {
         }
 
         if (messageToPlayer != ""){
-            client.users.get(player.discordID).send(messageToPlayer, {files: [getHeartImage(player.health)]});
+            client.users.cache.get(player.discordID).send(messageToPlayer, {files: [getHeartImage(player.health)]});
         }
         
         client.setPlayer.run(player);
@@ -68,7 +68,7 @@ module.exports = {
         message.channel.send(formatPlayer(client, player));
 
         if (messageToPlayer != ""){
-            client.users.get(player.discordID).send(messageToPlayer, {files: [getHeartImage(player.health)]});
+            client.users.cache.get(player.discordID).send(messageToPlayer, {files: [getHeartImage(player.health)]});
             message.channel.send(`:exclamation:${player.username} was notified.`);
         }
 	}

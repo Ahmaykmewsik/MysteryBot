@@ -56,7 +56,7 @@ module.exports = {
                 descriptionString = descriptionString.substring(0, 1024 - 3) + "...";
             }
 
-            return new Discord.RichEmbed()
+            return new Discord.MessageEmbed()
             .setColor(color)
             .setTitle(`**${area.name}**`)
             .setDescription(infoStringPartial)

@@ -1,4 +1,4 @@
-const createChannels = require('../../utilities/createChannels.js').createChannels;
+const ChannelCreationFunctions = require('../../utilities/ChannelCreationFunctions.js');
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
@@ -33,9 +33,11 @@ module.exports = {
 
         const players = client.getPlayers.all(message.guild.id);
         const locations = client.getLocations.all(message.guild.id);
+        const inventoryData = client.getItemsAndInventories.all(message.guild.id);
 
         try {
-            createChannels(client, message.guild, [area], players, locations, settings);
+            
+            ChannelCreationFunctions.CreateSingelChannelMidPhase(client, message, message.guild, area, players, locations, inventoryData, settings);
             return message.channel.send("Channel for `" + area.id + "` created.");
    
         } catch (error) {

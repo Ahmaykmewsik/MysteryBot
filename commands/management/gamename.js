@@ -10,8 +10,8 @@ module.exports = {
         const gameName = args.join(" ");
         let settings = UtilityFunctions.GetSettings(client, message.guild.id);
 
-        if (!message.guild.channels.has("name", gameName)) {
-            message.guild.createChannel(gameName, {
+        if (!message.guild.channels.cache.has("name", gameName)) {
+            message.guild.channels.create(gameName, {
                 type: 'category'
             })
                 .then((categoryObject) => {

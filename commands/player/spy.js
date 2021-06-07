@@ -111,11 +111,11 @@ module.exports = {
                 return message.channel.send(`Spy channel updated.`);
             } else {
                 //Else make a new channel
-                message.guild.createChannel("spy-" + spyAction.username, {
+                message.guild.channels.create("spy-" + spyAction.username, {
                     type: 'text',
                     permissionOverwrites: [{
                         id: message.guild.id,
-                        deny: ['READ_MESSAGES', 'SEND_MESSAGES']
+                        deny: ['VIEW_CHANNEL', 'SEND_MESSAGES']
                     },
                     {
                         id: player.discordID,

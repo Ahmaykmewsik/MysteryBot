@@ -32,7 +32,7 @@ module.exports = {
             message.channel.send(warningMessage).then(() => {
 
                 const filter = m => message.author.id === m.author.id;
-                message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })
+                message.channel.awaitMessages(filter, { time: 60000, max: 1, errors: ['time'] })
                     .then(messages => {
                         if (messages.first().content == 'y' || messages.first().content == 'yes') {
 
@@ -60,7 +60,7 @@ module.exports = {
             message.channel.send(`\`${item.id}\` updated.\n\n${formatItem(client, item)}`);
 
             players.forEach(player => {
-                client.users.get(player.discordID).send("**An item of yours changed!**\n" + formatItem(client, item, false));
+                client.users.cache.get(player.discordID).send("**An item of yours changed!**\n" + formatItem(client, item, false));
                 message.channel.send(`:exclamation:${player.username} was notified.`);
             }) 
         }

@@ -15,7 +15,7 @@ module.exports = {
 
         message.channel.send("Are you sure you want to reset the game? All player, area, and item data will be kept. (y or n)").then(() => {
             const filter = m => message.author.id === m.author.id;
-            message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })
+            message.channel.awaitMessages(filter, { time: 60000, max: 1, errors: ['time'] })
                 .then(messages => {
                     if (messages.first().content == 'y') {
 

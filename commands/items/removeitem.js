@@ -22,7 +22,7 @@ module.exports = {
         message.channel.send(formatItem(client, item));
         message.channel.send("Are you sure you want to delete this item? (y or n)").then(() => {
             const filter = m => message.author.id === m.author.id;
-            message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })
+            message.channel.awaitMessages(filter, { time: 60000, max: 1, errors: ['time'] })
                 .then(messages => {
                     if (messages.first().content == 'y') {
 

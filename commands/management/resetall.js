@@ -9,7 +9,7 @@ module.exports = {
 		message.channel.send('Delete all data? (y or n).').then(() => {
 			const filter = m => message.author.id === m.author.id;
 		
-			message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })
+			message.channel.awaitMessages(filter, { time: 20000, max: 1, errors: ['time'] })
 				.then(messages => {
 					if (messages.first().content == "y") {
 
@@ -29,7 +29,7 @@ module.exports = {
 						client.deleteSettings.run(message.guild.id);
 						
 
-						message.channel.send("Goodbye DATA. https://youtu.be/oIscL-Bjsq4");
+						message.channel.send("Goodbye DATA. https://youtu.be/6kguaGI7aZg");
 					} else if (messages.first().content == "n") {
 						message.channel.send("Your DATA will thank you later.");
 					} else {

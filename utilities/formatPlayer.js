@@ -38,7 +38,7 @@ module.exports = {
         }
 
         const heartImageURL = getHeartImage(player.health); 
-        const attachment = new Discord.Attachment(heartImageURL, "hearts.png");
+        const attachment = new Discord.MessageAttachment(heartImageURL, "hearts.png");
 
         function MakeInfoText(status, health, areaString, spyActionString, spyCurrentString, actionString, moveString, moveSpecialString){
             return  "__Status:__ **" + status + "**" +
@@ -60,7 +60,7 @@ module.exports = {
                 infoText = MakeInfoText(status, player.health, areaString, spyActionString, spyCurrentString, actionString, moveString, moveSpecialString)
             }
     
-            return new Discord.RichEmbed()
+            return new Discord.MessageEmbed()
                 .setColor(color)
                 .setTitle("**" + player.username + "**")
                 .addField(player.character.toUpperCase(), infoText)

@@ -48,7 +48,7 @@ module.exports = {
         
         message.channel.send(formatPlayer(client, player));
 
-        client.users.get(player.discordID).send("**Got item!**\n" + formatItem(client, item, false));
+        client.users.cache.get(player.discordID).send("**Got item!**\n" + formatItem(client, item, false));
         message.channel.send(`:exclamation:${player.username} was notified.`);
 
 	}

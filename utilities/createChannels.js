@@ -1,9 +1,12 @@
 const formatItem = require('./formatItem').formatItem;
 const SendMessageChannel = require('./SendMessageChannel_Failsafe').SendMessageChannel_Failsafe;
-const getHeartImage = require('./getHeartImage').getHeartImage;
+const ChannelCreationFunctions = require('./channelCreationFunctions.js');
+
 
 module.exports = {
-    createChannels(client, guild, areas, players, locations, settings) {
+    createChannels(client, message, areas, players, locations, settings) {
+
+        const guild = message.guild;
 
         let spyChannels = client.getSpyChannels.all(guild.id);
         let spyActionsData = client.getSpyActionsAll.all(guild.id);
@@ -26,8 +29,7 @@ module.exports = {
             if (freeSpyChannel == undefined) {
                 //no free spy channel, so make one
 
-                const player = players.find(p=> p.username == spyAction.username);
-                
+                const player = players.find(p => p.username == spyAction.username);
 
                 channelsToMake.push({
                     type: "spy",
@@ -58,7 +60,7 @@ module.exports = {
             client.addSpyCurrent.run(spyCurrent);
         });
 
-        let activeAreas = areas.filter(a =>{
+        let activeAreas = areas.filter(a => {
             let areaLocations = locations.filter(l => l.areaID == a.id);
             //This won't work for multiareas
             let livingPlayersPresent = players.filter(p => p.alive && areaLocations.find(l => l.username == p.username))
@@ -70,44 +72,7 @@ module.exports = {
 
         //Manage Area Channels
         for (let area of areas) {
-
-            //If nobody is there, don't make a channel for it
-            let active = (activeAreas.find(a => area.id == a.id)) ? true : false;
-
-            //If there's no image then don't try and put one
-            if (area.image == undefined) {
-                area.image = "";
-            }
-
-            let playersPresent = players.filter(p => locations.find(l => l.username == p.username && l.areaID == area.id))
-
-            //Determine who has big items
-            var bigItemsText = "";
-            const itemsHereToPost = inventoryData.filter(d => playersPresent.find(p => p.username == d.username) && (d.big || d.clothing));
-            itemsHereToPost.forEach(item => {
-                const player = players.find(p => p.username == item.username);
-                bigItemsText += "\n**" + player.character + "** has: " + formatItem(client, item, false);
-            });
-
-            //Area Description Messages
-            const pinIndicator = ">>> *-----Phase ";
-
-            const outputString1 =
-                pinIndicator + settings.phase + "-----*\n" +
-                "**" + area.name + "**\n\n" + area.description;
-
-            const outputString2 = bigItemsText + "\n\n" + area.image;
-
-            const channelname = "p" + settings.phase + "-" + area.id;
-
-            channelsToMake.push({
-                type: "area",
-                area: area,
-                channelname: channelname,
-                active: active,
-                outputString1: outputString1,
-                outputString2: outputString2
-            })
+            channelsToMake.push(ChannelCreationFunctions.CreateChannelInfoObject(client, area, players, locations, inventoryData, settings, activeAreas));
         };
 
         function CreateNewSpyChannelsRecursive(guild, spyAreas, spyChannels, spyCategory, areaChannelObject, areaCategoryID) {
@@ -135,12 +100,12 @@ module.exports = {
             }
 
             //Else make a new channel
-            guild.createChannel("spy-" + c.username, {
+            guild.channels.create("spy-" + c.username, {
                 type: 'text',
                 //parentID: spyCategory.id,
                 permissionOverwrites: [{
                     id: guild.id,
-                    deny: ['READ_MESSAGES', 'SEND_MESSAGES']
+                    deny: ['VIEW_CHANNEL', 'SEND_MESSAGES']
                 },
                 {
                     id: c.discordID,
@@ -162,7 +127,7 @@ module.exports = {
                                     channelID: channel.id
                                 };
                                 client.setSpyChannel.run(newSpyChannel);
-        
+
                                 if (spyAreas.length == 0) {
                                     CreateNewAreaChannel(guild, areaChannelObject, locations, areaCategoryID);
                                 } else {
@@ -173,14 +138,14 @@ module.exports = {
             })
         };
 
-        
+
         function CreateNewAreaChannel(guild, c, locations, categoryID) {
 
             if (!c.active) {
                 //post in spy channels
                 const spyChannelsToPost = spyChannels.filter(d => d.areaID == c.area.id);
                 spyChannelsToPost.forEach(spyChannel => {
-                    const daChannel = guild.channels.get(spyChannel.channelid);
+                    const daChannel = guild.channels.cache.get(spyChannel.channelid);
                     SendMessageChannel(c.outputString1, daChannel);
                     if (c.outputString2 != "\n\n") {
                         SendMessageChannel(c.outputString2, daChannel);
@@ -189,68 +154,11 @@ module.exports = {
                 return;
             }
 
-        
             //Make da channel
-            guild.createChannel(c.channelname, {
-                type: 'text',
-                parentID: categoryID,
-                permissionOverwrites: [{
-                    id: guild.id,
-                    deny: ['READ_MESSAGES']
-                }]
-            }).then(channel => {
-                channel.setParent(categoryID)
-                    .then(channel => {
 
-                        const earlogChannel = client.getEarlogChannel.get(`${guild.id}_${c.area.id}`); 
+            ChannelCreationFunctions.CreateSingleChannel(client, message, categoryID, guild, c, locations, players);
 
-                        const newGameplayChannel = {
-                            guild_areaID: `${guild.id}_${c.area.id}`,
-                            areaID: c.area.id,
-                            guild: guild.id,
-                            channelName: channel.name,
-                            channelID: channel.id,
-                            earlogChannelID: earlogChannel.channelID,
-                            active: 1,
-                            locked: 0
-                        }
 
-                        client.setGameplayChannel.run(newGameplayChannel);
-
-                        SendMessageChannel(c.outputString1, channel);
-                        if (c.outputString2 != "\n\n") {
-                            SendMessageChannel(c.outputString2, channel);
-                        }
-        
-                        //Figure out who's here
-                        const locationsHere = locations.filter(l => c.area.id == l.areaID);
-        
-                        locationsHere.forEach(location => {
-        
-                            const member = guild.members.find(m => m.user.username == location.username);
-                            const playerObject = players.find(p => location.username == p.username);
-        
-                            if (member != undefined || playerObject.length != 0) {
-        
-                                //pingMessage += "<@" + member.user.id + ">\n" 
-        
-                                if (playerObject.alive) {
-        
-                                    channel.overwritePermissions(member.user, { READ_MESSAGES: true })
-                                        .then(channel.send("<@" + member.user.id + ">  --  HEALTH: " + playerObject.health, { files: [getHeartImage(playerObject.health)] }))
-                                        
-                                }
-                                else {
-                                    channel.overwritePermissions(member.user, { READ_MESSAGES: true, SEND_MESSAGES: false })
-                                        .then(channel.send("<@" + member.user.id + ">"))
-                                        
-                                }
-                            } else {
-                                console.log("Failed to open area " + area.name + " for " + location.username);
-                            }
-                        })
-                    })
-            })
 
         }
 

@@ -17,7 +17,7 @@ module.exports = {
 
         //find player based on input
         var playerobject;
-        message.guild.members.forEach(function(member) {
+        message.guild.members.cache.forEach(function(member) {
             if (member.user.username.toLowerCase().includes(inputusername)) {
                 playerobject = member.user;
             }

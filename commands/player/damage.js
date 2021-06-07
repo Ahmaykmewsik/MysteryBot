@@ -59,7 +59,7 @@ module.exports = {
         client.setPlayer.run(player);
 
         if (messageToPlayer != ""){
-            client.users.get(player.discordID).send(messageToPlayer, {files: [getHeartImage(player.health)]});
+            client.users.cache.get(player.discordID).send(messageToPlayer, {files: [getHeartImage(player.health)]});
         }
 
         message.channel.send(player.username + " has taken `" + damageValue + "` damage!\nCurrent health: " + player.health);

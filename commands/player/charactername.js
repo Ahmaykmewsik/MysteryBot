@@ -39,6 +39,7 @@ module.exports = {
         message.channel.send(player.username + "'s character name has been changed to: `" + player.character + "`");
         message.channel.send(formatPlayer(client, player));
 
-        client.users.get(player.discordID).send("**You will now appear as: **\n" + player.character);
+        client.users.cache.get(player.discordID).send("**You will now appear as: **\n" + player.character);
+        message.channel.send(`:exclamation:${player.username} was notified.`);
 	}
 };

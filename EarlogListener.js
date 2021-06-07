@@ -15,7 +15,7 @@ module.exports = {
 			return;
 		}
 
-		const earlogChannel = client.channels.get(gameplayChannel.earlogChannelID);
+		const earlogChannel = client.channels.cache.get(gameplayChannel.earlogChannelID);
 
 
 		const webhooks = await earlogChannel.fetchWebhooks();
@@ -48,7 +48,7 @@ module.exports = {
 	
 			await webhook.send(content, {
 				username: username,
-				avatarURL: message.author.displayAvatarURL,
+				avatarURL: message.author.avatarURL(),
 				embed: message.embed
 			}).then(earlogMsg => {
 	
@@ -75,7 +75,7 @@ module.exports = {
 		spyCurrentData.forEach(async spyCurrent => {
 
 			const spyChannelData = spyChannels.find(c => c.areaID == spyCurrent.spyArea && c.username == spyCurrent.username);
-			const spyChannel = client.channels.get(spyChannelData.channelID);
+			const spyChannel = client.channels.cache.get(spyChannelData.channelID);
 
 			try {
 				const webhooksSpy = await spyChannel.fetchWebhooks();
@@ -94,7 +94,7 @@ module.exports = {
 
 
 
-		// const tempWebhook = message.guild.channels.get(gameplayChannel.earlogChannelID)
+		// const tempWebhook = message.guild.channels.cache.get(gameplayChannel.earlogChannelID)
 		// 	.createWebhook(message.author.username)
 		// 	.then(w => {
 
@@ -236,7 +236,7 @@ module.exports = {
 			//Copy to Ear Log
 			if (!postName || message.author.bot) {
 				//Message Only
-				client.channels.get(earlogChannel.channelid).send(messageContent)
+				client.channels.cache.get(earlogChannel.channelid).send(messageContent)
 					//Pin phase starts
 					.then(message => {
 						if (message.content.includes(">>> *-----Phase ")) {
@@ -249,7 +249,7 @@ module.exports = {
 					.get(earlogChannel.channelid)
 					.send({ files: [filename] })
 					.then(m => {
-						client.channels.get(earlogChannel.channelid).send(messageContent);
+						client.channels.cache.get(earlogChannel.channelid).send(messageContent);
 						//Avatars used to be updated here
 					});
 			}

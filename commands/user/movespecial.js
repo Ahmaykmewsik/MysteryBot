@@ -38,7 +38,7 @@ module.exports = {
 		client.setPlayer.run(player);
 
 		const displayName = `${player.character.toUpperCase()} [${player.username.toUpperCase()}]`;
-		client.channels.get(settings.actionLogID).send(":bangbang: :arrow_forward: MOVESPECIAL " + displayName + ": `" + action + "`");
+		client.channels.cache.get(settings.actionLogID).send(":bangbang: :arrow_forward: MOVESPECIAL " + displayName + ": `" + action + "`");
 		returnMessage += "Movespecial sent. The GM will process this action manually."
 		message.channel.send(returnMessage);
 		message.reply(formatPlayer(client, player));

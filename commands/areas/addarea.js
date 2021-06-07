@@ -43,11 +43,11 @@ module.exports = {
         const settings = UtilityFunctions.GetSettings(client, message.guild.id);
         if (settings.phase) {
             const area = newArea;
-            message.guild.createChannel("earlog-" + area.id, {
+            message.guild.channels.create("earlog-" + area.id, {
                 type: 'text',
                 permissionOverwrites: [{
                     id: message.guild.id,
-                    deny: ['SEND_MESSAGES', 'READ_MESSAGES']
+                    deny: ['SEND_MESSAGES', 'VIEW_CHANNEL']
                 }]
             }).then(channel => {
 

@@ -14,7 +14,7 @@ module.exports = {
 		let idGiven = false;
 		if (args.length > 0) {
 			actionLogChannelID = args[0];
-			const channel = client.channels.get(actionLogChannelID)
+			const channel = client.channels.cache.get(actionLogChannelID);
 			if (!channel){
 				message.channel.send("Invalid channel id.");
 				return;
@@ -25,7 +25,7 @@ module.exports = {
 			message.delete();
 		}
 
-		let actionLogChannel = client.channels.get(actionLogChannelID);
+		let actionLogChannel = client.channels.cache.get(actionLogChannelID);
 		actionLogChannel.send("What will they do? Where will they go? Find out here!")
 			.then(m => {
 				m.pin();

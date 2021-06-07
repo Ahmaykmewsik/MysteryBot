@@ -1,5 +1,7 @@
+const ChannelCreationFunctions = require('../../utilities/ChannelCreationFunctions.js');
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
 const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
+const postErrorMessage = require('../../utilities/errorHandling').postErrorMessage;
 
 module.exports = {
 	name: 'moveinstant',
@@ -73,27 +75,44 @@ module.exports = {
 		const filter = m => responses.includes(m.content.toLowerCase());
 
 		message.reply(promptMessage).then(() => {
-			const collector = message.channel.createMessageCollector(filter, { time: 30000, maxMatches: 1 });
+			const collector = message.channel.createMessageCollector(filter, { time: 30000, max: 1 });
 			collector.on('collect', m => {
 
 				if (m.content.toLowerCase() == 'y' || m.content.toLowerCase() == 'yes') {
 
-					//Move the player!
-					const gameplayChannelCurrent = client.channels.get(gameplayChannels.find(g => (g.areaID == location.areaID) && g.active).channelID);
-					const gameplayChannelToMove = client.channels.get(gameplayChannels.find(g => (g.areaID == areaInput) && g.active).channelID);
 
 					const areas = client.getAreas.all(player.guild);
 					const areaCurrent = areas.find(a => a.id == location.areaID);
 					const areaToMove = areas.find(a => a.id == areaInput);
 
+					//Move the player!
+					const gameplayChannelInfoCurrent = gameplayChannels.find(g => (g.areaID == location.areaID) && g.active);
+					const gameplayChannelCurrent = client.channels.cache.get(gameplayChannelInfoCurrent.channelID);
+
+					const gameplayChannelInfoToMove = gameplayChannels.find(g => (g.areaID == areaInput) && g.active);
+
 					m.reply("Moving you...");
+					if (gameplayChannelInfoToMove == undefined) {
+						//channel doesn't exist, we gotta make it
+						let players = client.getPlayers.all(player.id);
+						let inventoryData = client.getItemsAndInventories.all(player.id);
+						let locations = client.getLocations.all(player.id);
+						let guild = client.guilds.cache.find(g => g.id == settings.guild);
+						ChannelCreationFunctions.CreateSingelChannelMidPhase(client, message, guild, areaToMove, players, locations, inventoryData, settings)
+							.then(channel => InstantMove(channel))
+							.catch(error => console.log(error));
+					} else {
+						let gameplayChannelToMove = client.channels.cache.get(gameplayChannelInfoToMove.channelID);
+						InstantMove(gameplayChannelToMove)
+					}
+					
 
-					async function InstantMove() {
+					async function InstantMove(gameplayChannelToMove) {
 
-						const user = await client.users.find(m => m.username == player.username);
-						await gameplayChannelCurrent.overwritePermissions(user, { READ_MESSAGES: false });
+						const user = await client.users.cache.find(m => m.username == player.username);
+						await gameplayChannelCurrent.createOverwrite(user, { VIEW_CHANNEL: false });
 						await gameplayChannelCurrent.send(`<@${user.id}>:bangbang: **${player.character} instantly moved to ${areaToMove.name}!**`);
-						await gameplayChannelToMove.overwritePermissions(user, { READ_MESSAGES: true });
+						await gameplayChannelToMove.createOverwrite(user, { VIEW_CHANNEL: true });
 						await gameplayChannelToMove.send(`<@${user.id}>:bangbang: **${player.character} appeared from ${areaCurrent.name}!**`);
 
 						//TODO: tweak this for multi-location mode
@@ -109,7 +128,7 @@ module.exports = {
 						await m.reply("You have been moved!");
 					}
 
-					InstantMove();
+					//InstantMove();
 				}
 				if (m.content.toLowerCase() == 'n' || m.content.toLowerCase() == 'no') {
 

@@ -71,7 +71,7 @@ module.exports = {
 			returnMessage += "Movement updated.";
 		}
 
-		client.channels.get(settings.actionLogID).send(actionLogMessage);
+		client.channels.cache.get(settings.actionLogID).send(actionLogMessage);
 		message.reply(returnMessage);
 		message.reply(formatPlayer(client, player));
 	}
