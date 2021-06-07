@@ -38,12 +38,12 @@ module.exports = {
                     area: area,
                     areaID: spyAction.spyArea
                 })
-                console.log(`Gonna make a spy channel for ${spyAction.username} in ${spyAction.spyArea}`);
+                //console.log(`Gonna make a spy channel for ${spyAction.username} in ${spyAction.spyArea}`);
             } else {
                 //Update the old Spychannel to the new area
                 freeSpyChannel.areaID = spyAction.spyArea;
                 freeSpyChannel.area = area;
-                console.log(`Gonna update a spy channel for ${spyAction.username} to ${spyAction.spyArea}`);
+                //console.log(`Gonna update a spy channel for ${spyAction.username} to ${spyAction.spyArea}`);
             }
             //Put in new Spy Current Data
             spyCurrentData.push(spyAction);
@@ -150,7 +150,7 @@ module.exports = {
                 //post in spy channels
                 const spyChannelsToPost = spyChannels.filter(d => d.areaID == c.area.id);
                 spyChannelsToPost.forEach(spyChannel => {
-                    const daChannel = guild.channels.cache.get(spyChannel.channelid);
+                    const daChannel = guild.channels.cache.get(spyChannel.channelID);
                     SendMessageChannel(c.outputString1, daChannel);
                     if (c.outputString2 != "\n\n") {
                         SendMessageChannel(c.outputString2, daChannel);
