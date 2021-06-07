@@ -18,7 +18,7 @@ module.exports = {
             
             if (swappers.length > 0) {
                 const swappersString = swappers.map(s => s.character).join(', ');
-                playerobject = members.find(m => m.user.username == player.username)
+                playerobject = members.find(m => m.user.id == player.discordID);
 
                 try {
                     const swapMessage = "On your way to `" + player.move + "` you pass by: " + swappersString;

@@ -119,6 +119,11 @@ module.exports = {
                     .then(() => {
                         channel.setParent(settings.spyCategoryID)
                             .then(() => {
+                                channel.overwritePermissions([{
+                                    id: guild.id,
+                                    deny: [`VIEW_CHANNEL`]
+                                }]);
+
                                 newSpyChannel = {
                                     guild_username: `${guild.id}_${c.username}`,
                                     guild: guild.id,

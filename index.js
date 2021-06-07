@@ -563,7 +563,7 @@ client.on("message", message => {
 	if (message.channel.type != "dm" && message.channel.name[0] == "p") {
 		try {
 			if ((message.content.toLowerCase() == "lock") && (message.member.hasPermission('ADMINISTRATOR'))) {
-				message.channel.overwritePermissions(message.channel.guild.defaultRole, { SEND_MESSAGES: false });
+				message.channel.updateOverwrite(message.channel.guild.roles.everyone, { SEND_MESSAGES: false });
 
 				let gameplayChannel = client.getGameplayChannel.get(message.channel.id);
 				
@@ -571,7 +571,7 @@ client.on("message", message => {
 				client.setGameplayChannel.run(gameplayChannel);
 			}
 			if ((message.content.toLowerCase() == "unlock") && (message.member.hasPermission('ADMINISTRATOR'))) {
-				message.channel.overwritePermissions(message.channel.guild.defaultRole, { SEND_MESSAGES: true });
+				message.channel.updateOverwrite(message.channel.guild.roles.everyone, { SEND_MESSAGES: true });
 
 				let gameplayChannel = client.getGameplayChannel.get(message.channel.id);
 				gameplayChannel.locked = 0;

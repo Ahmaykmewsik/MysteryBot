@@ -67,7 +67,7 @@ module.exports = {
 
                 }
             } else {
-                console.log("Failed to open area " + area.name + " for " + location.username);
+                message.channel.send("Failed to open area " + area.name + " for " + location.username);
             }
         })
 
