@@ -1,3 +1,5 @@
+const getHeartImage = require("./getHeartImage");
+
 module.exports = {
 
      
@@ -47,7 +49,7 @@ module.exports = {
     },
 
     GetPlayerFromDM(client, message) {
-        let player = client.getUserInDatabase.get(message.author.username);
+        let player = client.getUserInDatabase.get(message.author.id);
 
 		if (!player) {
 			return message.channel.send("You don't seem to be on a list of players. If you think this is a mistake, ask your GM.");
@@ -61,5 +63,42 @@ module.exports = {
 		}
 
         return player;
+    },
+
+    GetPlayer(client, message, guildID, playerInputString) {
+
+        var table = client.countPlayers.get(guildID);
+        
+        if (table['count(*)'] == 0) 
+            return message.channel.send("You haven't added any players yet. Use !addplayer <person> <character> to add players.");
+        
+        if (playerInputString.length == 0) 
+            return message.channel.send("You need to enter a player.");
+        
+        const player = this.GetPlayerFronInput(client, guildID, playerInputString);
+
+        if (player == undefined) 
+            return message.channel.send("Invalid username: " + playerInputString);
+        
+        return player;
+    },
+
+
+    GetArea(client, message, areaInputString) {
+        if (areaInputString.length === 0) {
+            return message.channel.send("No arguments given. Please specify area ID and desired area description.");
+        }
+        
+        const area = client.getArea.get(`${message.guild.id}_${areaInputString}`);
+
+        if (area == undefined) {
+            return message.channel.send("No area exists with that ID. Use !areas to view all areas, or !addarea <id> to create a new area.");
+        }
+
+        return area;
     }
+
+
+    
+
 }

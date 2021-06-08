@@ -56,6 +56,16 @@ client.on("ready", () => {
 
 		sql.prepare("CREATE UNIQUE INDEX idx_players_guild_username ON players (guild_username);").run();
 
+		// Profiles
+		sql.prepare(
+			`CREATE TABLE profiles (
+				guild_username TEXT PRIMARY KEY,
+				username TEXT,
+				guild TEXT,
+				profileText TEXT
+			);`
+		).run();
+
 		//Areas
 		sql.prepare(
 			`CREATE TABLE areas (
@@ -208,7 +218,7 @@ client.on("ready", () => {
 	// -------Player Functions------
 
 	client.getUserInDatabase = sql.prepare(
-		`SELECT * from players WHERE username = ?`
+		`SELECT * from players WHERE discordID = ?`
 	)
 
 	client.setPlayer = sql.prepare(
@@ -232,6 +242,30 @@ client.on("ready", () => {
 
 	client.deleteAllPlayers = sql.prepare(
 		`DELETE FROM players WHERE guild = ?`
+	);
+
+	// -------Profile Functions------
+
+	client.getProfile = sql.prepare(
+		`SELECT * FROM profiles
+		WHERE username = ? AND guild = ?`
+	);
+
+	client.getProfiles = sql.prepare(
+		`SELECT * FROM profiles
+		WHERE guild = ?`
+	)
+
+	client.setProfile = sql.prepare(
+		`INSERT OR REPLACE INTO profiles
+		(guild_username, username, guild, profileText)
+		VALUES
+		(@guild_username, @username, @guild, @profileText);`
+	);
+
+	client.deleteProfile = sql.prepare(
+		`DELETE FROM profiles
+		WHERE username = ? AND guild = ?`
 	);
 
 	// -------Area Functions------

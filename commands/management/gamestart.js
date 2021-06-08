@@ -74,9 +74,7 @@ module.exports = {
             let position = message.guild.channels.cache.get(settings.categoryID).position;
 
             if (position) {
-                categoryObject.setPosition(position + 1).then(c => {
-                    console.log(c.position);
-                });
+                categoryObject.setPosition(position + 1);
             }
 
             createChannels(client, message, areas, players, locations, settings);

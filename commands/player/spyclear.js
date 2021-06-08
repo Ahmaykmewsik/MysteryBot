@@ -9,17 +9,8 @@ module.exports = {
     gmonly: true,
     execute(client, message, args) {
 
-        if (args.length == 0) {
-            return message.channel.send("You need to enter a player.");
-        }
-
-        const inputusername = args.shift().toLowerCase();
-
-        const player = UtilityFunctions.GetPlayerFronInput(client, message.guild.id, inputusername);
-
-        if (player == undefined) {
-            return message.channel.send("Invalid username: " + inputusername);
-        }
+        let player = UtilityFunctions.GetPlayer(client, message, message.guild.id, args.shift());
+        if (player.username == undefined) return;
 
         if (args.length == 0) {
             client.deleteSpyActions.run(`${message.guild.id}_${player.username}`);

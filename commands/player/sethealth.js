@@ -10,22 +10,8 @@ module.exports = {
     gmonly: true,
 	execute(client, message, args) {
 
-        var table = client.countPlayers.get(message.guild.id);
-        if (table['count(*)'] == 0) {
-            return message.channel.send("You haven't added any players yet. Use !addplayer <person> <character> to add players.");
-        }
-        
-        if (args.length == 0) {
-            return message.channel.send("You need to enter a player.");
-        }
-
-        const inputusername = args.shift().toLowerCase();
-
-        const player = UtilityFunctions.GetPlayerFronInput(client, message.guild.id, inputusername);
-
-        if (player == undefined) {
-            return message.channel.send("Invalid username: " + inputusername);
-        }
+        let player = UtilityFunctions.GetPlayer(client, message, message.guild.id, args.shift());
+        if (player.username == undefined) return;
 
         if (args.length == 0) {
             return message.channel.send("You need to put a value.");
@@ -56,10 +42,6 @@ module.exports = {
         } else if (deltaHealth < 0) {
             deltaHealth *= -1;
             messageToPlayer = "You gained " + deltaHealth + " health!\nCurrent Health: " + player.health;
-        }
-
-        if (messageToPlayer != ""){
-            client.users.cache.get(player.discordID).send(messageToPlayer, {files: [getHeartImage(player.health)]});
         }
         
         client.setPlayer.run(player);

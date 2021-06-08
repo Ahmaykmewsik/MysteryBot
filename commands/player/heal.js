@@ -10,24 +10,8 @@ module.exports = {
     gmonly: true,
 	execute(client, message, args) {
 
-        var table = client.countPlayers.get(message.guild.id);
-        if (table['count(*)'] == 0) {
-            return message.channel.send("You haven't added any players yet. Use !addplayer <person> <character> to add players.");
-        }
-        
-        if (args.length == 0) {
-            return message.channel.send("You need to enter a player.");
-        }
-
-        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
-
-        const inputusername = args.shift().toLowerCase();
-
-        const player = UtilityFunctions.GetPlayerFronInput(client, message.guild.id, inputusername);
-
-        if (player == undefined) {
-            return message.channel.send("Invalid username: " + inputusername);
-        }
+        let player = UtilityFunctions.GetPlayer(client, message, message.guild.id, args.shift());
+        if (player.username == undefined) return;
 
         if (args.length == 0) {
             return message.channel.send("You need to put a value.");
@@ -35,7 +19,8 @@ module.exports = {
 
         const healInput = args.shift();
         const healValue = parseFloat(healInput);
-
+        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
+        
         if (!(typeof healValue == "number") || healValue % 0.25 != 0.0) {
             return message.channel.send("Invalid damage: " + healInput + ". Please enter a number divisible by 1/4.");
         }
