@@ -1,4 +1,5 @@
 const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
+const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
     name: 'sendprofiles',
@@ -28,26 +29,9 @@ module.exports = {
             postErrorMessage(error, message.channel);
         }
 
-        message.channel.send("\n\nAre you SURE you're ready to send everyone their profile? You should only do this once! (y or n)").then(() => {
-            const filter = m => message.author.id === m.author.id;
-            message.channel.awaitMessages(filter, { time: 60000, max: 1, errors: ['time'] })
-                .then(messages => {
-                    if (messages.first().content == 'y') {
+        let warningMessage = "\n\nAre you SURE you're ready to send everyone their profile? You should only do this once! (y or n)";
 
-                        return SendProfiles();
-
-                    } else if (messages.first().content == 'n') {
-                        message.channel.send("Okay, never mind then :)");
-                    } else {
-                        message.channel.send("...uh, okay.");
-                    }
-                })
-                .catch(() => {
-                    message.channel.send(`Something went wrong with that: ${error}`);
-                    console.log(Error);
-                })
-        });
-
+        return UtilityFunctions.WarnUserWithPrompt(message, warningMessage, SendProfiles);
 
         function SendProfiles() {
 

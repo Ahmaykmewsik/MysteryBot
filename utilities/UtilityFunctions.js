@@ -1,4 +1,5 @@
 const getHeartImage = require("./getHeartImage");
+const postErrorMessage = require('./errorHandling').postErrorMessage;
 
 module.exports = {
 
@@ -85,7 +86,7 @@ module.exports = {
 
 
     GetArea(client, message, areaInputString) {
-        if (areaInputString.length === 0) {
+        if (!areaInputString) {
             return message.channel.send("No arguments given. Please specify area ID and desired area description.");
         }
         
@@ -96,9 +97,26 @@ module.exports = {
         }
 
         return area;
+    },
+
+    WarnUserWithPrompt(message, promptMessage, Action) {
+        const responses = [`y`, `yes`, `n`, `no`];
+		const filter = m => responses.includes(m.content.toLowerCase());
+		message.channel.send(promptMessage, {split: true}).then(() => {
+			const collector = message.channel.createMessageCollector(filter, { time: 30000, max: 1 });
+			collector.on('collect', m => {
+                if (m.content.toLowerCase() == 'y' || m.content.toLowerCase() == 'yes') {
+                    return Action();
+                }
+                else if (m.content.toLowerCase() == 'n' || m.content.toLowerCase() == 'no') {
+                    message.channel.send("Okay, never mind then :)");
+                } 
+                else {
+                    message.channel.send("...uh, okay.");
+                }
+            })
+        }).catch(error => {
+            postErrorMessage(error, message.channel);
+        });
     }
-
-
-    
-
 }

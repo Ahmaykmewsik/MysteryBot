@@ -1,4 +1,5 @@
 const formatArea = require('../../utilities/formatArea').formatArea;
+const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
 	name: 'areaimage',
@@ -7,25 +8,13 @@ module.exports = {
     gmonly: true,
 	execute(client, message, args) {
 
-        if (args.length === 0) {
-            return message.channel.send("No arguments given. Please specify area ID and imageURL.");
-        }
-        if (args.length === 1) {
-            return message.channel.send("No image URL given. Please specify the image you wish to assign this area.");
-        }
+        let area = UtilityFunctions.GetArea(client, message, args.shift());
+        if (!area.guild) return;
 
-        const id = args[0];
-        const imageURL = args[1];
-
-        const area = client.getArea.get(`${message.guild.id}_${id}`);
-        if (!area) {
-            return message.channel.send("No area exists with ID `" + id + "`. Use !areas to view all areas.");
-        }
-
-        if (!imageURL[3] == ("http")) {
+        const imageURL = args[0];
+        if (!imageURL.includes("http")) 
             return message.channel.send("That's not an URL. Please input an image URL.");
-        }
-
+        
         area.image = imageURL;
         client.setArea.run(area);
 

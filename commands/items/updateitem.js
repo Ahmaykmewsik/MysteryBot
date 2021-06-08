@@ -1,4 +1,5 @@
 const formatItem = require('../../utilities/formatItem').formatItem;
+const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
 	name: 'updateitem',
@@ -7,47 +8,28 @@ module.exports = {
     gmonly: true,
 	execute(client, message, args) {
 
-        if (args.length === 0) {
+        if (args.length === 0) 
             return message.channel.send("No item IDs provided.");
-        }
 
-        if (args.length === 1) {
+        if (args.length === 1) 
             return message.channel.send("New ID not provided");
-        }
-
+    
         const oldID = args[0];
         const newID = args[1];
 
         const item = client.getItem.get(`${message.guild.id}_${oldID}`);
 
-        if (item == undefined) {
+        if (item == undefined) 
             return message.channel.send(`No item with the ID \`${oldID}\` exists.`);
-        }
 
         let players = client.getPlayersOfItem.all(item.id, item.guild);
+
         if (players.length > 1) {
             let warningMessage = "There is more than one player with this item! Are you sure you want to do this? (y/n)\n" + formatItem(client, item);
-
-            message.channel.send(warningMessage).then(() => {
-
-                const filter = m => message.author.id === m.author.id;
-                message.channel.awaitMessages(filter, { time: 60000, max: 1, errors: ['time'] })
-                    .then(messages => {
-                        if (messages.first().content == 'y' || messages.first().content == 'yes') {
-
-                            UpdateItem();
-
-                        } else if (messages.first().content == 'n' || message.first().content == `no`) {
-                            message.channel.send("Okay, never mind then :)");
-                        } else {
-                            message.channel.send("...uh, okay.");
-                        }
-                    });
-            });
-            return;
+            return UtilityFunctions.WarnUserWithPrompt(message, warningMessage, UpdateItem);
         }
 
-        UpdateItem();
+        return UpdateItem();
 
         function UpdateItem() {
 

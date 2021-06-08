@@ -1,4 +1,5 @@
 const formatArea = require('../../utilities/formatArea').formatArea;
+const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
     name: 'area',
@@ -7,17 +8,8 @@ module.exports = {
     gmonly: true,
     execute(client, message, args) {
 
-        if (args.length === 0) {
-            return message.channel.send("No area ID given. Please specify the ID of the area you wish to display.");
-        }
-
-        const id = args.shift();
-        
-        const area = client.getArea.get(`${message.guild.id}_${id}`);
-
-        if (area == undefined) {
-            return message.channel.send("No area exists with that ID. Use !areas to view all areas, or !addarea <id> to create a new area.");
-        }
+        let area = UtilityFunctions.GetArea(client, message, args.shift());
+        if (!area.guild) return;
 
         if (!args.includes("-e")) {
             message.channel.send(formatArea(client, area, true), {split: true});

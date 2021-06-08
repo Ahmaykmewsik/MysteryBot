@@ -13,35 +13,25 @@ module.exports = {
             message.channel.send("The game has not started yet FYI.");
         }
 
-        message.channel.send("Are you sure you want to reset the game? All player, area, and item data will be kept. (y or n)").then(() => {
-            const filter = m => message.author.id === m.author.id;
-            message.channel.awaitMessages(filter, { time: 60000, max: 1, errors: ['time'] })
-                .then(messages => {
-                    if (messages.first().content == 'y') {
+        let warningMessage = "Are you sure you want to reset the game? All player, area, and item data will be kept. (y or n)";
+        return UtilityFunctions.WarnUserWithPrompt(message, warningMessage, ResetGame);
 
-                        //CLEAR IT
-                        client.deleteAllLocations.run(message.guild.id);
-                        client.deleteAllInventories.run(message.guild.id);
-                        client.deleteAllSpyActions.run(message.guild.id);
-                        client.deleteAllSpyCurrent.run(message.guild.id);
-                        client.deleteAllEarlogChannelData.run(message.guild.id);
-                        client.deleteAllSpyChannelData.run(message.guild.id);
-                        client.deleteAllGameplayChannelData.run(message.guild.id);
-                        
-                        //Settings is a special case. Only one thing needs to change
-                        settings.phase = null;
-                        client.setSettings.run(settings);
+        function ResetGame() {
+            //CLEAR IT
+            client.deleteAllLocations.run(message.guild.id);
+            client.deleteAllInventories.run(message.guild.id);
+            client.deleteAllSpyActions.run(message.guild.id);
+            client.deleteAllSpyCurrent.run(message.guild.id);
+            client.deleteAllEarlogChannelData.run(message.guild.id);
+            client.deleteAllSpyChannelData.run(message.guild.id);
+            client.deleteAllGameplayChannelData.run(message.guild.id);
 
-                        message.channel.send("The game has been reset.");
+            //Settings is a special case. Only one thing needs to change
+            settings.phase = null;
+            client.setSettings.run(settings);
 
-                    } else if (messages.first().content == 'n') {
-                        message.channel.send("Okay, never mind then :)");
-                    } else {
-                        message.channel.send("...uh, okay.");
-                    }
-                })
-                .catch(console.error);
-        });
+            return message.channel.send("The game has been reset.");
+        }
     }
 };
 

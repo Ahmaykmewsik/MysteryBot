@@ -11,10 +11,9 @@ module.exports = {
         let area = UtilityFunctions.GetArea(client, message, args.shift());
         if (!area.guild) return;
         
-        if (args.length === 0) {
+        if (args.length === 0) 
             return message.channel.send("No area description given. Please specify the description you wish to assign this area.");
-        }
-
+        
         area.description = args.join(' ');
         client.setArea.run(area);
         message.channel.send("Area description updated!");

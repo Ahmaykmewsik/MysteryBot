@@ -1,4 +1,5 @@
 const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
+const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
     name: 'profiles',
@@ -15,26 +16,9 @@ module.exports = {
         if (args.length != 0)
             return message.channel.send("This command takes no arguments.");
 
-        message.channel.send("Are you sure you want to do this? This is probably going to be a LOT of text. (y or n)\nIf you're just checking if each player has a profile, use `!profilestatus`").then(() => {
-            const filter = m => message.author.id === m.author.id;
-            message.channel.awaitMessages(filter, { time: 60000, max: 1, errors: ['time'] })
-                .then(messages => {
-                    if (messages.first().content == 'y') {
+        let promptMessage = "Are you sure you want to do this? This is probably going to be a LOT of text. (y or n)\nIf you're just checking if each player has a profile, use `!profilestatus`";
 
-                        return PostProfiles();
-
-                    } else if (messages.first().content == 'n') {
-                        message.channel.send("Okay, never mind then :)");
-                    } else {
-                        message.channel.send("...uh, okay.");
-                    }
-                })
-                .catch(() => {
-                    message.channel.send("Something went wrong with that.");
-                    console.log(Error);
-                })
-        });
-
+        return UtilityFunctions.WarnUserWithPrompt(message, promptMessage, PostProfiles);
 
         function PostProfiles() {
 

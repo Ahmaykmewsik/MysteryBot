@@ -1,5 +1,5 @@
 const { Webhook } = require("discord.js");
-const { updateAvatars } = require("./utilities/updateAvatarsUtil");
+const { updateAvatars } = require("./unusedCommands/updateAvatarsUtil");
 
 module.exports = {
 	async EarlogListener(client, message) {

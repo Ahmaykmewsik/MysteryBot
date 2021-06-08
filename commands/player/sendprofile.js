@@ -17,27 +17,9 @@ module.exports = {
             return message.channel.send(`Nah man, I'm not gonna do that. ${player.username} has no profile!`);
         }
 
-        message.channel.send(`${profile.profileText}\n\n--------\nSend ${player.username} their profile? (y or n)`, { split: true }).then(() => {
-            const filter = m => message.author.id === m.author.id;
-            message.channel.awaitMessages(filter, { time: 60000, max: 1, errors: ['time'] })
-                .then(messages => {
-                    if (messages.first().content == 'y') {
-
-                        return SendProfile();
-
-                    } else if (messages.first().content == 'n') {
-                        message.channel.send("Okay, never mind then :)");
-                    } else {
-                        message.channel.send("...uh, okay.");
-                    }
-                })
-                .catch(() => {
-                    message.channel.send(`Something went wrong with that: ${error}`);
-                    console.log(Error);
-                })
-        });
-
-
+        let warningMessage = `${profile.profileText}\n\n--------\nSend ${player.username} their profile? (y or n)`;
+        return UtilityFunctions.WarnUserWithPrompt(message, warningMessage, SendProfile);
+        
         function SendProfile() {
             let status = "SENT!:white_check_mark:";
             try {

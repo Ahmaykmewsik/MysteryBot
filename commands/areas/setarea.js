@@ -12,12 +12,8 @@ module.exports = {
         let player = UtilityFunctions.GetPlayer(client, message, message.guild.id, args.shift());
         if (player.username == undefined) return;
 
-        //Find area
-        const area = client.getArea.get(`${message.guild.id}_${args[0].toLowerCase()}`);
-
-        if (area == undefined) {
-            return message.channel.send("No area exists with that ID.");
-        }
+        let area = UtilityFunctions.GetArea(client, message, args.shift());
+        if (!area.guild) return;
 
         //Remove all locations of player
         client.deleteLocationsOfPlayer.run(`${message.guild.id}_${player.username}`);

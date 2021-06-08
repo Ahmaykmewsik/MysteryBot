@@ -72,7 +72,6 @@ module.exports = {
 		promptMessage += ` (y / n)`;
 
 		const responses = [`y`, `yes`, `n`, `no`];
-
 		const filter = m => responses.includes(m.content.toLowerCase());
 
 		message.reply(promptMessage).then(() => {
