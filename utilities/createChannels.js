@@ -161,7 +161,7 @@ module.exports = {
 
             //Make da channel
 
-            ChannelCreationFunctions.CreateSingleChannel(client, message, categoryID, guild, c, locations, players);
+            ChannelCreationFunctions.CreateSingleChannel(client, message, categoryID, guild, c, locations, players, inventoryData);
 
 
 

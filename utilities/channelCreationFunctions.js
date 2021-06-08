@@ -5,7 +5,7 @@ const formatItem = require('./formatItem').formatItem;
 
 module.exports = {
 
-    async CreateSingleChannel(client, message, categoryID, guild, channelInfoObject, locations, players) {
+    async CreateSingleChannel(client, message, categoryID, guild, channelInfoObject, locations, players, inventoryData) {
 
 
         const channel = await guild.channels.create(channelInfoObject.channelname, {
@@ -40,35 +40,14 @@ module.exports = {
         client.setGameplayChannel.run(newGameplayChannel);
 
         SendMessageChannel(channelInfoObject.outputString1, channel);
-        if (channelInfoObject.outputString2 != "\n\n") {
+        if (channelInfoObject.outputString2)
             SendMessageChannel(channelInfoObject.outputString2, channel);
-        }
 
         //Figure out who's here
         const locationsHere = locations.filter(l => channelInfoObject.area.id == l.areaID);
 
         locationsHere.forEach(async location => {
-
-            const playerObject = players.find(p => location.username == p.username);
-            const member = guild.members.cache.find(m => m.user.id == playerObject.discordID);
-
-
-            if (member != null || playerObject.length != 0) {
-
-                //pingMessage += "<@" + member.user.id + ">\n" 
-
-                if (playerObject.alive) {
-                    await channel.createOverwrite(member.user, { VIEW_CHANNEL: true })
-                    channel.send("<@" + member.user.id + ">  --  HEALTH: " + playerObject.health, { files: [getHeartImage(playerObject.health)] });
-                }
-                else {
-                    await channel.createOverwrite(member.user, { VIEW_CHANNEL: true, SEND_MESSAGES: false })
-                    channel.send(":skull_crossbones: <@" + member.user.id + "> :skull_crossbones: ");
-
-                }
-            } else {
-                message.channel.send("Failed to open area " + area.name + " for " + location.username);
-            }
+            this.PlacePlayerInChannel(client, message, players, guild, channel, location, inventoryData);
         })
 
         return channel;
@@ -90,7 +69,7 @@ module.exports = {
         let playersPresent = players.filter(p => locations.find(l => l.username == p.username && l.areaID == area.id))
 
         //Determine who has big items
-        const bigItemsText = this.GetBigItemString(client, playersPresent, inventoryData);
+        //const bigItemsText = this.GetBigItemString(client, playersPresent, inventoryData);
 
         //Area Description Messages
         const pinIndicator = ">>> *-----Phase ";
@@ -99,7 +78,7 @@ module.exports = {
             pinIndicator + settings.phase + "-----*\n" +
             "**" + area.name + "**\n\n" + area.description;
 
-        const outputString2 = bigItemsText + "\n\n" + area.image;
+        const outputString2 = area.image;
 
         const channelname = "p" + settings.phase + "-" + area.id;
 
@@ -113,9 +92,19 @@ module.exports = {
         })
     },
 
+    PlacePlayerInChannel(client, message, players, guild, channel, location, inventoryData) {
+        const playerObject = players.find(p => location.username == p.username);
+        const member = guild.members.cache.find(m => m.user.id == playerObject.discordID);
+        if (member != null || playerObject.length != 0) {
+            this.SendEntranceMessageAndOpenChannel(client, playerObject, member.user, inventoryData, channel);
+        } else {
+            message.channel.send("Failed to open area " + area.name + " for " + location.username);
+        }
+    },
+
     async CreateSingelChannelMidPhase(client, message, guild, area, players, locations, inventoryData, settings) {
         const channelInfoObject = this.CreateChannelInfoObject(client, area, players, locations, inventoryData, settings);
-        const channel = await this.CreateSingleChannel(client, message, settings.categoryID, guild, channelInfoObject, locations, players);
+        const channel = await this.CreateSingleChannel(client, message, settings.categoryID, guild, channelInfoObject, locations, players, inventoryData);
         return channel;
     },
 
@@ -127,7 +116,18 @@ module.exports = {
             bigItemsText += "\n**" + player.character + "** has: " + formatItem(client, item, false);
         });
         return bigItemsText;
-    }
+    },
 
+    async SendEntranceMessageAndOpenChannel(client, player, user, inventoryData, channel) {
+        let bigItemString = this.GetBigItemString(client, [player], inventoryData);
+
+        if (player.alive) {
+            await channel.createOverwrite(user, { VIEW_CHANNEL: true });
+        } else {
+            await channel.createOverwrite(user, { VIEW_CHANNEL: true, SEND_MESSAGES: false });
+        }
+
+        return channel.send(`${bigItemString}\n<@${user.id}>  --  HEALTH: ${player.health}`, { files: [getHeartImage(player.health)] });
+    }
 
 }

@@ -3,7 +3,7 @@ const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
 
 module.exports = {
 	name: 'setarea',
-	description: 'Manually sets the area for a player.',
+	description: 'Manually sets the area for a player. This command only changes where the bot thinks the player is, NOT what discord channel they are in! (use `!fixplayerarea` to move a player inbetween discord channels)',
     format: "!setarea <username> <areaid>",
     guildonly: true,
     gmonly: true,

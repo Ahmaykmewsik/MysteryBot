@@ -84,7 +84,6 @@ module.exports = {
 					const areas = client.getAreas.all(player.guild);
 					const areaCurrent = areas.find(a => a.id == location.areaID);
 					const areaToMove = areas.find(a => a.id == areaInput);
-					const inventoryData = client.getItemsAndInventories.all(player.guild);
 
 					//Move the player!
 					const gameplayChannelInfoCurrent = gameplayChannels.find(g => (g.areaID == location.areaID) && g.active);
@@ -109,18 +108,16 @@ module.exports = {
 					
 
 					async function InstantMove(gameplayChannelToMove) {
-
+						let inventoryData = client.getItemsAndInventories.all(player.id);
 						const user = await client.users.cache.find(m => m.username == player.username);
+
 						await gameplayChannelCurrent.createOverwrite(user, { VIEW_CHANNEL: false });
 						await gameplayChannelCurrent.send(`<@${user.id}>:bangbang: **${player.character} instantly moved to ${areaToMove.name}!**`);
 						
 						let entranceMessage = `<@${user.id}>:bangbang: **${player.character} appeared from ${areaCurrent.name}!**\n`;
-						entranceMessage += ChannelCreationFunctions.GetBigItemString(client, [player], inventoryData);
-						entranceMessage += `\nHEALTH: ${player.health}`;
-
-
-						await gameplayChannelToMove.createOverwrite(user, { VIEW_CHANNEL: true });
-						await gameplayChannelToMove.send(entranceMessage, { files: [getHeartImage(player.health)] });
+						
+						await gameplayChannelToMove.send(entranceMessage);
+						await ChannelCreationFunctions.SendEntranceMessageAndOpenChannel(client, player, user, inventoryData, gameplayChannelToMove);
 
 						//TODO: tweak this for multi-location mode
 						client.deleteLocationsOfPlayer.run(player.guild_username);

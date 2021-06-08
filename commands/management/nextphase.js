@@ -177,7 +177,7 @@ module.exports = {
             //Iterate Phase
             settings.phase += 1;
 
-            client.channels.cache.get(settings.actionLogID).send(`--------------------------------------------------------\n--------------------------**PHASE ${settings.phase}**------------------------------\n--------------------------------------------------------`);
+            client.channels.cache.get(settings.actionLogID).send(`--------------------------------------------------------\n---------------------**PHASE ${settings.phase}**------------------------\n--------------------------------------------------------`);
 
             //CreateChannels
             try {
