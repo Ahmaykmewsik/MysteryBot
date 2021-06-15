@@ -1,6 +1,6 @@
 const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
-const ChannelCreationFunctions = require('../../utilities/ChannelCreationFunctions.js');
+const ChannelCreationFunctions = require('../../utilities/channelCreationFunctions.js');
 
 module.exports = {
     name: 'fixplayerarea',

@@ -1,4 +1,4 @@
-const ChannelCreationFunctions = require('../../utilities/ChannelCreationFunctions.js');
+const ChannelCreationFunctions = require('../../utilities/channelCreationFunctions.js');
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {

@@ -6,7 +6,7 @@ const path = require("path");
 require("dotenv").config();
 
 const { EarlogListener } = require("./EarlogListener");
-const postErrorMessage = require('./Utilities/errorHandling').postErrorMessage;
+const postErrorMessage = require('./utilities/errorHandling').postErrorMessage;
 
 const SQLite = require("better-sqlite3");
 const sql = new SQLite('./data.sqlite');
