@@ -577,6 +577,11 @@ client.on("ready", () => {
 		WHERE guild = ?`
 	);
 
+	client.deleteSpyChannelDataOfPlayer = sql.prepare(
+		`DELETE FROM spyChannels 
+		WHERE guild = ? AND username = ?`
+	);
+
 	client.deleteAllSpyChannelData = sql.prepare(
 		`DELETE FROM spyChannels 
 		WHERE guild = ?`

@@ -76,6 +76,11 @@ module.exports = {
 
 			const spyChannelData = spyChannels.find(c => c.areaID == spyCurrent.spyArea && c.username == spyCurrent.username);
 			
+			if (spyChannelData == undefined) {
+				//make it dammit!
+				
+			}
+
 			try {
 				const spyChannel = client.channels.cache.get(spyChannelData.channelID);
 				const webhooksSpy = await spyChannel.fetchWebhooks();

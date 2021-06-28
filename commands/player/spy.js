@@ -93,7 +93,10 @@ module.exports = {
 
             let spyChannels = client.getSpyChannels.all(message.guild.id);
 
-            const freeSpyChannels = spyChannels.filter(d => d.username == spyAction.username && !d.spyArea);
+            let freeSpyChannels = spyChannels.filter(d => d.username == spyAction.username && !d.spyArea);
+
+            //Hack cause Spaceman deleted the channel
+            freeSpyChannels = {};
 
             if (freeSpyChannels.length > 0) {
                 //if a spy channel is free use it

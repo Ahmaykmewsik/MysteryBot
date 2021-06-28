@@ -4,7 +4,7 @@ const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
 module.exports = {
     name: 'spyclear',
     description: 'Clears a player\'s spy action.',
-    format: "!spyclear <player> [current]",
+    format: "!spyclear <player> [-c]",
     guildonly: true,
     gmonly: true,
     execute(client, message, args) {
