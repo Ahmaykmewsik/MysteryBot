@@ -56,7 +56,7 @@ module.exports = {
                 channel.createWebhook(`EarlogWebhook_${area.id}_1`);
                 channel.createWebhook(`EarlogWebhook_${area.id}_2`)
                     .then(() => {
-                        client.setEarlogChannel.run({ guild_areaID: `${message.guild.id}_${area.id}`, guild: message.channel.id, channelID: channel.id });
+                        client.setEarlogChannel.run({ guild_areaID: `${message.guild.id}_${area.id}`, guild: message.guild.id, channelID: channel.id });
                     })
                     .catch(console.error);
             }).catch(console.error())

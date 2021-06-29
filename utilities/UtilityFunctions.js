@@ -118,5 +118,19 @@ module.exports = {
         }).catch(error => {
             postErrorMessage(error, message.channel);
         });
+    },
+
+    async RunCommand(client, message, command, args = []) {
+        const commandObject =
+            client.commands.get(command) ||
+            client.commands.find(
+                (cmd) => cmd.aliases && cmd.aliases.includes(commandName)
+            );
+
+        try {
+            commandObject.execute(client, message, args);
+        } catch (error) {
+            postErrorMessage(error, message.channel);
+        }
     }
 }

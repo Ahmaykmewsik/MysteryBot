@@ -547,6 +547,11 @@ client.on("ready", () => {
 		WHERE guild_areaID = ?`
 	);
 
+	client.getEarlogChannels = sql.prepare(
+		`SELECT * FROM earlogChannels
+		WHERE guild = ?`
+	);
+
 	client.getGameplayChannel = sql.prepare(
 		`SELECT * FROM gameplayChannels
 		WHERE channelID = ?`

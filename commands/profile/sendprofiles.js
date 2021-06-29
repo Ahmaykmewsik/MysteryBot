@@ -16,18 +16,8 @@ module.exports = {
         if (args.length != 0)
             return message.channel.send("This command takes no arguments.");
 
-        //Show profile status!
-        const profileStatusCommand =
-            client.commands.get("profilestatus") ||
-            client.commands.find(
-                (cmd) => cmd.aliases && cmd.aliases.includes(commandName)
-            );
-
-        try {
-            profileStatusCommand.execute(client, message, args);
-        } catch (error) {
-            postErrorMessage(error, message.channel);
-        }
+        //Show profile status
+        UtilityFunctions.RunCommand(client, message, "profilestatus");
 
         let warningMessage = "\n\nAre you SURE you're ready to send everyone their profile? You should only do this once! (y or n)";
 
