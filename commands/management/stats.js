@@ -16,8 +16,8 @@ module.exports = {
         const items = client.getItems.all(message.guild.id);
         const inventories = client.getInventories.all(message.guild.id);
         const spyActions = client.getSpyActions.all(message.guild.id);
-        const spyCurrent = client.getSpyCurrent.all(message.guild.id);
         const spyChannels = client.getSpyChannels.all(message.guild.id);
+        const spyConnections = client.getSpyConnectionsAll.all(message.guild.id);
         const numEarlogChannels = client.countEarlogChannels.get(message.guild.id);
         const gameplayChannels = client.getGameplayChannels.all(message.guild.id);
 
@@ -39,7 +39,7 @@ module.exports = {
         + `\n__Items:__** ${items.map(i => i.id).join(", ")}**`
         + `\n__#Inventories:__ **${inventories.length}**`
         + `\n__#Spy Actions:__ **${spyActions.length}**`
-        + `\n__#Spy Current:__ **${spyCurrent.length}**`
+        + `\n__#Spy Connections:__ **${spyConnections.length}**`
         + `\n__#Spy Channels:__ **${spyChannels.length}**`
         + `\n__#Earlog Channels:__ **${numEarlogChannels[`count(*)`]}**`
         + `\n__#Gameplay Channels:__ **${gameplayChannels.length}**`

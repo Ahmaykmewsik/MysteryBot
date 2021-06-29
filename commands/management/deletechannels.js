@@ -2,9 +2,7 @@ const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
 	name: 'deletechannels',
-	description: 'For development purposes only. Deletes every discord channel the bot created.\
-				Because Ahmayk is fucking tired of manually deleting huge test games. \
-				Will only work in Ahmayk\'s secret development server. Also runs !resetall',
+	description: 'Will only work in Ahmayk\'s secret development server. For development purposes only. Deletes every discord channel the bot created. Because Ahmayk is fucking tired of manually deleting huge test games. Also runs !resetall',
 	format: "!deletegame",
 	guildonly: true,
 	gmonly: true,

@@ -31,7 +31,7 @@ for (const folder of commandFolders) {
 }
 
 client.on("ready", () => {
-	
+
 	// Check if the tables exists, if not make them.
 	const table = sql.prepare("SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'players';").get();
 	if (!table['count(*)']) {
@@ -136,20 +136,22 @@ client.on("ready", () => {
 				guild TEXT,
 				spyArea TEXT,
 				accuracy FLOAT,
-				permanent BOOL 
+				permanent BOOL,
+				visible BOOL,
+				active BOOL
 			);`
-		).run();
+		).run();	
 
-		//Spy Current
+		//Spy Connections
 		sql.prepare(
-			`CREATE TABLE spyCurrent (
-				guild_username TEXT,
-				username TEXT,
-				guild TEXT,
-				spyArea TEXT,
-				accuracy FLOAT,
-				permanent BOOL 
-			);`
+			`CREATE TABLE spyConnections (
+			area1 TEXT,
+			area2 TEXT,
+			guild TEXT,
+			accuracy FLOAT,
+			visible BOOL,
+			active BOOL
+		);`
 		).run();
 
 		//Spy Channels
@@ -162,7 +164,7 @@ client.on("ready", () => {
 				channelID TEXT
 			);`
 		).run();
-			
+
 		//Earlogs
 		sql.prepare(
 			`CREATE TABLE earlogChannels (
@@ -291,7 +293,7 @@ client.on("ready", () => {
 		`DELETE FROM areas
 		WHERE guild = ?`
 	);
-	
+
 	// -------Connection Functions------
 
 	client.getConnections = sql.prepare(
@@ -462,7 +464,7 @@ client.on("ready", () => {
 	);
 
 	// -------Spy Functions------
-	
+
 	client.getSpyActions = sql.prepare(
 		`SELECT * FROM spyActions
 		WHERE guild_username = ?`
@@ -473,24 +475,29 @@ client.on("ready", () => {
 		WHERE guild = ?`
 	)
 
-	client.getSpyCurrent = sql.prepare(
-		`SELECT * FROM spyCurrent
-		WHERE guild_username = ?`
+	client.getSpyConnections = sql.prepare(
+		`SELECT * FROM spyConnections
+		WHERE area1 = ? AND guild = ?`
 	);
 
-	client.getSpyCurrentAll = sql.prepare(
-		`SELECT * FROM spyCurrent
+	client.getSpyConnectionsAll = sql.prepare(
+		`SELECT * FROM spyConnections
 		WHERE guild = ?`
 	);
 
 	client.addSpyAction = sql.prepare(
-		`INSERT INTO spyActions (guild_username, username, guild, spyArea, accuracy, permanent)
-		VALUES (@guild_username, @username, @guild, @spyArea, @accuracy, @permanent)`
+		`INSERT INTO spyActions (guild_username, username, guild, spyArea, accuracy, permanent, visible, active)
+		VALUES (@guild_username, @username, @guild, @spyArea, @accuracy, @permanent, @visible, @active)`
 	);
 
-	client.addSpyCurrent = sql.prepare(
-		`INSERT INTO spyCurrent (guild_username, username, guild, spyArea, accuracy, permanent)
-		VALUES (@guild_username, @username, @guild, @spyArea, @accuracy, @permanent)`
+	client.addSpyConnection = sql.prepare(
+		`INSERT INTO spyConnections (area1, area2, guild, accuracy, visible, active)
+		VALUES (@area1, @area2, @guild, @accuracy, @visible, @active)`
+	);
+
+	client.deleteSpyAction = sql.prepare(
+		`DELETE FROM spyActions
+		WHERE guild_username = ? AND spyArea = ? AND active = ?`
 	);
 
 	client.deleteSpyActions = sql.prepare(
@@ -503,13 +510,13 @@ client.on("ready", () => {
 		WHERE guild = ?`
 	)
 
-	client.deleteSpyCurrent = sql.prepare(
-		`DELETE FROM spyCurrent
-		WHERE guild_username = ?`
+	client.deleteSpyConnection = sql.prepare(
+		`DELETE FROM spyConnections
+		WHERE area1 = ? AND area2 = ? AND guild = ? AND active = ?`
 	);
 
-	client.deleteAllSpyCurrent = sql.prepare(
-		`DELETE FROM spyCurrent
+	client.deleteAllSpyConnections = sql.prepare(
+		`DELETE FROM spyConnections
 		WHERE guild = ?`
 	);
 
@@ -610,7 +617,7 @@ client.on("message", message => {
 				message.channel.updateOverwrite(message.channel.guild.roles.everyone, { SEND_MESSAGES: false });
 
 				let gameplayChannel = client.getGameplayChannel.get(message.channel.id);
-				
+
 				gameplayChannel.locked = 1;
 				client.setGameplayChannel.run(gameplayChannel);
 			}
@@ -624,7 +631,7 @@ client.on("message", message => {
 		} catch (error) {
 			console.error("LOCK error!" + error);
 		}
-		
+
 		try {
 			EarlogListener(client, message);
 		} catch (error) {

@@ -2,8 +2,7 @@ const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
 	name: 'defaultsetup',
-	description: ` For development purposes. \
-                   Adds the minimum requirement to a game so you can use !gamestart immediatley.`,
+	description: ` For development purposes. Adds the minimum requirement to a game so you can use !gamestart immediatley.`,
 	format: "!defaultsetup",
 	guildonly: true,
 	gmonly: true,

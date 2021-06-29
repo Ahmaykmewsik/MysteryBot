@@ -39,7 +39,7 @@ module.exports = {
 			client.deleteAllItems.run(message.guild.id);
 			client.deleteAllInventories.run(message.guild.id);
 			client.deleteAllSpyActions.run(message.guild.id);
-			client.deleteAllSpyCurrent.run(message.guild.id);
+			client.deleteAllSpyConnections.run(message.guild.id);
 			client.deleteAllEarlogChannelData.run(message.guild.id);
 			client.deleteAllSpyChannelData.run(message.guild.id);
 			client.deleteAllGameplayChannelData.run(message.guild.id);
