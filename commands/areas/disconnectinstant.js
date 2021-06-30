@@ -35,7 +35,6 @@ module.exports = {
         }
 
         instantConnectionsToDelete.forEach(c => {
-            console.log(c);
             client.deleteInstantConnection.run(c.area1, c.area2, c.guild);
         })
         

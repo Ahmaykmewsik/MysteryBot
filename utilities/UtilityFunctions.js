@@ -187,11 +187,36 @@ module.exports = {
     },
 
 
-    Emoji(client, emojiID) {
-        //return 
- 
+    GetHeartEmojis(num) {
+        let heart100 = `<:h10:859700259152199721>`;
+        let heart075 = `<:h75:859700259064512522>`;
+        let heart050 = `<:h50:859700259223109632>`;
+        let heart025 = `<:h25:859700259168714762>`;
+        let heart000 = `<:h00:859700258950348842>`;
 
+        return GenerateHeartString(num);
 
-        //return client.emojis.cache.get(emojiID);
+        function GenerateHeartString(n) {
+            if (n < 0.0 || n > 30)  return "";
+            if (n == 0.00) return heart000;
+            if (n == 0.25) return heart025;
+            if (n == 0.50) return heart050;
+            if (n == 0.75) return heart075;
+            if (n == 1.00) return heart100;
+
+            let remainder = n % 1.0;
+            switch (remainder) {
+                case 0.00:
+                    return `${GenerateHeartString(n - 1.00)} ${heart100}`;
+                case 0.25:
+                    return `${GenerateHeartString(n - 0.25)} ${heart025}`;
+                case 0.50:
+                    return `${GenerateHeartString(n - 0.50)} ${heart050}`;
+                case 0.75:
+                    return `${GenerateHeartString(n - 0.75)} ${heart075}`;
+                default:
+                    return "";
+            }
+        }
     }
 }

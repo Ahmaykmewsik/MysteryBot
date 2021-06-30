@@ -1,6 +1,5 @@
 const postErrorMessage = require('./errorHandling').postErrorMessage;
 const SendMessageChannel = require('./SendMessageChannel_Failsafe').SendMessageChannel_Failsafe;
-const getHeartImage = require('./getHeartImage').getHeartImage;
 const formatItem = require('./formatItem').formatItem;
 const UtilityFunctions = require('./UtilityFunctions');
 
@@ -11,6 +10,7 @@ module.exports = {
             let categoryID = settings.categoryID;
             let channelName = "p" + settings.phase + "-" + area.id;
             let areaDescription = this.CreateAreaDescription(area, settings);
+            let items = client.getItems.all(guild.id);
 
             let channel = await guild.channels.create(channelName, {
                 type: 'text',
@@ -47,9 +47,15 @@ module.exports = {
             //Figure out who's here
             const locationsHere = locations.filter(l => area.id == l.areaID);
 
+            let characterDescriptions = "";
+
             locationsHere.forEach(async location => {
-                await this.PlacePlayerInChannel(client, message, players, guild, channel, location, inventoryData);
+                let player = players.find(p => p.username == location.username);
+                characterDescriptions += this.GetPlayerIntroString(client, player, items, inventoryData) + "\n\n";
+                await this.OpenChannelForPlayer(player, message, channel);
             })
+
+            SendMessageChannel(characterDescriptions, channel);
 
             return channel;
         } catch (error) {
@@ -61,56 +67,50 @@ module.exports = {
     CreateAreaDescription(area, settings) {
         let pinIndicator = ">>> *-----Phase ";
         let areaImage = (area.image) ? area.image : "";
-        return `${pinIndicator}${settings.phase}-----*\n**${area.name}**\n\n${area.description}${areaImage}`;
+        return `${pinIndicator}${settings.phase}-----*\n**${area.name}**\n\n${area.description}\n\n${areaImage}`;
     },
 
-    async PlacePlayerInChannel(client, message, players, guild, channel, location, inventoryData) {
-
-        try {
-            const playerObject = players.find(p => location.username == p.username);
-            const member = guild.members.cache.find(m => m.user.id == playerObject.discordID);
-            if (member != null || playerObject.length != 0) {
-                await this.SendEntranceMessageAndOpenChannel(client, playerObject, member.user, inventoryData, channel);
-            } else {
-                message.channel.send("Failed to open area " + area.name + " for " + location.username);
-            }
-        } catch (error) {
-            postErrorMessage(error, message.channel);
-        }
-    },
 
     async CreateSingelChannelMidPhase(client, message, guild, area, players, locations, inventoryData, settings) {
         const channel = await this.CreateSingleChannel(client, message, area, guild, settings, players, locations, inventoryData);
         return channel;
     },
 
-    GetBigItemString(client, players, inventoryData) {
-        try {
-            let bigItemsText = "";
-            const itemsHereToPost = inventoryData.filter(d => players.find(p => p.username == d.username) && (d.big || d.clothing));
-            itemsHereToPost.forEach(item => {
-                const player = players.find(p => p.username == item.username);
-                bigItemsText += "\n**" + player.character + "** has: " + formatItem(client, item, false);
-            });
-            return bigItemsText;
-        } catch (error) {
-            postErrorMessage(error, message.channel);
-        }
+    GetBigItemString(client, player, items, inventoryData) {
+
+        let bigItemsText = "";
+        const itemsHereToPost = inventoryData.filter(d => (player.username == d.username));
+        console.log(inventoryData);
+        itemsHereToPost.forEach(inventory => {
+
+            let item = items.find(i => i.id == inventory.itemID);
+            //Only show big and clothing items
+            if (!(item.big || item.clothing)) return;
+
+            bigItemsText += "\n**" + player.character + "** has: " + formatItem(client, item, false);
+        });
+        return bigItemsText;
+
     },
 
-    async SendEntranceMessageAndOpenChannel(client, player, user, inventoryData, channel) {
+    GetPlayerIntroString(client, player, items, inventoryData) {
+        let bigItemString = this.GetBigItemString(client, player, items, inventoryData);
+        let heartEmojis = UtilityFunctions.GetHeartEmojis(player.health);
+        return `<@${player.discordID}>  --  HEALTH: ${player.health}  ${heartEmojis}\n${bigItemString}`;
+    },
+
+    async SendSingleEntranceMessageAndOpenChannel(client, player, user, items, inventoryData, channel) {
+        await OpenChannelForPlayer(player, message, user, channel);
+        await channel.send(this.GetPlayerIntroString(client, player, items, inventoryData), { split: true });
+    },
+
+    async OpenChannelForPlayer(player, message, channel) {
         try {
-            let bigItemString = this.GetBigItemString(client, [player], inventoryData);
-
-            if (player.alive) {
-                await channel.createOverwrite(user, { VIEW_CHANNEL: true });
-            } else {
-                await channel.createOverwrite(user, { VIEW_CHANNEL: true, SEND_MESSAGES: false });
-            }
-
-            return channel.send(`${bigItemString}\n<@${user.id}>  --  HEALTH: ${player.health}`, { files: [getHeartImage(player.health)] });
-
+            const member = channel.guild.members.cache.find(m => m.user.id == player.discordID);
+            (player.alive) ? await channel.createOverwrite(member.user, { VIEW_CHANNEL: true }) :
+                             await channel.createOverwrite(member.user, { VIEW_CHANNEL: true, SEND_MESSAGES: false });
         } catch (error) {
+            message.channel.send("Failed to open channel " + channel.name + " for " + player.username);
             postErrorMessage(error, message.channel);
         }
     },
@@ -141,8 +141,6 @@ module.exports = {
 
     //This can be run at literally any time and it will put the spy channels in the right place
     async UpdateSpyChannels(client, message, players, areas, spyChannelData, spyActionsData, settings) {
-
-        console.log(spyActionsData);
 
         //Iterate through all spy channels and clear out any outdated spy actions
         spyChannelData.forEach(spyChannel => {
@@ -186,7 +184,7 @@ module.exports = {
                 freeSpyChannel.areaID = spyAction.spyArea;
                 return ReplaceSpyChannel(spyChannel);
             }
-            
+
             //No free spy Channel, so we need to make one
             let player = players.find(p => p.username == spyAction.username);
             let area = areas.find(a => a.id == spyAction.spyArea);
@@ -253,7 +251,7 @@ module.exports = {
             };
 
             return await client.setSpyChannel.run(newSpyChannel);
-            
+
         } catch (error) {
             if (!message) return;
             postErrorMessage(error, message.channel);
