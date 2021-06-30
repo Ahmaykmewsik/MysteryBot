@@ -8,8 +8,12 @@ module.exports = {
     gmonly: true,
 	execute(client, message, args) {
 
+        //let emojiList = client.emojis.cache.random();
+        //console.log(emojiList);
+        message.channel.send("<:billy:859697522212339712>");
+
         if (args.length == 0) {
-            return message.channel.send("You need to enter a user.");
+            return message.channel.send(`${UtilityFunctions.Emoji(client, "859697522212339712")}You need to enter a user.`);
         }
 
         const inputusername = args.shift().toLowerCase();
@@ -28,7 +32,7 @@ module.exports = {
             return message.channel.send("Invalid username: " + inputusername);
         }
 
-        const playerExists = client.getUserInDatabase.get(playerobject.username);
+        const playerExists = client.getUserInDatabase.get(playerobject.id);
 
         if (playerExists) {
             if (playerExists.guild == message.guild.id) {

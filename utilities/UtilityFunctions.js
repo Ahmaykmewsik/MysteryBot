@@ -148,5 +148,50 @@ module.exports = {
         let a = (spyAction.active) ? " (active)" : "";
         let v = (spyAction.visible) ? " (visible)" : "";
         return `${spyAction.spyArea} [${spyAction.accuracy}]${p}${a}${v}`;
+    },
+
+    //Transfers all active spy connections into Spy Actions
+    UpdateSpyActions(client, message, spyActionsData, spyConnections, locations) {
+
+        spyConnections.forEach(spyConnection => {
+            //If the connection isn't active don't do shit
+            if (!spyConnection.active) return;
+
+            //Get all players in the spyConnection's area
+            let playerLocationsInSpyArea = locations.filter(l => l.areaID == spyConnection.area1);
+
+            playerLocationsInSpyArea.forEach(player => {
+
+                //find if the player has a matching spy action
+                //A matching spy Action that's already there takes precidnece
+                matchingCurrentSpyAction = spyActionsData.find(spyAction =>
+                    spyAction.username == player.username &&
+                    spyAction.spyArea == spyConnection.area2
+                );
+                if (matchingCurrentSpyAction) return;
+
+                newSpyAction = {
+                    guild_username: player.guild_username,
+                    username: player.username,
+                    guild: player.guild,
+                    spyArea: spyConnection.area2,
+                    accuracy: spyConnection.accuracy,
+                    permanent: 0,
+                    visible: spyConnection.visible,
+                    active: 1
+                }
+                client.addSpyAction.run(newSpyAction);
+            })
+
+        });
+    },
+
+
+    Emoji(client, emojiID) {
+        //return 
+ 
+
+
+        //return client.emojis.cache.get(emojiID);
     }
 }

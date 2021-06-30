@@ -2,132 +2,261 @@ const postErrorMessage = require('./errorHandling').postErrorMessage;
 const SendMessageChannel = require('./SendMessageChannel_Failsafe').SendMessageChannel_Failsafe;
 const getHeartImage = require('./getHeartImage').getHeartImage;
 const formatItem = require('./formatItem').formatItem;
+const UtilityFunctions = require('./UtilityFunctions');
 
 module.exports = {
 
-    async CreateSingleChannel(client, message, categoryID, guild, channelInfoObject, locations, players, inventoryData) {
+    async CreateSingleChannel(client, message, area, guild, settings, players, locations, inventoryData) {
+        try {
+            let categoryID = settings.categoryID;
+            let channelName = "p" + settings.phase + "-" + area.id;
+            let areaDescription = this.CreateAreaDescription(area, settings);
 
+            let channel = await guild.channels.create(channelName, {
+                type: 'text',
+                parentID: categoryID,
+                permissionOverwrites: [{
+                    id: guild.id,
+                    deny: [`VIEW_CHANNEL`]
+                }]
+            })
 
-        const channel = await guild.channels.create(channelInfoObject.channelname, {
-            type: 'text',
-            parentID: categoryID,
-            permissionOverwrites: [{
+            await channel.overwritePermissions([{
                 id: guild.id,
                 deny: [`VIEW_CHANNEL`]
-            }]
-        })
+            }]);
+            await channel.setParent(categoryID);
 
-        await channel.setParent(categoryID);
-        await channel.overwritePermissions([{
-            id: guild.id,
-            deny: [`VIEW_CHANNEL`]
-        }]);
+            const earlogChannel = client.getEarlogChannel.get(`${guild.id}_${area.id}`);
 
+            const newGameplayChannel = {
+                guild_areaID: `${guild.id}_${area.id}`,
+                areaID: area.id,
+                guild: guild.id,
+                channelName: channel.name,
+                channelID: channel.id,
+                earlogChannelID: earlogChannel.channelID,
+                active: 1,
+                locked: 0
+            }
 
-        const earlogChannel = client.getEarlogChannel.get(`${guild.id}_${channelInfoObject.area.id}`);
+            client.setGameplayChannel.run(newGameplayChannel);
 
-        const newGameplayChannel = {
-            guild_areaID: `${guild.id}_${channelInfoObject.area.id}`,
-            areaID: channelInfoObject.area.id,
-            guild: guild.id,
-            channelName: channel.name,
-            channelID: channel.id,
-            earlogChannelID: earlogChannel.channelID,
-            active: 1,
-            locked: 0
+            SendMessageChannel(areaDescription, channel);
+
+            //Figure out who's here
+            const locationsHere = locations.filter(l => area.id == l.areaID);
+
+            locationsHere.forEach(async location => {
+                await this.PlacePlayerInChannel(client, message, players, guild, channel, location, inventoryData);
+            })
+
+            return channel;
+        } catch (error) {
+            postErrorMessage(error, message.channel);
         }
 
-        client.setGameplayChannel.run(newGameplayChannel);
-
-        SendMessageChannel(channelInfoObject.outputString1, channel);
-        if (channelInfoObject.outputString2)
-            SendMessageChannel(channelInfoObject.outputString2, channel);
-
-        //Figure out who's here
-        const locationsHere = locations.filter(l => channelInfoObject.area.id == l.areaID);
-
-        locationsHere.forEach(async location => {
-            this.PlacePlayerInChannel(client, message, players, guild, channel, location, inventoryData);
-        })
-
-        return channel;
     },
 
-
-    CreateChannelInfoObject(client, area, players, locations, inventoryData, settings, activeAreas = undefined) {
-        let active = true;
-        if (activeAreas) {
-            //If nobody is there, don't make a channel for it
-            active = (activeAreas.find(a => area.id == a.id)) ? true : false;
-        }
-
-        //If there's no image then don't try and put one
-        if (area.image == undefined) {
-            area.image = "";
-        }
-
-        let playersPresent = players.filter(p => locations.find(l => l.username == p.username && l.areaID == area.id))
-
-        //Determine who has big items
-        //const bigItemsText = this.GetBigItemString(client, playersPresent, inventoryData);
-
-        //Area Description Messages
-        const pinIndicator = ">>> *-----Phase ";
-
-        const outputString1 =
-            pinIndicator + settings.phase + "-----*\n" +
-            "**" + area.name + "**\n\n" + area.description;
-
-        const outputString2 = area.image;
-
-        const channelname = "p" + settings.phase + "-" + area.id;
-
-        return ({
-            type: "area",
-            area: area,
-            channelname: channelname,
-            active: active,
-            outputString1: outputString1,
-            outputString2: outputString2
-        })
+    CreateAreaDescription(area, settings) {
+        let pinIndicator = ">>> *-----Phase ";
+        let areaImage = (area.image) ? area.image : "";
+        return `${pinIndicator}${settings.phase}-----*\n**${area.name}**\n\n${area.description}${areaImage}`;
     },
 
-    PlacePlayerInChannel(client, message, players, guild, channel, location, inventoryData) {
-        const playerObject = players.find(p => location.username == p.username);
-        const member = guild.members.cache.find(m => m.user.id == playerObject.discordID);
-        if (member != null || playerObject.length != 0) {
-            this.SendEntranceMessageAndOpenChannel(client, playerObject, member.user, inventoryData, channel);
-        } else {
-            message.channel.send("Failed to open area " + area.name + " for " + location.username);
+    async PlacePlayerInChannel(client, message, players, guild, channel, location, inventoryData) {
+
+        try {
+            const playerObject = players.find(p => location.username == p.username);
+            const member = guild.members.cache.find(m => m.user.id == playerObject.discordID);
+            if (member != null || playerObject.length != 0) {
+                await this.SendEntranceMessageAndOpenChannel(client, playerObject, member.user, inventoryData, channel);
+            } else {
+                message.channel.send("Failed to open area " + area.name + " for " + location.username);
+            }
+        } catch (error) {
+            postErrorMessage(error, message.channel);
         }
     },
 
     async CreateSingelChannelMidPhase(client, message, guild, area, players, locations, inventoryData, settings) {
-        const channelInfoObject = this.CreateChannelInfoObject(client, area, players, locations, inventoryData, settings);
-        const channel = await this.CreateSingleChannel(client, message, settings.categoryID, guild, channelInfoObject, locations, players, inventoryData);
+        const channel = await this.CreateSingleChannel(client, message, area, guild, settings, players, locations, inventoryData);
         return channel;
     },
 
     GetBigItemString(client, players, inventoryData) {
-        let bigItemsText = "";
-        const itemsHereToPost = inventoryData.filter(d => players.find(p => p.username == d.username) && (d.big || d.clothing));
-        itemsHereToPost.forEach(item => {
-            const player = players.find(p => p.username == item.username);
-            bigItemsText += "\n**" + player.character + "** has: " + formatItem(client, item, false);
-        });
-        return bigItemsText;
+        try {
+            let bigItemsText = "";
+            const itemsHereToPost = inventoryData.filter(d => players.find(p => p.username == d.username) && (d.big || d.clothing));
+            itemsHereToPost.forEach(item => {
+                const player = players.find(p => p.username == item.username);
+                bigItemsText += "\n**" + player.character + "** has: " + formatItem(client, item, false);
+            });
+            return bigItemsText;
+        } catch (error) {
+            postErrorMessage(error, message.channel);
+        }
     },
 
     async SendEntranceMessageAndOpenChannel(client, player, user, inventoryData, channel) {
-        let bigItemString = this.GetBigItemString(client, [player], inventoryData);
+        try {
+            let bigItemString = this.GetBigItemString(client, [player], inventoryData);
 
-        if (player.alive) {
-            await channel.createOverwrite(user, { VIEW_CHANNEL: true });
-        } else {
-            await channel.createOverwrite(user, { VIEW_CHANNEL: true, SEND_MESSAGES: false });
+            if (player.alive) {
+                await channel.createOverwrite(user, { VIEW_CHANNEL: true });
+            } else {
+                await channel.createOverwrite(user, { VIEW_CHANNEL: true, SEND_MESSAGES: false });
+            }
+
+            return channel.send(`${bigItemString}\n<@${user.id}>  --  HEALTH: ${player.health}`, { files: [getHeartImage(player.health)] });
+
+        } catch (error) {
+            postErrorMessage(error, message.channel);
+        }
+    },
+
+    async CreateEarlog(client, message, area) {
+        try {
+            let channel = await message.guild.channels.create("earlog-" + area.id, {
+                type: 'text',
+                permissionOverwrites: [{
+                    id: message.guild.id,
+                    deny: ['SEND_MESSAGES', 'VIEW_CHANNEL']
+                }]
+            })
+
+            await channel.createWebhook(`EarlogWebhook_${area.id}_1`)
+            await channel.createWebhook(`EarlogWebhook_${area.id}_2`)
+
+            return client.setEarlogChannel.run({
+                guild_areaID: `${message.guild.id}_${area.id}`,
+                guild: message.guild.id,
+                channelID: channel.id
+            });
+        } catch (error) {
+            postErrorMessage(error, message.channel);
         }
 
-        return channel.send(`${bigItemString}\n<@${user.id}>  --  HEALTH: ${player.health}`, { files: [getHeartImage(player.health)] });
-    }
+    },
 
+    //This can be run at literally any time and it will put the spy channels in the right place
+    async UpdateSpyChannels(client, message, players, areas, spyChannelData, spyActionsData, settings) {
+
+        console.log(spyActionsData);
+
+        //Iterate through all spy channels and clear out any outdated spy actions
+        spyChannelData.forEach(spyChannel => {
+
+            let matchedSpyAction = spyActionsData.find(spyAction =>
+                spyAction.username == spyChannel.username &&
+                spyAction.spyArea == spyChannel.areaID &&
+                spyAction.active
+            );
+
+            //We found a matching spy action
+            if (matchedSpyAction) return;
+
+            //no active Spy Action, so unassign the spy Channel
+            spyChannel.areaID == null;
+            return ReplaceSpyChannel(spyChannel);
+        });
+
+        //make sure all spy Actions have an appropriate spy channel stored in memory
+        await spyActionsData.forEach(async spyAction => {
+
+            if (!spyAction.active) return;
+
+            let matchedSpyChannel = spyChannelData.find(spyChannel =>
+                spyAction.username == spyChannel.username &&
+                spyAction.spyArea == spyChannel.areaID &&
+                spyAction.active
+            );
+
+            if (matchedSpyChannel) return;
+
+            //No spy channel for the action, so update it!
+            //If there's a free Spy Channel for that player, use it
+            let freeSpyChannel = spyChannelData.find(spyChannel =>
+                spyChannel.username == spyAction.username &&
+                spyChannel.areaID == null
+            );
+
+            //If there's a free spy channel use that
+            if (freeSpyChannel) {
+                freeSpyChannel.areaID = spyAction.spyArea;
+                return ReplaceSpyChannel(spyChannel);
+            }
+            
+            //No free spy Channel, so we need to make one
+            let player = players.find(p => p.username == spyAction.username);
+            let area = areas.find(a => a.id == spyAction.spyArea);
+            return await this.CreateSpyChannel(client, message, message.guild, player, area, settings);
+        })
+
+        //Check that the GM didn't delete the spy channel or some shit
+        return await this.MakeSureSpyChannelsExist(client, message, players, areas, spyChannelData);
+
+        function ReplaceSpyChannel(spyChannel) {
+            client.deleteSpyChannelData.run(spyChannel.guild, spyChannel.username, spyChannel.areaID);
+            client.setSpyChannel.run(spyChannel);
+        }
+    },
+
+    async MakeSureSpyChannelsExist(client, message, players, areas, spyChannelData) {
+        await spyChannelData.forEach(async spyChannelData => {
+            const spyChannel = client.channels.cache.get(spyChannelData.channelID);
+            if (spyChannel) return;
+
+            //We can't find it, so gotta make it. 
+            let player = players.find(player => player.username == spyChannelData.username);
+            let area = areas.find(area => area.id == spyChannelData.areaID);
+            let settings = UtilityFunctions.GetSettings(client, player.guild);
+            //delete the useless one
+            client.deleteSpyChannelData.run(player.guild, player.username, spyChannelData.areaID);
+            //Make a new one!
+            await this.CreateSpyChannel(client, message, player, area, settings);
+
+        });
+    },
+
+    async CreateSpyChannel(client, message, guild, player, area, settings) {
+        try {
+            let channel = await guild.channels.create("spy-" + player.username, {
+                type: 'text',
+                permissionOverwrites: [{
+                    id: player.guild,
+                    deny: ['VIEW_CHANNEL', 'SEND_MESSAGES']
+                },
+                {
+                    id: player.discordID,
+                    allow: ['VIEW_CHANNEL']
+                }]
+            })
+
+            //Create Webhooks
+            await channel.overwritePermissions([{
+                id: player.guild,
+                deny: [`VIEW_CHANNEL`]
+            }]);
+
+            await channel.createWebhook(`SpyWebhook_${player.username}_1`);
+            await channel.createWebhook(`SpyWebhook_${player.username}_2`)
+
+            await channel.setParent(settings.spyCategoryID)
+
+            newSpyChannel = {
+                guild_username: `${player.guild_username}`,
+                guild: player.guild,
+                username: player.username,
+                areaID: area.id,
+                channelID: channel.id
+            };
+
+            return await client.setSpyChannel.run(newSpyChannel);
+            
+        } catch (error) {
+            if (!message) return;
+            postErrorMessage(error, message.channel);
+        }
+    }
 }

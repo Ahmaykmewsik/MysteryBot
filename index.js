@@ -221,7 +221,7 @@ client.on("ready", () => {
 
 	client.getUserInDatabase = sql.prepare(
 		`SELECT * from players WHERE discordID = ?`
-	)
+	);
 
 	client.setPlayer = sql.prepare(
 		`INSERT OR REPLACE INTO players
@@ -587,6 +587,11 @@ client.on("ready", () => {
 	client.deleteAllEarlogChannelData = sql.prepare(
 		`DELETE FROM earlogChannels 
 		WHERE guild = ?`
+	);
+
+	client.deleteSpyChannelData = sql.prepare(
+		`DELETE FROM spyChannels
+		WHERE guild = ? AND username = ? AND areaID = ?`
 	);
 
 	client.deleteSpyChannelDataOfPlayer = sql.prepare(

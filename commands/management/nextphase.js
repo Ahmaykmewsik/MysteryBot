@@ -5,7 +5,7 @@ const sendPassMessages = require('../../utilities/sendPassMessages.js').sendPass
 
 module.exports = {
     name: 'nextphase',
-    description: 'Progresses the phase. Moves all players based on their movement actions. Any player without a submitted action either stays still if possible, or moves randomly.',
+    description: 'Progresses the phase. Moves all players based on their movement actions. Any player without a submitted action either stays still if possible, or moves randomly. If you\'re in a hurry, use `!nextphase y` to bypass the prompt (not recommended).',
     format: "!moveplayers",
     gmonly: true,
     execute(client, message, args) {
@@ -91,6 +91,9 @@ module.exports = {
         //         .catch(console.error);;
         // }
 
+        //Do it immediatley if they put a y
+        if (args.includes("y")) return NextPhase();
+
         warningMessage += "Are you sure you would like to proceed with the movement phase? (y/n)";
         return UtilityFunctions.WarnUserWithPrompt(message, warningMessage, NextPhase);
 
@@ -127,19 +130,19 @@ module.exports = {
                         if (moved) {
                             if (connectionExists) {
                                 //If players can go here normally, post where they went
-                                message.guild.channels.cache.get(gameplayChannel.channelID).send(player.character + " moved to: " + player.move).catch(console.error());
+                                message.guild.channels.cache.get(gameplayChannel.channelID).send(player.character + " moved to: " + player.move);
                             } else {
                                 //If a player goes somewhere sneaky sneaky, don't tell nuthin
-                                message.guild.channels.cache.get(gameplayChannel.channelID).send(player.character + " moved to: ???").catch(console.error());
+                                message.guild.channels.cache.get(gameplayChannel.channelID).send(player.character + " moved to: ???");
                             }
 
                         } else {
-                            message.guild.channels.cache.get(gameplayChannel.channelID).send(player.character + " stayed here.").catch(console.error);
+                            message.guild.channels.cache.get(gameplayChannel.channelID).send(player.character + " stayed here.");
                         }
                     } catch (error) {
                         //If can't find the channel, tell the GM (it might not exist or something else went wrong)
                         console.error(error);
-                        message.channel.send("Could not post movement message for: " + player.username + " to " + areaOld);
+                        message.channel.send(":warning: Could not post movement message for: " + player.username + " to " + areaOld);
                     }
 
                 } else {
@@ -162,7 +165,7 @@ module.exports = {
                             message.guild.channels.cache.get(gameplayChannel.channelID).send(player.character + " stayed here.");
                         }
                     } catch (error) {
-                        message.channel.send("Did not post movement message for: " + player.username);
+                        message.channel.send(":warning: Could not post movement message for: " + player.username);
                     }
                 }
 

@@ -7,6 +7,7 @@ module.exports = {
     name: 'me',
     description: 'Lists a player\'s own info. DM only. Cannot be used while a player\'s channel is locked or if the GM has processed their movement manually (to hide spoilers!).',
     format: "!me",
+    alias: "i",
     dmonly: true,
     execute(client, message, args) {
 
@@ -25,7 +26,7 @@ module.exports = {
         if (playerChannel == undefined)
             return message.channel.send("Sorry can't do that cheif. I couldn't find where you are? (Might want to ask your GM about that)");
 
-        if (playerChannel.locked || player.forceMoved)
+        if (playerChannel.locked)
             return message.channel.send("Sorry can't do that cheif. You can't look at your player info while your channel is locked. It might have spoilers!");
 
         if (player.forceMoved)

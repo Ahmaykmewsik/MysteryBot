@@ -1,5 +1,6 @@
 const { Webhook } = require("discord.js");
 const { updateAvatars } = require("./unusedCommands/updateAvatarsUtil");
+const ChannelCreationFunctions = require('./utilities/channelCreationFunctions');
 
 module.exports = {
 	async EarlogListener(client, message) {
@@ -25,7 +26,7 @@ module.exports = {
 			if (message.member.nickname) {
 				username = `${message.member.nickname}  [${message.author.username}]`;
 			}
-	
+
 			var webhook;
 			if (!earlogChannel.lastMessage) {
 				webhook = webhooks.first();
@@ -35,23 +36,23 @@ module.exports = {
 				webhooks.sweep(w => w.id == earlogChannel.lastMessage.webhookID && w.username == username);
 				webhook = webhooks.first();
 			}
-	
+
 			let content = " ";
-	
+
 			if (message.content) {
 				content = EncryptSpyMessage(message.content, accuracy);
 			}
-	
+
 			if (message.attachments.array().length != 0) {
 				content += "\n" + message.attachments.array()[0].url
 			}
-	
+
 			await webhook.send(content, {
 				username: username,
 				avatarURL: message.author.avatarURL(),
 				embed: message.embed
 			}).then(earlogMsg => {
-	
+
 				if (content.includes(">>> *-----Phase ")) {
 					earlogMsg.pin();
 				}
@@ -61,34 +62,43 @@ module.exports = {
 		PostMessage(webhooks);
 
 		//Post in Spy Channels
-		
-		let spyCurrentData = client.getSpyCurrentAll.all(message.guild.id);
 
-		if (spyCurrentData.length == 0 ) return;
-		
 		let spyChannels = client.getSpyChannels.all(message.guild.id);
-
-		spyChannels = spyChannels.filter(c => c.areaID == gameplayChannel.areaID);
-
 		if (spyChannels.length == 0) return;
 
-		spyCurrentData.forEach(async spyCurrent => {
+		spyChannels = spyChannels.filter(c => c.areaID == gameplayChannel.areaID);
+		if (spyChannels.length == 0) return;
 
-			const spyChannelData = spyChannels.find(c => c.areaID == spyCurrent.spyArea && c.username == spyCurrent.username);
-			
-			if (spyChannelData == undefined) {
-				//make it dammit!
-				
-			}
+		let spyActions = client.getSpyActionsAll.all(message.guild.id);
+		if (spyActions.length == 0) return;
+
+		let activeSpyActions = spyActions.filter(a => a.active);
+		if (activeSpyActions.length == 0) return;
+
+		activeSpyActions.forEach(async spyAction => {
+
+			let spyChannelData = spyChannels.find(c => c.areaID == spyAction.spyArea && c.username == spyAction.username);
+
+			//No spy channel is spying this area
+			if (!spyChannelData) return;
 
 			try {
-				const spyChannel = client.channels.cache.get(spyChannelData.channelID);
+				let spyChannel = client.channels.cache.get(spyChannelData.channelID);
+				if (!spyChannel) {
+					//Can't find the discord channel for some reason? So check it exists and try again.
+					let players = client.getPlayers.all(message.guild.id);
+					let areas = client.getAreas.all(message.guild.id);
+					let spyChannelData = client.getSpyChannels.all(message.guild.id);
+					await ChannelCreationFunctions.MakeSureSpyChannelsExist(client, null, players, areas, spyChannelData) ;
+					spyChannel = client.channels.cache.get(spyChannelData.channelID);
+				}
+				
 				const webhooksSpy = await spyChannel.fetchWebhooks();
-				PostMessage(webhooksSpy, spyCurrent.accuracy);
-			} catch(error) {
+				PostMessage(webhooksSpy, spyAction.accuracy);
+			} catch (error) {
 				console.error(`Spy channel Error: ` + error);
 			}
-			
+
 		});
 
 		return;

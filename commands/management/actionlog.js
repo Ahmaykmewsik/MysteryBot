@@ -15,14 +15,13 @@ module.exports = {
 		if (args.length > 0) {
 			actionLogChannelID = args[0];
 			const channel = client.channels.cache.get(actionLogChannelID);
-			if (!channel){
-				message.channel.send("Invalid channel id.");
-				return;
-			}
+			if (!channel) 
+				return message.channel.send("Invalid channel id.");
 			idGiven = true;
 		} else {
 			actionLogChannelID = message.channel.id;
-			message.delete();
+			if (message.content.includes("actionlog"))
+				message.delete();
 		}
 
 		let actionLogChannel = client.channels.cache.get(actionLogChannelID);
@@ -30,14 +29,14 @@ module.exports = {
 			.then(m => {
 				m.pin();
 			});
-		
+
 		let settings = UtilityFunctions.GetSettings(client, guildID);
 		settings.actionLogID = actionLogChannelID;
 		client.setSettings.run(settings);
-		
-		if (idGiven) {
+
+		if (idGiven)
 			channel.send("Action Log set to: " + actionLogChannel.toString());
-		}
 		
+
 	}
 };

@@ -29,8 +29,6 @@ module.exports = {
 			let spyChannels = client.getSpyChannels.all(message.guild.id);
 			let earlogChannels = client.getEarlogChannels.all(message.guild.id);
 
-			console.log(earlogChannels);
-
 			await DeleteChannelsInList(gameplayChannels);
 			await DeleteChannelsInList(spyChannels);
 			await DeleteChannelsInList(earlogChannels);
