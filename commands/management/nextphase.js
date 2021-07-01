@@ -35,9 +35,9 @@ module.exports = {
         let warningMessage = "";
         var nonDoers = players.filter(p => !p.action && p.alive);
         if (nonDoers.length > 0) {
-            message.channel.send("The following players have not sent their main **action**:\n"
+            warningMessage += "The following players have not sent their main **action**:\n"
                 + "`" + nonDoers.map(p => p.username).join('\n') + "`"
-                + "\n");
+                + "\n";
         } else {
             warningMessage += "All players have sent in their main **actions**.\n";
         }
@@ -94,7 +94,7 @@ module.exports = {
         //Do it immediatley if they put a y
         if (args.includes("y")) return NextPhase();
 
-        warningMessage += "Are you sure you would like to proceed with the movement phase? (y/n)";
+        warningMessage += "Are you sure you would like to proceed with the phase rollover? (y/n)";
         return UtilityFunctions.WarnUserWithPrompt(message, warningMessage, NextPhase);
 
         function NextPhase() {

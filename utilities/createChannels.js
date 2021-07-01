@@ -12,10 +12,11 @@ module.exports = {
         let spyChannelData = client.getSpyChannels.all(message.guild.id);
         let spyActionsData = client.getSpyActionsAll.all(message.guild.id);
         let spyConnections = client.getSpyConnectionsAll.all(message.guild.id);
+        let items = client.getItems.all(message.guild.id);
         let inventoryData = client.getInventories.all(message.guild.id);
 
         //Remove all non-pernament Spy Actions
-        spyActionsData.filter(a => a.permanent);
+        spyActionsData = spyActionsData.filter(a => a.permanent == 1);
 
         //Make all SpyActions and Connections Active
         spyActionsData.forEach(a => a.active = 1);
@@ -28,10 +29,7 @@ module.exports = {
         spyConnections.forEach(c => client.addSpyConnection.run(c));
 
         //Transfer Spy Connections as Actions
-        UtilityFunctions.UpdateSpyActions(client, message, spyActionsData, spyConnections, locations);
-
-        //Make Spy Channels
-        await ChannelCreationFunctions.UpdateSpyChannels(client, message, players, areas, spyChannelData, spyActionsData, settings);
+        spyActionsData = UtilityFunctions.UpdateSpyActions(client, message, spyActionsData, spyConnections, locations);
 
         //Make Game Channels
         areas.forEach(async area => {
@@ -43,5 +41,8 @@ module.exports = {
             //Otherwise, make it!
             await ChannelCreationFunctions.CreateSingleChannel(client, message, area, message.guild, settings, players, locations, inventoryData);
         });
+
+        //Make Spy Channels
+        await ChannelCreationFunctions.UpdateSpyChannels(client, message, message.guild, players, areas, spyChannelData, spyActionsData, settings, locations, items, inventoryData) ;
     }
 };

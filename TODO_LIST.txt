@@ -2,15 +2,13 @@ TODO LIST
 
 
 BUGS
-
+post all movement messages in one message per channel
 
 
 FEATURES
 
 Add show all channels command
-
 spy from area
-
 Add reactions feature to earlogs
 
 

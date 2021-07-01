@@ -7,7 +7,7 @@ module.exports = {
     name: 'me',
     description: 'Lists a player\'s own info. DM only. Cannot be used while a player\'s channel is locked or if the GM has processed their movement manually (to hide spoilers!).',
     format: "!me",
-    alias: "i",
+    aliases: ["i"],
     dmonly: true,
     execute(client, message, args) {
 

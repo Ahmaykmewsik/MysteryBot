@@ -21,11 +21,8 @@ module.exports = {
                 }]
             })
 
-            await channel.overwritePermissions([{
-                id: guild.id,
-                deny: [`VIEW_CHANNEL`]
-            }]);
             await channel.setParent(categoryID);
+            await channel.updateOverwrite(channel.guild.id, { VIEW_CHANNEL: false });
 
             const earlogChannel = client.getEarlogChannel.get(`${guild.id}_${area.id}`);
 
@@ -106,11 +103,11 @@ module.exports = {
 
     async OpenChannelForPlayer(player, message, channel) {
         try {
-            const member = channel.guild.members.cache.find(m => m.user.id == player.discordID);
-            (player.alive) ? await channel.createOverwrite(member.user, { VIEW_CHANNEL: true }) :
-                             await channel.createOverwrite(member.user, { VIEW_CHANNEL: true, SEND_MESSAGES: false });
+            const member = channel.guild.members.cache.find(m => m.id == player.discordID);
+            (player.alive) ? await channel.createOverwrite(member, { VIEW_CHANNEL: true }) :
+                             await channel.createOverwrite(member, { VIEW_CHANNEL: true, SEND_MESSAGES: false });
         } catch (error) {
-            message.channel.send("Failed to open channel " + channel.name + " for " + player.username);
+            message.channel.send(":warning: Failed to open channel " + channel.name + " for " + player.username);
             postErrorMessage(error, message.channel);
         }
     },
@@ -140,8 +137,7 @@ module.exports = {
     },
 
     //This can be run at literally any time and it will put the spy channels in the right place
-    async UpdateSpyChannels(client, message, players, areas, spyChannelData, spyActionsData, settings) {
-
+    async UpdateSpyChannels(client, message, guild, players, areas, spyChannelData, spyActionsData, settings, locations, items, inventoryData) {
         //Iterate through all spy channels and clear out any outdated spy actions
         spyChannelData.forEach(spyChannel => {
 
@@ -170,7 +166,11 @@ module.exports = {
                 spyAction.active
             );
 
+            //If we found a spy channel already assigned for the spy action return
             if (matchedSpyChannel) return;
+
+            let player = players.find(p => p.username == spyAction.username);
+            let area = areas.find(a => a.id == spyAction.spyArea);
 
             //No spy channel for the action, so update it!
             //If there's a free Spy Channel for that player, use it
@@ -178,46 +178,56 @@ module.exports = {
                 spyChannel.username == spyAction.username &&
                 spyChannel.areaID == null
             );
-
-            //If there's a free spy channel use that
             if (freeSpyChannel) {
                 freeSpyChannel.areaID = spyAction.spyArea;
-                return ReplaceSpyChannel(spyChannel);
+                return ReplaceSpyChannel(freeSpyChannel);
             }
 
             //No free spy Channel, so we need to make one
-            let player = players.find(p => p.username == spyAction.username);
-            let area = areas.find(a => a.id == spyAction.spyArea);
-            return await this.CreateSpyChannel(client, message, message.guild, player, area, settings);
+            return await this.CreateSpyChannel(client, message, guild, players, player, area, settings, spyAction, locations, items, inventoryData);
         })
 
         //Check that the GM didn't delete the spy channel or some shit
-        return await this.MakeSureSpyChannelsExist(client, message, players, areas, spyChannelData);
+        //Commenting this out cause the spyChannelData is sadly outdated sometimes
+        //return await this.MakeSureSpyChannelsExist(client, message, players, areas, spyChannelData);
 
+        //Function that replaces a spy channel in the database
         function ReplaceSpyChannel(spyChannel) {
             client.deleteSpyChannelData.run(spyChannel.guild, spyChannel.username, spyChannel.areaID);
             client.setSpyChannel.run(spyChannel);
         }
     },
 
-    async MakeSureSpyChannelsExist(client, message, players, areas, spyChannelData) {
+    async MakeSureSpyChannelsExist(client, message, guild, players, areas, spyChannelData) {
         await spyChannelData.forEach(async spyChannelData => {
             const spyChannel = client.channels.cache.get(spyChannelData.channelID);
             if (spyChannel) return;
 
-            //We can't find it, so gotta make it. 
+            //We can't find the discord channel, so we gotta make it. 
             let player = players.find(player => player.username == spyChannelData.username);
             let area = areas.find(area => area.id == spyChannelData.areaID);
             let settings = UtilityFunctions.GetSettings(client, player.guild);
-            //delete the useless one
+            let locations = client.getLocations.all(message.guild.id);
+            let items = client.getItems.all(message.guild.id);
+            const inventoryData = client.getItemsAndInventories.all(message.guild.id);
+
+            //delete the useless spyChannel data
             client.deleteSpyChannelData.run(player.guild, player.username, spyChannelData.areaID);
-            //Make a new one!
-            await this.CreateSpyChannel(client, message, player, area, settings);
+
+            //Find the associated spy action that should go with this. Return if none found.
+            let spyActions = client.getSpyActions.all(player.guild_username);
+            if (spyActions.length == 0) return;
+            let spyActionForChannel = spyActions.find(spyAction => spyAction.areaID == area.id);
+            if (!spyActionForChannel) return;
+
+            //Make a new channel!
+            await this.CreateSpyChannel(client, message, message.guild, players, player, area, settings, 
+                                        spyActionForChannel, locations, items, inventoryData) ;
 
         });
     },
 
-    async CreateSpyChannel(client, message, guild, player, area, settings) {
+    async CreateSpyChannel(client, message, guild, players, player, area, settings, spyActionForChannel, locations, items, inventoryData) {
         try {
             let channel = await guild.channels.create("spy-" + player.username, {
                 type: 'text',
@@ -250,11 +260,34 @@ module.exports = {
                 channelID: channel.id
             };
 
+
+            await this.PostStartSpyMessage(message, channel, spyActionForChannel, players, settings, locations, area, items, inventoryData) ;
+
             return await client.setSpyChannel.run(newSpyChannel);
 
         } catch (error) {
             if (!message) return;
             postErrorMessage(error, message.channel);
         }
+    },
+
+    //Post identical message for spy channel (with a few adjustements)
+    async PostStartSpyMessage(message, channel, spyActionForChannel, players, settings, locations, area, items, inventoryData) {
+
+        let areaname = (spyActionForChannel.visible) ? area.name : "?????";
+
+        let spyMessage = `:detective: :detective: :detective: **NOW SPYING: ${areaname}** :detective: :detective: :detective:\n\n`;
+
+        let areaDescription = spyMessage + this.CreateAreaDescription(area, settings);
+
+        const locationsHere = locations.filter(l => area.id == l.areaID);
+        let characterDescriptions = "";
+        locationsHere.forEach(async location => {
+            let player = players.find(p => p.username == location.username);
+            characterDescriptions += this.GetPlayerIntroString(message.client, player, items, inventoryData) + "\n\n";
+        });
+
+        SendMessageChannel(areaDescription, channel);
+        SendMessageChannel(characterDescriptions, channel);
     }
 }

@@ -1,19 +1,19 @@
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
 
 module.exports = {
-	name: 'defaultsetup',
-	description: ` For development purposes. Adds the minimum requirement to a game so you can use !gamestart immediatley.`,
-	format: "!defaultsetup",
-    alias: 'setupdefault',
-	guildonly: true,
-	gmonly: true,
-	async execute(client, message, args) {
+    name: 'defaultsetup',
+    description: ` For development purposes. Adds the minimum requirement to a game so you can use !gamestart immediatley.`,
+    format: "!defaultsetup",
+    aliases: ['setupdefault'],
+    guildonly: true,
+    gmonly: true,
+    async execute(client, message, args) {
 
         let players = client.getPlayers.all(message.guild.id);
         let areas = client.getAreas.all(message.guild.id);
         let settings = UtilityFunctions.GetSettings(client, message.guild.id);
         let locations = client.getLocations.all(message.guild.id);
-        
+
         let returnMessage = "";
 
         //Add player if there are none
@@ -22,10 +22,10 @@ module.exports = {
         } else {
             returnMessage += `Game already has ${players.length} players. No new players added.\n`;
         }
-        
+
         //Add area if none exists
         if (areas.length == 0) {
-            await UtilityFunctions.RunCommand(client, message, "addarea",  ["room"]);
+            await UtilityFunctions.RunCommand(client, message, "addarea", ["room"]);
         } else {
             returnMessage += `Game already has ${areas.length} areas. No new areas added.\n`;
         }
@@ -48,7 +48,7 @@ module.exports = {
         areas = client.getAreas.all(message.guild.id);
 
         //Set area for all players with no area set
-        players.forEach(function(p) {
+        players.forEach(function (p) {
             let playerLocation = locations.find(l => p.username == l.username);
             if (!playerLocation) {
                 var randomIndex = Math.floor(Math.random() * areas.length);
@@ -61,10 +61,10 @@ module.exports = {
                 returnMessage += `${p.username}'s area has been set to \`${areas[randomIndex].id}\`\n`;
             }
         });
-        
+
         returnMessage += `**Default Game setup complete!**`;
 
         return message.channel.send(returnMessage);
-	}
+    }
 
 };

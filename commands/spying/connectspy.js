@@ -5,6 +5,7 @@ module.exports = {
     name: 'connectspy',
     description: 'Makes all players in an area spy on another area automatically. This is the recommended way to use the spy functionality. Includes an accuraccy value \`(0.0 - 1.0)\` limiting the number of words that are copied. Include \`-v\` to make the spy visible. This will turn on the area name, area description, area image, and other info posted at the beginning of the phase that would be seen by someone\'s eyes (This info is hidden by default). Include `-a` to make the spying active now instead of activated on the phase rollover.',
     format: "!connectspy <area1> <area2> <accuracy> [-v] [-a]",
+    aliases: [`spyconnect`],
     guildonly: true,
     gmonly: true,
     execute(client, message, args) {
@@ -80,7 +81,8 @@ module.exports = {
         if (visible) {
             returnMessage += `This is a visible spy.`;
         } else {
-            returnMessage += `This is NOT a visible spy.`;
+            returnMessage += `This is NOT a visible spy. The area name and description will NOT be shown. ` + 
+                             `If you don't want this, make the spy a visible spy with \`-v\``;  
         }
 
         return message.channel.send(returnMessage);

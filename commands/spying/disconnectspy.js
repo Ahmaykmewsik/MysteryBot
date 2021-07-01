@@ -50,7 +50,7 @@ module.exports = {
         client.deleteSpyConnection.run(matchedAction.area1, matchedAction.area2, matchedAction.guild, matchedAction.active);
 
         //Notify
-        returnMessage = (active) ?  `This active spy action has been deelted:\n` : 
+        returnMessage = (active) ?  `This active spy action has been deleted:\n` : 
                                   `This non-active spy action has been deleted:\n`;
 
         returnMessage += `**${UtilityFunctions.FormatSpyConnection(matchedAction)}**\n\n`;

@@ -12,7 +12,11 @@ module.exports = {
 		message.channel.send('Delete all data? (y or n).').then(() => {
 			const filter = m => message.author.id === m.author.id;
 
-			message.channel.awaitMessages(filter, { time: 20000, max: 1, errors: ['time'] })
+			message.channel.awaitMessages(filter, {
+					time: 20000,
+					max: 1,
+					errors: ['time']
+				})
 				.then(messages => {
 					if (messages.first().content == "y") {
 						ResetAll();
@@ -29,7 +33,7 @@ module.exports = {
 		});
 
 
-		function ResetAll(silent=false) {
+		function ResetAll(silent = false) {
 			//CLEAR IT
 			client.deleteAllPlayers.run(message.guild.id);
 			client.deleteAllAreas.run(message.guild.id);

@@ -1,6 +1,7 @@
 const createChannels = require('../../utilities/createChannels.js').createChannels;
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
 const ChannelCreationFunctions = require('../../utilities/channelCreationFunctions.js');
+const postErrorMessage = require('../../utilities/errorHandling').postErrorMessage;
 
 module.exports = {
     name: 'gamestart',

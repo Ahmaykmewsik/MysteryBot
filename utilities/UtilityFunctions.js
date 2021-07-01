@@ -92,7 +92,7 @@ module.exports = {
         const area = client.getArea.get(`${message.guild.id}_${areaInputString}`);
 
         if (area == undefined) {
-            return message.channel.send("No area exists with that ID. Use !areas to view all areas, or !addarea <id> to create a new area.");
+            return message.channel.send(`No area exists with id \`${areaInputString}\`. Use !areas to view all areas, or !addarea <id> to create a new area.`);
         }
 
         return area;
@@ -101,16 +101,19 @@ module.exports = {
     WarnUserWithPrompt(message, promptMessage, Action) {
         const responses = [`y`, `yes`, `n`, `no`];
         const filter = m => responses.includes(m.content.toLowerCase());
-        message.channel.send(promptMessage, { split: true }).then(() => {
-            const collector = message.channel.createMessageCollector(filter, { time: 30000, max: 1 });
+        message.channel.send(promptMessage, {
+            split: true
+        }).then(() => {
+            const collector = message.channel.createMessageCollector(filter, {
+                time: 30000,
+                max: 1
+            });
             collector.on('collect', m => {
                 if (m.content.toLowerCase() == 'y' || m.content.toLowerCase() == 'yes') {
                     return Action();
-                }
-                else if (m.content.toLowerCase() == 'n' || m.content.toLowerCase() == 'no') {
+                } else if (m.content.toLowerCase() == 'n' || m.content.toLowerCase() == 'no') {
                     message.channel.send("Okay, never mind then :)");
-                }
-                else {
+                } else {
                     message.channel.send("...uh, okay.");
                 }
             })
@@ -119,12 +122,19 @@ module.exports = {
         });
     },
 
-    async RunCommand(client, message, command, args = []) {
+    async RunCommand(client, message, commandName, args = []) {
+        
+        if (commandName.startsWith("!"))
+            commandName = commandName.slice(1).toLowerCase();
+        
         const commandObject =
-            client.commands.get(command) ||
+            client.commands.get(commandName) ||
             client.commands.find(
                 (cmd) => cmd.aliases && cmd.aliases.includes(commandName)
             );
+
+        if (!commandObject)
+            return message.channel.send(`Unrecognized command \`${commandName}\``);
 
         try {
             commandObject.execute(client, message, args);
@@ -150,7 +160,8 @@ module.exports = {
         return `${spyAction.spyArea} [${spyAction.accuracy}]${p}${a}${v}`;
     },
 
-    //Transfers all active spy connections into Spy Actions
+    //Converts all active spy connections into Spy Actions
+    //Updates the database and returns the updated spyActions
     UpdateSpyActions(client, message, spyActionsData, spyConnections, locations) {
 
         spyConnections.forEach(spyConnection => {
@@ -160,7 +171,7 @@ module.exports = {
             //Get all players in the spyConnection's area
             let playerLocationsInSpyArea = locations.filter(l => l.areaID == spyConnection.area1);
 
-            playerLocationsInSpyArea.forEach(player => {
+            playerLocationsInSpyArea.forEach(async player => {
 
                 //find if the player has a matching spy action
                 //A matching spy Action that's already there takes precidnece
@@ -180,10 +191,13 @@ module.exports = {
                     visible: spyConnection.visible,
                     active: 1
                 }
+                spyActionsData.push(newSpyAction);
                 client.addSpyAction.run(newSpyAction);
             })
 
         });
+
+        return spyActionsData;
     },
 
 
@@ -197,7 +211,7 @@ module.exports = {
         return GenerateHeartString(num);
 
         function GenerateHeartString(n) {
-            if (n < 0.0 || n > 30)  return "";
+            if (n < 0.0 || n > 30) return "";
             if (n == 0.00) return heart000;
             if (n == 0.25) return heart025;
             if (n == 0.50) return heart050;
