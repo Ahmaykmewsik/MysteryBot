@@ -97,14 +97,16 @@ module.exports = {
         warningMessage += "Are you sure you would like to proceed with the phase rollover? (y/n)";
         return UtilityFunctions.WarnUserWithPrompt(message, warningMessage, NextPhase);
 
-        function NextPhase() {
+        async function NextPhase() {
             message.channel.send("Beginning Phase " + (settings.phase + 1) + "...");
+            
+            //Deactivate all spy Actions during rollover
+            await client.deactivateAllSpyActions.run();
 
             //Send DMs to players that pass each other on the map
             const passingMessages = sendPassMessages(message.guild.members.cache, players, locations, message.channel);
 
             message.channel.send(passingMessages, { split: true });
-
 
             //Move players
             players.forEach(player => {

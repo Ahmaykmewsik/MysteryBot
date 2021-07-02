@@ -39,7 +39,7 @@ module.exports = {
 
             client.setGameplayChannel.run(newGameplayChannel);
 
-            SendMessageChannel(areaDescription, channel);
+            await SendMessageChannel(areaDescription, channel);
 
             //Figure out who's here
             const locationsHere = locations.filter(l => area.id == l.areaID);
@@ -52,7 +52,7 @@ module.exports = {
                 await this.OpenChannelForPlayer(player, message, channel);
             })
 
-            SendMessageChannel(characterDescriptions, channel);
+            await SendMessageChannel(characterDescriptions, channel);
 
             return channel;
         } catch (error) {
@@ -77,7 +77,6 @@ module.exports = {
 
         let bigItemsText = "";
         const itemsHereToPost = inventoryData.filter(d => (player.username == d.username));
-        console.log(inventoryData);
         itemsHereToPost.forEach(inventory => {
 
             let item = items.find(i => i.id == inventory.itemID);
@@ -156,9 +155,9 @@ module.exports = {
         });
 
         //make sure all spy Actions have an appropriate spy channel stored in memory
-        await spyActionsData.forEach(async spyAction => {
+        for (spyAction of spyActionsData) {
 
-            if (!spyAction.active) return;
+            if (!spyAction.active) break;
 
             let matchedSpyChannel = spyChannelData.find(spyChannel =>
                 spyAction.username == spyChannel.username &&
@@ -167,7 +166,7 @@ module.exports = {
             );
 
             //If we found a spy channel already assigned for the spy action return
-            if (matchedSpyChannel) return;
+            if (matchedSpyChannel) break;
 
             let player = players.find(p => p.username == spyAction.username);
             let area = areas.find(a => a.id == spyAction.spyArea);
@@ -180,12 +179,16 @@ module.exports = {
             );
             if (freeSpyChannel) {
                 freeSpyChannel.areaID = spyAction.spyArea;
-                return ReplaceSpyChannel(freeSpyChannel);
+                ReplaceSpyChannel(freeSpyChannel);
+                break;
             }
 
             //No free spy Channel, so we need to make one
-            return await this.CreateSpyChannel(client, message, guild, players, player, area, settings, spyAction, locations, items, inventoryData);
-        })
+            let newSpyChannelData = await this.CreateSpyChannel(client, message, guild, players, player, area, settings, spyAction, locations, items, inventoryData);
+            spyChannelData.push(newSpyChannelData);
+        }
+
+        return spyChannelData;
 
         //Check that the GM didn't delete the spy channel or some shit
         //Commenting this out cause the spyChannelData is sadly outdated sometimes
@@ -260,10 +263,8 @@ module.exports = {
                 channelID: channel.id
             };
 
-
-            await this.PostStartSpyMessage(message, channel, spyActionForChannel, players, settings, locations, area, items, inventoryData) ;
-
-            return await client.setSpyChannel.run(newSpyChannel);
+            await client.setSpyChannel.run(newSpyChannel);
+            return newSpyChannel;
 
         } catch (error) {
             if (!message) return;
@@ -271,12 +272,36 @@ module.exports = {
         }
     },
 
+    async PostAllStartSpyMessages(message, spyActions, spyChannelData, players, settings, locations, areas, items, inventoryData)  {
+        for (spyAction of spyActions) {
+            
+            //Generate message
+            let area = areas.find(area => area.id == spyAction.spyArea);
+            let spyMessageArray = await this.GetStartSpyMessage(message, spyAction, players, settings, locations, area, items, inventoryData);
+            
+            //if it's not visible don't mess with the accuracy because we don't want to encrypt the 
+            let accuracy = spyAction.accuracy;
+            if (!spyAction.visible) accuracy = 1.0;
+
+            //Post in it
+            UtilityFunctions.PostSpyMessage(message.client, message, spyMessageArray[0],  spyAction, spyChannelData, 1.0, false);
+            UtilityFunctions.PostSpyMessage(message.client, message, spyMessageArray[1], spyAction, spyChannelData, accuracy, false);
+        };
+
+    },
+
     //Post identical message for spy channel (with a few adjustements)
-    async PostStartSpyMessage(message, channel, spyActionForChannel, players, settings, locations, area, items, inventoryData) {
+    async GetStartSpyMessage(message, spyActionForChannel, players, settings, locations, area, items, inventoryData) {
 
-        let areaname = (spyActionForChannel.visible) ? area.name : "?????";
-
+        let areaname = (spyActionForChannel.visible) ? area.name : "???";
+        
         let spyMessage = `:detective: :detective: :detective: **NOW SPYING: ${areaname}** :detective: :detective: :detective:\n\n`;
+
+        if (!spyActionForChannel.visible) {
+            let pinIndicator = ">>> *-----Phase ";
+            let disclaimer = `${pinIndicator}${settings.phase}-----*\n\n[NON-VISIBLE SPY]\n[AREA DESCRIPTION REDACTED]\n`;
+            return [spyMessage, disclaimer];
+        }
 
         let areaDescription = spyMessage + this.CreateAreaDescription(area, settings);
 
@@ -287,7 +312,6 @@ module.exports = {
             characterDescriptions += this.GetPlayerIntroString(message.client, player, items, inventoryData) + "\n\n";
         });
 
-        SendMessageChannel(areaDescription, channel);
-        SendMessageChannel(characterDescriptions, channel);
+        return [ areaDescription, characterDescriptions ];
     }
 }

@@ -2,7 +2,7 @@ module.exports = {
     async SendMessageChannel_Failsafe(text, channel) { 
        
         if (!text) return;
-        channel.send(text)
+        await channel.send(text)
             .then(m => {
                 m.pin();
             })

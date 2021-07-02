@@ -74,6 +74,7 @@ module.exports = {
             spyArea: area.id,
             accuracy: accuracy,
             permanent: permanent,
+            playerSpy: 1,
             visible: visible,
             active: active
         };

@@ -22,17 +22,24 @@ module.exports = {
         //Delete all current location data
         client.deleteAllLocations.run(message.guild.id);
 
+        let locations = [];
         //Set random locations for each player
         players.forEach(function(p) {
             var randomIndex = Math.floor(Math.random() * areas.length);
-            client.setLocation.run({
+            
+            let newLocation = {
                 guild_username: `${message.guild.id}_${p.username}`,
                 username: p.username,
                 guild: message.guild.id,
                 areaID: areas[randomIndex].id
-            })
+            }
+            client.setLocation.run(newLocation);
+            locations.push(newLocation);
         });
 
-        message.channel.send("All player areas have been randomzied.");
+        let listOfPlayers = locations.map(location => `${location.username}: **${location.areaID}**`).join(`\n`);
+        let returnMessage = `All player areas have been randomzied.\n${listOfPlayers}`;
+
+        message.channel.send(returnMessage);
 	}
 };

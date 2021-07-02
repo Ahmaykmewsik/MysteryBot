@@ -72,7 +72,7 @@ module.exports = {
         if (table['count(*)'] == 0)
             return message.channel.send("You haven't added any players yet. Use !addplayer <person> <character> to add players.");
 
-        if (playerInputString.length == 0)
+        if (!playerInputString)
             return message.channel.send("You need to enter a player.");
 
         const player = this.GetPlayerFronInput(client, guildID, playerInputString);
@@ -123,10 +123,10 @@ module.exports = {
     },
 
     async RunCommand(client, message, commandName, args = []) {
-        
+
         if (commandName.startsWith("!"))
             commandName = commandName.slice(1).toLowerCase();
-        
+
         const commandObject =
             client.commands.get(commandName) ||
             client.commands.find(
@@ -177,7 +177,8 @@ module.exports = {
                 //A matching spy Action that's already there takes precidnece
                 matchingCurrentSpyAction = spyActionsData.find(spyAction =>
                     spyAction.username == player.username &&
-                    spyAction.spyArea == spyConnection.area2
+                    spyAction.spyArea == spyConnection.area2 &&
+                    spyAction.playerSpy
                 );
                 if (matchingCurrentSpyAction) return;
 
@@ -188,6 +189,7 @@ module.exports = {
                     spyArea: spyConnection.area2,
                     accuracy: spyConnection.accuracy,
                     permanent: 0,
+                    playerSpy: 0,
                     visible: spyConnection.visible,
                     active: 1
                 }
@@ -232,5 +234,88 @@ module.exports = {
                     return "";
             }
         }
+    },
+
+    async PostMessage(message, messageString, channelToPost, webhooks, accuracy = 1.0, changeApperance = true) {
+        var username = message.author.username;
+        if (message.member.nickname)
+            username = `${message.member.nickname}  [${message.author.username}]`;
+
+        let avatarToDisplay = message.author.avatarURL();
+        
+        if (!changeApperance) {
+            username = message.client.user.username;
+            avatarToDisplay = message.client.user.avatarURL();
+        }
+
+        var webhook;
+        if (!channelToPost.lastMessage) {
+            webhook = webhooks.first();
+        } else if (!channelToPost.lastMessage.webhookID) {
+            webhook = webhooks.first();
+        } else {
+            webhooks.sweep(w => w.id == channelToPost.lastMessage.webhookID && w.username == username);
+            webhook = webhooks.first();
+        }
+        
+        let content = " ";
+
+        if (messageString)
+            content = this.EncryptSpyMessage(messageString, accuracy);
+
+        if (message.attachments.array().length != 0)
+            content += "\n" + message.attachments.array()[0].url
+
+        let postedMessage = await webhook.send(content, {
+            username: username,
+            avatarURL: avatarToDisplay,
+            embed: message.embed
+        })
+
+        if (content.includes(">>> *-----Phase "))
+            postedMessage.pin();
+    },
+
+    EncryptSpyMessage(message, accuracy) {
+        let messageWords = message.split(" ");
+        for (let i = 0; i < messageWords.length; i++) {
+            const rand = Math.random();
+            if (rand >= accuracy)
+                messageWords[i] = "---";
+        }
+        const newMessage = messageWords.join(" ");
+        return newMessage;
+    },
+
+
+
+    async PostSpyMessage(client, message, spyMessage, spyAction, spyChannels, accuracy = undefined, changeApperance = true) {
+
+        if (!spyAction.active) return;
+
+        if (!accuracy) accuracy = spyAction.accuracy;
+
+        let spyChannelData = spyChannels.find(c => c.areaID == spyAction.spyArea && c.username == spyAction.username);
+
+        //No spy channel is spying this area
+        if (!spyChannelData) return;
+
+        try {
+            let spyChannel = client.channels.cache.get(spyChannelData.channelID);
+            if (!spyChannel) {
+                //Can't find the discord channel for some reason? So check it exists and try again.
+                let players = client.getPlayers.all(message.guild.id);
+                let areas = client.getAreas.all(message.guild.id);
+                let spyChannelData = client.getSpyChannels.all(message.guild.id);
+                await ChannelCreationFunctions.MakeSureSpyChannelsExist(client, null, players, areas, spyChannelData);
+                spyChannel = client.channels.cache.get(spyChannelData.channelID);
+            }
+
+            const webhooksSpy = await spyChannel.fetchWebhooks();
+            this.PostMessage(message, spyMessage, spyChannel, webhooksSpy, accuracy, changeApperance);
+        } catch (error) {
+            console.error(`Spy channel Error: ` + error);
+        }
+
     }
 }

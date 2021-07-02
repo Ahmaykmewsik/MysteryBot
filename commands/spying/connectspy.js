@@ -1,5 +1,5 @@
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
-const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
+const formatArea = require('../../utilities/formatArea').formatArea;
 
 module.exports = {
     name: 'connectspy',
@@ -37,9 +37,9 @@ module.exports = {
         let returnMessage = "";
 
         //Visible flag
-        if (args.includes("-v")) 
+        if (args.includes("-v"))
             visible = 1;
-        
+
         //Active flag
         if (args.includes("-a")) {
             //check that a game is running
@@ -49,12 +49,20 @@ module.exports = {
         }
 
 
-        //Check if this connection already exists (matched with the inputed active value). If it does, delete it
+        //Check if this connection already exists.
         let area1SpyConnections = client.getSpyConnections.all(area1.id, message.guild.id);
         let matchedAction = area1SpyConnections.find(c => c.area2 == area2.id && c.active == active);
         if (matchedAction) {
             client.deleteSpyConnection.run(matchedAction.area1, matchedAction.area2, matchedAction.guild, matchedAction.active);
-            returnMessage += `**Spy connection of accuracy ${matchedAction.accuracy} has been overridden.**\n`
+            returnMessage += `**Spy connection of accuracy ${matchedAction.accuracy} has been overridden.**\n`;
+        }
+        //If we're updating the values of a spy connection that is currently active, mark the active one as not perminent so it gets deleted on rollover
+        let activeActionToUpdate = area1SpyConnections.find(c => c.area2 == area2.id && c.active && active);
+        if (activeActionToUpdate) {
+            activeActionToUpdate.permanent = 0;
+            client.deleteSpyConnection.run(activeActionToUpdate.area1, activeActionToUpdate.area2, activeActionToUpdate.guild, activeActionToUpdate.active);
+            client.addSpyConnection.run(activeActionToUpdate);
+            returnMessage += `**An active spy connection will be overwritten during rollover.**`
         }
 
         //Add the connection
@@ -63,6 +71,7 @@ module.exports = {
             area2: area2.id,
             guild: message.guild.id,
             accuracy: accuracy,
+            permanent: 1,
             visible: visible,
             active: active
         }
@@ -81,11 +90,12 @@ module.exports = {
         if (visible) {
             returnMessage += `This is a visible spy.`;
         } else {
-            returnMessage += `This is NOT a visible spy. The area name and description will NOT be shown. ` + 
-                             `If you don't want this, make the spy a visible spy with \`-v\``;  
+            returnMessage += `This is NOT a visible spy. The area name and description will NOT be shown. ` +
+                `If you don't want this, make the spy a visible spy with \`-v\``;
         }
 
-        return message.channel.send(returnMessage);
+        message.channel.send(returnMessage);
+        message.channel.send(formatArea(client, area1, true));
 
     }
 }

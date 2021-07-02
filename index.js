@@ -137,6 +137,7 @@ client.on("ready", () => {
 				spyArea TEXT,
 				accuracy FLOAT,
 				permanent BOOL,
+				playerSpy BOOL,
 				visible BOOL,
 				active BOOL
 			);`
@@ -149,6 +150,7 @@ client.on("ready", () => {
 			area2 TEXT,
 			guild TEXT,
 			accuracy FLOAT,
+			permanent BOOL,
 			visible BOOL,
 			active BOOL
 		);`
@@ -486,13 +488,13 @@ client.on("ready", () => {
 	);
 
 	client.addSpyAction = sql.prepare(
-		`INSERT INTO spyActions (guild_username, username, guild, spyArea, accuracy, permanent, visible, active)
-		VALUES (@guild_username, @username, @guild, @spyArea, @accuracy, @permanent, @visible, @active)`
+		`INSERT INTO spyActions (guild_username, username, guild, spyArea, accuracy, permanent, playerSpy, visible, active)
+		VALUES (@guild_username, @username, @guild, @spyArea, @accuracy, @permanent, @playerSpy, @visible, @active)`
 	);
 
 	client.addSpyConnection = sql.prepare(
-		`INSERT INTO spyConnections (area1, area2, guild, accuracy, visible, active)
-		VALUES (@area1, @area2, @guild, @accuracy, @visible, @active)`
+		`INSERT INTO spyConnections (area1, area2, guild, accuracy, permanent, visible, active)
+		VALUES (@area1, @area2, @guild, @accuracy, @permanent, @visible, @active)`
 	);
 
 	client.deleteSpyAction = sql.prepare(
@@ -518,6 +520,13 @@ client.on("ready", () => {
 	client.deleteAllSpyConnections = sql.prepare(
 		`DELETE FROM spyConnections
 		WHERE guild = ?`
+	);
+
+	// Special SpyAction Function
+
+	client.deactivateAllSpyActions = sql.prepare(
+		`UPDATE spyActions
+		SET active = 0`
 	);
 
 
