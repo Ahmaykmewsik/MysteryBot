@@ -88,7 +88,7 @@ module.exports = {
             returnMessage += `The following spy action will go into effect next phase:\n`
         }
 
-        returnMessage += `**${UtilityFunctions.FormatPlayerSpyAction(spyAction)}**\n`;
+        returnMessage += `**${UtilityFunctions.FormatSpyAction(spyAction)}**\n`;
         
         //Visible?
         if (visible) {

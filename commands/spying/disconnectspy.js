@@ -7,7 +7,7 @@ module.exports = {
     format: "!disconnectspy <area1> <area2> [-a]",
     guildonly: true,
     gmonly: true,
-    execute(client, message, args) {
+    async execute(client, message, args) {
 
         if (args.length == 0)
             return message.channel.send("Disconnect what? Enter 2 areas.");
@@ -26,9 +26,9 @@ module.exports = {
         let returnMessage = "";
 
         //Visible flag
-        if (args.includes("-v")) 
+        if (args.includes("-v"))
             visible = 1;
-        
+
         //Active flag
         if (args.includes("-a")) {
             //check that a game is running
@@ -37,25 +37,49 @@ module.exports = {
             active = 1;
         }
 
+        let spyConnections = client.getSpyConnectionsAll.all(message.guild.id);
+        let spyActionsData = client.getSpyActionsAll.all(message.guild.id);
+        let locations = client.getLocations.all(message.guild.id);
+        let players = client.getPlayers.all(message.guild.id);
+        let areas = client.getAreas.all(message.guild.id);
+        let spyChannelData = client.getSpyChannels.all(message.guild.id);
+
         //Check that this connection actually exists (matched with the inputed active value). If it does, delete it
-        let area1SpyConnections = client.getSpyConnections.all(area1.id, message.guild.id);
-        let matchedAction = area1SpyConnections.find(c => c.area2 == area2.id && c.active == active);
-        if (!matchedAction) {
-            returnMessage = (active) ?  `Huh? No active spy connection exists between ${area1.id} and ${area2.id}.\n\n` : 
-                                        `Huh? No non-active spy connection exists between ${area1.id} and ${area2.id}.\n\n`;
-            return message.channel.send(returnMessage + formatArea(client, area1, true));
+        let matchedConnection = spyConnections.find(c =>
+            c.area1 == area1.id &&
+            c.area2 == area2.id &&
+            c.active == active
+        );
+
+        if (!matchedConnection) {
+            returnMessage = (active) ?
+                `Huh? No active spy connection exists between \`${area1.id}\` and \`${area2.id}.\`` :
+                `Huh? No non-active spy connection exists between \`${area1.id}\` and \`${area2.id}\` (Did you forget an \`-a\` tag?).`;
+            return message.channel.send(`${returnMessage}\n\n${formatArea(client, area1, true)}`, { split: true });
         }
 
-
-        client.deleteSpyConnection.run(matchedAction.area1, matchedAction.area2, matchedAction.guild, matchedAction.active);
+        //Delete it
+        spyConnections = spyConnections.filter(a => !(
+            a.area1 == matchedConnection.area1 &&
+            a.area2 == matchedConnection.area2 &&
+            a.active == matchedConnection.active
+        ));
+        client.deleteSpyConnection.run(
+            matchedConnection.area1,
+            matchedConnection.area2,
+            matchedConnection.guild,
+            matchedConnection.active
+        );
 
         //Notify
-        returnMessage = (active) ?  `This active spy action has been deleted:\n` : 
-                                  `This non-active spy action has been deleted:\n`;
+        returnMessage = (active) ?
+            `This active spy connection has been deleted:\n` :
+            `This non-active spy connection has been deleted:\n`;
+        returnMessage += `**${UtilityFunctions.FormatSpyConnection(matchedConnection)}**\n\n`;
 
-        returnMessage += `**${UtilityFunctions.FormatSpyConnection(matchedAction)}**\n\n`;
+        returnMessage += await UtilityFunctions.RefreshSpying(client, message, message.guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings);
 
-        return message.channel.send(returnMessage + formatArea(client, area1, true));
+        return message.channel.send(returnMessage + formatArea(client, area1, true), { split: true });
 
     }
 }

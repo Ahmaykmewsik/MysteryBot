@@ -8,7 +8,7 @@ module.exports = {
     aliases: [`spyconnect`],
     guildonly: true,
     gmonly: true,
-    execute(client, message, args) {
+    async execute(client, message, args) {
 
         if (args.length == 0)
             return message.channel.send("Spy where? Enter an area.");
@@ -49,24 +49,15 @@ module.exports = {
         }
 
 
-        //Check if this connection already exists.
-        let area1SpyConnections = client.getSpyConnections.all(area1.id, message.guild.id);
-        let matchedAction = area1SpyConnections.find(c => c.area2 == area2.id && c.active == active);
-        if (matchedAction) {
-            client.deleteSpyConnection.run(matchedAction.area1, matchedAction.area2, matchedAction.guild, matchedAction.active);
-            returnMessage += `**Spy connection of accuracy ${matchedAction.accuracy} has been overridden.**\n`;
-        }
-        //If we're updating the values of a spy connection that is currently active, mark the active one as not perminent so it gets deleted on rollover
-        let activeActionToUpdate = area1SpyConnections.find(c => c.area2 == area2.id && c.active && active);
-        if (activeActionToUpdate) {
-            activeActionToUpdate.permanent = 0;
-            client.deleteSpyConnection.run(activeActionToUpdate.area1, activeActionToUpdate.area2, activeActionToUpdate.guild, activeActionToUpdate.active);
-            client.addSpyConnection.run(activeActionToUpdate);
-            returnMessage += `**An active spy connection will be overwritten during rollover.**`
-        }
 
-        //Add the connection
-        newSpyConnection = {
+        let spyConnections = client.getSpyConnectionsAll.all(message.guild.id);
+        let spyActionsData = client.getSpyActionsAll.all(message.guild.id);
+        let locations = client.getLocations.all(message.guild.id);
+        let players = client.getPlayers.all(message.guild.id);
+        let areas = client.getAreas.all(message.guild.id);
+        let spyChannelData = client.getSpyChannels.all(message.guild.id);
+
+        let newSpyConnection = {
             area1: area1.id,
             area2: area2.id,
             guild: message.guild.id,
@@ -75,27 +66,48 @@ module.exports = {
             visible: visible,
             active: active
         }
+
+        //Check if this connection already exists.
+        let matchedConnection = UtilityFunctions.FindMatchedConnection(newSpyConnection, spyConnections);
+
+        if (matchedConnection) {
+            client.deleteSpyConnection.run(newSpyConnection.area1, newSpyConnection.area2, newSpyConnection.guild, newSpyConnection.active);
+            returnMessage += `This spy connection has been overwritten:\n**${UtilityFunctions.FormatSpyConnection(matchedConnection)}**\n\n`;
+        }
+
+        //If we're updating the values of a spy connection that is currently active, mark the active one as not perminent so it gets deleted on rollover
+        let activeConnectionToUpdate = spyConnections.find(c =>
+            c.area1 == area1.id &&
+            c.area2 == area2.id &&
+            c.active &&
+            active
+        );
+        if (activeConnectionToUpdate) {
+            activeConnectionToUpdate.permanent = 0;
+            client.deleteSpyConnection.run(activeConnectionToUpdate.area1, activeConnectionToUpdate.area2, activeConnectionToUpdate.guild, activeConnectionToUpdate.active);
+            client.addSpyConnection.run(activeConnectionToUpdate);
+            returnMessage += `**An active spy connection will be overwritten during rollover.**\n\n`
+        }
+
+        //Add the connection
         client.addSpyConnection.run(newSpyConnection);
 
         //Notify
-        if (active) {
-            returnMessage += `The following spy action will go into effect immediatley:\n`
-        } else {
-            returnMessage += `The following spy action will go into effect next phase:\n`
-        }
+        returnMessage += (active) ?
+            `The following spy action will go into effect immediatley:\n` :
+            `The following spy action will go into effect next phase:\n`;
 
-        returnMessage += `**${UtilityFunctions.FormatSpyConnection(newSpyConnection)}**\n`;
+        returnMessage += `**${UtilityFunctions.FormatSpyConnection(newSpyConnection)}**\n\n`;
 
         //Visible?
-        if (visible) {
-            returnMessage += `This is a visible spy.`;
-        } else {
-            returnMessage += `This is NOT a visible spy. The area name and description will NOT be shown. ` +
-                `If you don't want this, make the spy a visible spy with \`-v\``;
-        }
+        returnMessage += (visible) ?
+            `:white_check_mark::eye: This is a visible spy.\n\n` :
+            `:x::eye: This is NOT a visible spy. The area name and description will be hidden in the spy channel. ` +
+            `If you don't want this, make the spy a visible spy with \`-v\`\n\n`;
 
-        message.channel.send(returnMessage);
-        message.channel.send(formatArea(client, area1, true));
+        //Refresh spying, see if we need to do anything fancy like update spy actions or spy channels
+        returnMessage += await UtilityFunctions.RefreshSpying(client, message, message.guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings);
 
+        message.channel.send(`\n` + returnMessage + `\n\n` + formatArea(client, area1, true), { split: true });
     }
 }

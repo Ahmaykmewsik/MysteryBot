@@ -26,9 +26,7 @@ module.exports = {
             areaID: area.id
         });
 
-        message.channel.send(player.username + "'s area has been manually set.\n");
-
-        message.channel.send(formatPlayer(client, player));
+        message.channel.send(player.username + "'s area has been manually set.\n" + formatPlayer(client, player), {split: true});
 
 	}
 };

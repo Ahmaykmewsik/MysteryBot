@@ -12,7 +12,7 @@ module.exports = {
 
         let players = client.getPlayers.all(message.guild.id);
         if (players == undefined || players.length === 0)
-            return message.channel.send("No players found. Use !addplayers <role> to set up a game with players in a given role.");
+            return message.channel.send("Nope. Can't do that. You don't got no players! Setup your god damn game first.");
 
         let areas = client.getAreas.all(message.guild.id);
         if (areas == undefined || areas.length === 0)

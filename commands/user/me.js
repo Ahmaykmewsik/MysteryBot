@@ -41,6 +41,6 @@ module.exports = {
         else 
             profileOutput = `\n\n*No profile*`
 
-        message.reply(formatPlayer(client, player) + profileOutput, { split: true });
+        message.reply(formatPlayer(client, player, true) + profileOutput, { split: true });
     }
 };

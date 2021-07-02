@@ -29,6 +29,7 @@ module.exports = {
 			})
 
 			data.push(`\n:book: __DOCUMENTATION:__ :book: <https://docs.google.com/document/d/1_aF2M3hEbcCTNj-d9jwDk5PKLALTj8J5Qvh1RxIKsEY/edit?usp=sharing>\n`);
+			data.push(`*To learn more about a command, use \`!help <command>\`*`)
 
 			return message.channel.send(data, { split: true });
 		}

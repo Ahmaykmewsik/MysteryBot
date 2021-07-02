@@ -1,8 +1,8 @@
 const getHeartImage = require("./getHeartImage");
 const postErrorMessage = require('./errorHandling').postErrorMessage;
+const CreateSpyChannel = require('./channelCreationFunctions').CreateSpyChannel;
 
 module.exports = {
-
 
     GetPlayerFronInput(client, guildID, input) {
         /* 
@@ -153,17 +153,102 @@ module.exports = {
         return `${spyConnection.area1}->${spyConnection.area2} [${spyConnection.accuracy}]${a}${v}`;
     },
 
-    FormatPlayerSpyAction(spyAction) {
+    FormatSpyAction(spyAction, hiddenFromPlayer = false) {
         let p = (spyAction.permanent) ? " (permanent)" : "";
         let a = (spyAction.active) ? " (active)" : "";
         let v = (spyAction.visible) ? " (visible)" : "";
-        return `${spyAction.spyArea} [${spyAction.accuracy}]${p}${a}${v}`;
+        let areaTag = (spyAction.active) ? "**" : "*";
+        if (hiddenFromPlayer)
+            return `[HIDDEN NON-VISIBLE SPY ACTION] ${a}`
+        
+        return `${areaTag}${spyAction.spyArea}${areaTag} [${spyAction.accuracy}]${p}${a}${v}`;
+    },
+
+    MatchSpyAction(a1, a2) {
+        return (
+            a1.username == a2.username &&
+            a1.spyArea == a2.spyArea &&
+            a1.active == a2.active &&
+            a1.guild == a2.guild
+        )
+    },
+
+    MatchSpyConnection(c1, c2) {
+        return (
+            c1.area1 == c2.area2 &&
+            c1.area2 == c2.area2 &&
+            c1.active == c2.active &&
+            c1.guild == c2.guild
+        )
+    },
+
+    MatchSpyChannel(c1, c2) {
+        return (
+            c1.guild == c2.guild &&
+            c1.username == c2.username &&
+            c1.areaID == c2.areaID
+        )
+    },
+
+    FindMatchedConnection(connection, list) {
+        return list.find(c => this.MatchSpyConnection(connection, c));
+    },
+
+    DifferenceOfSpyActions(list1, list2) {
+        return list1.filter(a1 => (list2.includes(a2 => !this.MatchSpyAction(a1, a2))));
+    },
+
+    DifferenceOfSpyConnections(list1, list2) {
+        return list1.filter(c1 => (list2.includes(c2 => !this.MatchSpyAction(c1, c2))));
+    },
+
+    DifferenceOfSpyChannels(list1, list2) {
+        return list1.filter(c1 => list2.includes(c2 => !this.MatchSpyAction(c1, c2)));
+    },
+
+    //Command run mid-phase when we want to make sure that everything regarding spy connections, spy actions, and spy channels add up.
+    async RefreshSpying(client, message, guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings) {
+
+        //Update Spy Actions Based on Spy Connections
+        // Spy Connections -> Spy Actions
+        let updatedSpyActions = this.UpdateSpyActions(client, message, spyActionsData, spyConnections, locations);
+        client.deleteAllSpyActions.run(guild.id);
+        updatedSpyActions.forEach(a => client.addSpyAction.run(a));
+
+        //Checkup on Spy Channels based on Spy Actions
+        // Spy Actions -> Spy Channels
+        let newSpyChannelData = await this.UpdateSpyChannels(client, message, guild, players, areas, spyChannelData, updatedSpyActions, settings);
+
+        let addedActions = this.DifferenceOfSpyActions(updatedSpyActions, spyActionsData);
+        let deletedActions = this.DifferenceOfSpyActions(spyActionsData, updatedSpyActions);
+        let addedSpyChannels = this.DifferenceOfSpyChannels(newSpyChannelData, spyChannelData);
+
+        let returnMessage = ""
+
+        if (addedActions.length == 0 || deletedActions.length == 0) 
+            returnMessage += `No spy actions were added or deleted.`;
+        
+        if (addedActions.length > 0) {
+            returnMessage += `Theses spy actions were added:\n` +
+                addedActions.map(a => `${a.username}: ${UtilityFunctions.FormatSpyAction(a)}`).join("\n") + `\n`;
+        }
+
+        if (deletedActions.length > 0) {
+            returnMessage += `Theses players' spy actions were deleted:\n` +
+                deletedActions.map(a => `${a.username}: ${UtilityFunctions.FormatSpyAction(a)}`).join("\n") + `\n`;
+        }
+
+        if (addedSpyChannels.length > 0) 
+            returnMessage += addedSpyChannels.map(channel => `A spy channel was created for ${channel.username}`).join('\n');
+        
+        return returnMessage;
     },
 
     //Converts all active spy connections into Spy Actions
     //Updates the database and returns the updated spyActions
     UpdateSpyActions(client, message, spyActionsData, spyConnections, locations) {
 
+        //Add all spy actions that need to be added due to new connections
         spyConnections.forEach(spyConnection => {
             //If the connection isn't active don't do shit
             if (!spyConnection.active) return;
@@ -177,8 +262,7 @@ module.exports = {
                 //A matching spy Action that's already there takes precidnece
                 matchingCurrentSpyAction = spyActionsData.find(spyAction =>
                     spyAction.username == player.username &&
-                    spyAction.spyArea == spyConnection.area2 &&
-                    spyAction.playerSpy
+                    spyAction.spyArea == spyConnection.area2
                 );
                 if (matchingCurrentSpyAction) return;
 
@@ -199,7 +283,101 @@ module.exports = {
 
         });
 
+
+        //Remove spy Actions that are outdated from connections that no longer exist
+        spyActionsData.forEach(spyAction => {
+            //If it was put here manually don't mess with it
+            if (spyAction.playerSpy) return;
+
+            let playerLocation = locations.find(l => l.username == spyAction.username);
+
+            matchingSpyConnection = spyConnections.find(spyConnection =>
+                spyConnection.area1 == playerLocation.areaID &&
+                spyConnection.area2 == spyAction.spyArea &&
+                spyConnection.active == spyAction.active
+            );
+            if (matchingSpyConnection) return;
+
+            //No matching connection found, so bye bye
+            client.deleteSpyAction.run(spyAction.guild_username, spyAction.spyArea, spyAction.active);
+        })
+
+        //because getting the guild here is a little tricky...
+        let guildID;
+        try {
+            guildID = message.guild.id;
+        } catch {
+            guildID = locations[0].guild;
+        }
+        spyActionsData = client.getSpyActionsAll.all(guildID);
+
         return spyActionsData;
+    },
+
+    //This can be run at literally any time and it will put the spy channels in the right place
+    async UpdateSpyChannels(client, message, guild, players, areas, spyChannelData, spyActionsData, settings) {
+        //Iterate through all spy channels and clear out any outdated spy actions
+        spyChannelData.forEach(spyChannel => {
+
+            let matchedSpyAction = spyActionsData.find(spyAction =>
+                spyAction.username == spyChannel.username &&
+                spyAction.spyArea == spyChannel.areaID &&
+                spyAction.active
+            );
+
+            //We found a matching spy action
+            if (matchedSpyAction) return;
+
+            //no active Spy Action, so unassign the spy Channel
+            spyChannel.areaID == null;
+            return ReplaceSpyChannel(spyChannel);
+        });
+
+        //make sure all spy Actions have an appropriate spy channel stored in memory
+        for (spyAction of spyActionsData) {
+
+            if (!spyAction.active) break;
+
+            let matchedSpyChannel = spyChannelData.find(spyChannel =>
+                spyAction.username == spyChannel.username &&
+                spyAction.spyArea == spyChannel.areaID &&
+                spyAction.active
+            );
+
+            //If we found a spy channel already assigned for the spy action return
+            if (matchedSpyChannel) break;
+
+            let player = players.find(p => p.username == spyAction.username);
+            let area = areas.find(a => a.id == spyAction.spyArea);
+
+            //No spy channel for the action, so update it!
+            //If there's a free Spy Channel for that player, use it
+            let freeSpyChannel = spyChannelData.find(spyChannel =>
+                spyChannel.username == spyAction.username &&
+                spyChannel.areaID == null
+            );
+            if (freeSpyChannel) {
+                freeSpyChannel.areaID = spyAction.spyArea;
+                ReplaceSpyChannel(freeSpyChannel);
+                break;
+            }
+
+            //No free spy Channel, so we need to make one
+            let newSpyChannelData = await CreateSpyChannel(client, message, guild, player, area, settings);
+            spyChannelData.push(newSpyChannelData);
+        }
+
+        return spyChannelData;
+
+        //Check that the GM didn't delete the spy channel or some shit
+        //Commenting this out cause the spyChannelData is sadly outdated sometimes
+        //return await this.MakeSureSpyChannelsExist(client, message, players, areas, spyChannelData);
+
+        //Function that replaces a spy channel in the database
+        function ReplaceSpyChannel(spyChannel) {
+            client.deleteSpyChannelData.run(spyChannel.guild, spyChannel.username, spyChannel.areaID);
+            client.setSpyChannel.run(spyChannel);
+        }
     },
 
 
@@ -237,15 +415,22 @@ module.exports = {
     },
 
     async PostMessage(message, messageString, channelToPost, webhooks, accuracy = 1.0, changeApperance = true) {
-        var username = message.author.username;
+
+        if (!messageString) return;
+        if (messageString.length == 0) return;
+
+        let username = message.author.username;
         if (message.member.nickname)
             username = `${message.member.nickname}  [${message.author.username}]`;
 
         let avatarToDisplay = message.author.avatarURL();
-        
+
+        let embedFile = message.embed;
+
         if (!changeApperance) {
             username = message.client.user.username;
             avatarToDisplay = message.client.user.avatarURL();
+            embedFile = undefined;
         }
 
         var webhook;
@@ -257,22 +442,21 @@ module.exports = {
             webhooks.sweep(w => w.id == channelToPost.lastMessage.webhookID && w.username == username);
             webhook = webhooks.first();
         }
-        
-        let content = " ";
 
-        if (messageString)
-            content = this.EncryptSpyMessage(messageString, accuracy);
+        let content = this.EncryptSpyMessage(messageString, accuracy);
 
         if (message.attachments.array().length != 0)
             content += "\n" + message.attachments.array()[0].url
 
+        //The magic happens here
         let postedMessage = await webhook.send(content, {
             username: username,
             avatarURL: avatarToDisplay,
             embed: message.embed
         })
 
-        if (content.includes(">>> *-----Phase "))
+        //A little bit of a hack but who cares lol it works
+        if (content.includes(">>> *-----Phase ") || content.includes(`:detective: :detective: :detective: **NOW SPYING:`))
             postedMessage.pin();
     },
 

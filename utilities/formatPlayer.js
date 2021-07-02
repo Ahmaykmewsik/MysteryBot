@@ -4,7 +4,7 @@ const getHeartImage = require('./getHeartImage').getHeartImage;
 const UtilityFunctions = require('./UtilityFunctions');
 
 module.exports = {
-    formatPlayer(client, player, embed = 1) {
+    formatPlayer(client, player, playerView = 0) {
 
         embed = 0;
 
@@ -22,7 +22,8 @@ module.exports = {
         const moveSpecialString = (player.moveSpecial == undefined) ? "-" : player.moveSpecial;
 
         let spyActions = client.getSpyActions.all(player.guild_username);
-        let spyActionString = (spyActions.length == 0) ? "-" : spyActions.map(s => UtilityFunctions.FormatPlayerSpyAction(s)).join(", ");
+        let spyActionStringFull = (spyActions.length == 0) ? "-" : spyActions.map(s => UtilityFunctions.FormatSpyAction(s)).join(", ");
+        let spyActionStringPlayer = (spyActions.length == 0) ? "-" : spyActions.map(s => UtilityFunctions.FormatSpyAction(s, !s.visible)).join(", ");
 
         const inventoryData = client.getItemsAndInventories.all(player.guild);
         const playerInventoryData = inventoryData.filter(d => d.username == player.username);
@@ -36,35 +37,20 @@ module.exports = {
         }
 
         const heartImageURL = getHeartImage(player.health);
-        const attachment = new Discord.MessageAttachment(heartImageURL, "hearts.png");
+        const attachment = new Discord.MessageAttachment(heartImageURL, "hearts.png");        
 
-        let infoText = MakeInfoText(status, player.health, areaString, spyActionString, actionString, moveString, moveSpecialString)
-
-        if (embed) {
-            if (infoText.length > (1024)) {
-                let difference = infoText.length - actionString.length;
-                actionString = actionString.substring(0, 1024 - difference) + "...";
-                infoText = MakeInfoText(status, player.health, areaString, spyActionString, actionString, moveString, moveSpecialString)
-            }
-
-            return new Discord.MessageEmbed()
-                .setColor(color)
-                .setTitle("**" + player.username + "**")
-                .addField(player.character.toUpperCase(), infoText)
-                .addField("Items:", itemString)
-                .attachFile(attachment)
-                .setThumbnail("attachment://hearts.png")
-        } else {
-            const circle = (player.alive) ? `:green_circle:` : `:red_circle:`
-            return `${circle} **${player.username}** ${circle}\n__Character:__** ${player.character}**\n${infoText}\n\n__ITEMS__\n${itemString}`;
-        }
-
+        let infoText = (playerView) ?
+            MakeInfoText(status, player.health, areaString, spyActionStringPlayer, actionString, moveString, moveSpecialString):
+            MakeInfoText(status, player.health, areaString, spyActionStringFull, actionString, moveString, moveSpecialString);
+ 
+        const circle = (player.alive) ? `:green_circle:` : `:red_circle:`
+        return `${circle} **${player.username}** ${circle}\n__Character:__** ${player.character}**\n${infoText}\n\n__ITEMS__\n${itemString}`;
 
         function MakeInfoText(status, health, areaString, spyActionString, actionString, moveString, moveSpecialString) {
             return "__Status:__ **" + status + "**" +
                 "\n__Health:__ **" + health + "**" +
                 "\n__Area:__ **" + areaString + "**" +
-                "\n__Spy Actions:__ *" + spyActionString + "*" +
+                "\n__Spy Actions:__ " + spyActionString +
                 "\n__Phase Action:__ *" + actionString + "*" +
                 "\n__Movement Action:__ *" + moveString + "*" +
                 "\n__MoveSpecial:__ *" + moveSpecialString + "*";

@@ -40,8 +40,10 @@ module.exports = {
         });
 
         message.channel.send("Successfully created new area: `" + id +
-            "`.\nUse `!areaname`, `!areadesc`, `!connect`, and `!areaimage` to edit this area's properties.");
-        message.channel.send(formatArea(client, newArea));
+            "`.\nUse `!areaname`, `!areadesc`, `!connect`, and `!areaimage` to edit this area's properties.\n\n" +
+            formatArea(client, newArea, 1)
+        );
+
 
         //Create Earlog if game has started
         const settings = UtilityFunctions.GetSettings(client, message.guild.id);

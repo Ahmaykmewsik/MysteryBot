@@ -1,9 +1,8 @@
 
-const SendMessageChannel = require('./SendMessageChannel_Failsafe').SendMessageChannel_Failsafe;
-const ChannelCreationFunctions = require('./channelCreationFunctions.js');
+
 const postErrorMessage = require('./errorHandling').postErrorMessage;
 const UtilityFunctions = require('./UtilityFunctions');
-
+const ChannelCreationFunctions = require('./channelCreationFunctions');
 
 module.exports = {
     //for Rollover ONLY
@@ -45,7 +44,7 @@ module.exports = {
         spyConnections.forEach(c => client.addSpyConnection.run(c));
 
         //Make Spy Channels
-        spyChannelData = await ChannelCreationFunctions.UpdateSpyChannels(client, message, message.guild, players, areas, spyChannelData, spyActionsData, settings, locations, items, inventoryData) ;
+        spyChannelData = await UtilityFunctions.UpdateSpyChannels(client, message, message.guild, players, areas, spyChannelData, spyActionsData, settings);
 
         await ChannelCreationFunctions.PostAllStartSpyMessages(message, spyActionsData, spyChannelData, players, settings, locations, areas, items, inventoryData);
     }

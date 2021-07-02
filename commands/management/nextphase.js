@@ -5,7 +5,7 @@ const sendPassMessages = require('../../utilities/sendPassMessages.js').sendPass
 
 module.exports = {
     name: 'nextphase',
-    description: 'Progresses the phase. Moves all players based on their movement actions. Any player without a submitted action either stays still if possible, or moves randomly. If you\'re in a hurry, use `!nextphase y` to bypass the prompt (not recommended).',
+    description: 'Progresses the phase. Moves all players based on their movement actions and creates new gameplay channels. If you\'re in a hurry, use `!nextphase y` to bypass the prompt (not recommended).',
     format: "!moveplayers",
     gmonly: true,
     execute(client, message, args) {
