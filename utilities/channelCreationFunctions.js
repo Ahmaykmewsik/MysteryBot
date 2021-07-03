@@ -94,7 +94,7 @@ module.exports = {
     GetPlayerIntroString(client, player, items, inventoryData) {
         let bigItemString = this.GetBigItemString(client, player, items, inventoryData);
         let heartEmojis = UtilityFunctions.GetHeartEmojis(player.health);
-        return `<@${player.discordID}>  --  HEALTH: ${player.health}  ${heartEmojis}\n${bigItemString}`;
+        return `<${player.discordID}>  --  HEALTH: ${player.health}  ${heartEmojis}\n${bigItemString}`;
     },
 
     async SendSingleEntranceMessageAndOpenChannel(client, player, user, items, inventoryData, channel) {

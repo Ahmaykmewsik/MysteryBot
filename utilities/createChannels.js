@@ -19,7 +19,7 @@ module.exports = {
 
             //if aint nobody here don't make the channel
             const locationsHere = locations.filter(l => area.id == l.areaID);
-            if (locationsHere.length == 0) return;
+            if (locationsHere.length == 0) continue;
 
             //Otherwise, make it!
             await ChannelCreationFunctions.CreateSingleChannel(client, message, area, message.guild, settings, players, locations, inventoryData);
