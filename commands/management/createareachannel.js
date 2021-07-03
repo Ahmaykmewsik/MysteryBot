@@ -37,7 +37,7 @@ module.exports = {
 
         try {
             
-            ChannelCreationFunctions.CreateSingelChannelMidPhase(client, message, message.guild, area, players, locations, inventoryData, settings);
+            ChannelCreationFunctions.CreateSingleChannel(client, message, area, message.guild, settings, players, locations, inventoryData);
             return message.channel.send("Channel for `" + area.id + "` created.");
    
         } catch (error) {

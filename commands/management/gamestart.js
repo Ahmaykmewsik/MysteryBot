@@ -64,7 +64,7 @@ module.exports = {
             //create earlogs
             areas.forEach(async area => {
                 await ChannelCreationFunctions.CreateEarlog(client, message, area);
-            })
+            });
     
             //Create spy category and store it
             let categoryObject = await message.guild.channels.create("SPY CHANNELS", { type: 'category' });

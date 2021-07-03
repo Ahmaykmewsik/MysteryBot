@@ -26,7 +26,7 @@ module.exports = {
 
         client.setPlayer.run(player);
 
-        message.channel.send(player.username + " will move to: `" + area.id + "`");
-        message.channel.send(formatPlayer(client, player));
+        message.channel.send(player.username + " will move to: `" + area.id + "`\n" + formatPlayer(client, player), {split: true});
+
 	}
 };

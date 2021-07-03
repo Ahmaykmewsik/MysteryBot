@@ -144,7 +144,7 @@ module.exports = {
     },
 
     FormatInstantConnection(instantConnection) {
-        return `${instantConnection.area1}->${instantConnection.area2}`;
+        return `\`${instantConnection.area1}->${instantConnection.area2}\``;
     },
 
     FormatSpyConnection(spyConnection) {

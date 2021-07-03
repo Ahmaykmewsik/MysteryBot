@@ -18,6 +18,7 @@ module.exports = {
         let instantConnections = client.getInstantConnections.all(area.guild);
         let instantConnectionsOutString = instantConnections.filter(c => area.id == c.area1).map(c => UtilityFunctions.FormatInstantConnection(c)).join(", ");
         let instantConnectionsInString  = instantConnections.filter(c => area.id == c.area2).map(c => UtilityFunctions.FormatInstantConnection(c)).join(", ");
+        let instantConnectionsOutStirngPlayer = (instantConnectionsOutString.length == 0) ? "---" : instantConnectionsOutString;
 
         let spyConnections = client.getSpyConnectionsAll.all(area.guild);
         let spyConnectionsOutString = spyConnections.filter(c => area.id == c.area1).map(c => UtilityFunctions.FormatSpyConnection(c)).join(" - "); 
@@ -57,7 +58,7 @@ module.exports = {
         const infoStringPartial =
             `__id__: ${area.id}
             __Connections Out__: ${connectionsOutString}
-            __Instant Connections Out__: ${instantConnectionsOutString}
+            __Instant Connections Out__: ${instantConnectionsOutStirngPlayer}
             __Characters Present__: ${charactersPresent}\n`;
 
         if (descriptionString.length > (1024)) {

@@ -1,6 +1,6 @@
 const formatArea = require('../../utilities/formatArea').formatArea;
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
-
+const ChannelCreationFunctions = require('../../utilities/channelCreationFunctions.js');
 
 module.exports = {
     name: 'addarea',
@@ -46,30 +46,6 @@ module.exports = {
 
 
         //Create Earlog if game has started
-        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
-        if (settings.phase) {
-            const area = newArea;
-            message.guild.channels.create("earlog-" + area.id, {
-                type: 'text',
-                permissionOverwrites: [{
-                    id: message.guild.id,
-                    deny: ['SEND_MESSAGES', 'VIEW_CHANNEL']
-                }]
-            }).then(channel => {
-
-                channel.createWebhook(`EarlogWebhook_1`);
-                channel.createWebhook(`EarlogWebhook_2`)
-                    .then(result => {
-                        client.setEarlogChannel.run({
-                            guild_areaID: `${message.guild.id}_${area.id}`,
-                            guild: message.channel.id,
-                            channelID: channel.id
-                        });
-                        message.channel.send("Earlog Channel Created");
-                    })
-            }).catch(console.error())
-
-
-        }
+        ChannelCreationFunctions.CreateEarlog(client, message, newArea);
     }
 };
