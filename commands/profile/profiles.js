@@ -16,7 +16,7 @@ module.exports = {
         if (args.length != 0)
             return message.channel.send("This command takes no arguments.");
 
-        let promptMessage = "Are you sure you want to do this? This is probably going to be a LOT of text. (y or n)\nIf you're just checking if each player has a profile, use `!profilestatus`";
+        let promptMessage = "Are you sure you want to show all profiles in this channel? This is probably going to be a LOT of text! (y or n)\nIf you're just checking if each player has a profile, use `!profilestatus`";
 
         return UtilityFunctions.WarnUserWithPrompt(message, promptMessage, PostProfiles);
 

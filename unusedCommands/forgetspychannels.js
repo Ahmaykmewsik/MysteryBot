@@ -1,5 +1,5 @@
-const UtilityFunctions = require('../../utilities/UtilityFunctions');
-const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
+const UtilityFunctions = require('../utilities/UtilityFunctions');
+const formatPlayer = require('../utilities/formatPlayer').formatPlayer;
 
 module.exports = {
 	name: 'forgetspychannels',
