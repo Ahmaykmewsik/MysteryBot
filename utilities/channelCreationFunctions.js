@@ -3,9 +3,7 @@ const SendMessageChannel = require('./SendMessageChannel_Failsafe').SendMessageC
 const formatItem = require('./formatItem').formatItem;
 
 //UtilityFunctions Cause we have to
-const GetHeartEmojis = require('./UtilityFunctions').GetHeartEmojis;
-const GetSettings = require('./UtilityFunctions').GetSettings;
-const PostSpyMessage = require('./UtilityFunctions').PostSpyMessage;
+const UtilityFunctions = require("./UtilityFunctions");
 
 module.exports = {
 
@@ -95,7 +93,7 @@ module.exports = {
 
     GetPlayerIntroString(client, player, items, inventoryData) {
         let bigItemString = this.GetBigItemString(client, player, items, inventoryData);
-        let heartEmojis = GetHeartEmojis(player.health);
+        let heartEmojis = UtilityFunctions.GetHeartEmojis(player.health);
         return `<@${player.discordID}>  --  HEALTH: ${player.health}  ${heartEmojis}\n${bigItemString}`;
     },
 
@@ -149,7 +147,7 @@ module.exports = {
             //We can't find the discord channel, so we gotta make it. 
             let player = players.find(player => player.username == spyChannelData.username);
             let area = areas.find(area => area.id == spyChannelData.areaID);
-            let settings = GetSettings(client, player.guild);
+            let settings = UtilityFunctions.GetSettings(client, player.guild);
 
             //delete the useless spyChannel data
             client.deleteSpyChannelData.run(player.guild, player.username, spyChannelData.areaID);
@@ -221,8 +219,8 @@ module.exports = {
             if (!spyAction.visible) accuracy = 1.0;
 
             //Post in it
-            PostSpyMessage(message.client, message, spyMessageArray[0],  spyAction, spyChannelData, 1.0, false);
-            PostSpyMessage(message.client, message, spyMessageArray[1], spyAction, spyChannelData, accuracy, false);
+            UtilityFunctions.PostSpyMessage(message.client, message, spyMessageArray[0],  spyAction, spyChannelData, 1.0, false);
+            UtilityFunctions.PostSpyMessage(message.client, message, spyMessageArray[1], spyAction, spyChannelData, accuracy, false);
         };
 
     },

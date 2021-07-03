@@ -1,5 +1,6 @@
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
 const formatArea = require('../../utilities/formatArea').formatArea;
+const SpyManagement = require('../../utilities/SpyManagement');
 
 module.exports = {
     name: 'disconnectspy',
@@ -77,9 +78,9 @@ module.exports = {
             `This non-active spy connection has been deleted:\n`;
         returnMessage += `**${UtilityFunctions.FormatSpyConnection(matchedConnection)}**\n\n`;
 
-        returnMessage += await UtilityFunctions.RefreshSpying(client, message, message.guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings);
+        returnMessage += await SpyManagement.RefreshSpying(client, message, message.guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings);
 
-        return message.channel.send(returnMessage + formatArea(client, area1, true), { split: true });
+        return message.channel.send(returnMessage + "\n\n" + formatArea(client, area1, true), { split: true });
 
     }
 }

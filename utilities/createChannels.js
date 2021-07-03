@@ -1,8 +1,8 @@
 
 
 const postErrorMessage = require('./errorHandling').postErrorMessage;
-const UtilityFunctions = require('./UtilityFunctions');
 const ChannelCreationFunctions = require('./channelCreationFunctions');
+const SpyManagement = require('./SpyManagement');
 
 module.exports = {
     //for Rollover ONLY
@@ -13,7 +13,6 @@ module.exports = {
         let spyConnections = client.getSpyConnectionsAll.all(message.guild.id);
         let items = client.getItems.all(message.guild.id);
         let inventoryData = client.getInventories.all(message.guild.id);
-
 
         //Make Game Channels
         for (area of areas) {
@@ -34,8 +33,6 @@ module.exports = {
         spyActionsData.forEach(a => a.active = 1);
         spyConnections.forEach(c => c.active = 1);
 
-        //Transfer Spy Connections as Actions
-        spyActionsData = UtilityFunctions.UpdateSpyActions(client, message, spyActionsData, spyConnections, locations);
 
         //Update Database
         client.deleteAllSpyActions.run(message.guild.id);
@@ -43,8 +40,10 @@ module.exports = {
         client.deleteAllSpyConnections.run(message.guild.id);
         spyConnections.forEach(c => client.addSpyConnection.run(c));
 
-        //Make Spy Channels
-        spyChannelData = await UtilityFunctions.UpdateSpyChannels(client, message, message.guild, players, areas, spyChannelData, spyActionsData, settings);
+        await SpyManagement.RefreshSpying(client, message, message.guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings);
+
+        spyChannelData = client.getSpyChannels.all(message.guild.id);
+        spyActionsData = client.getSpyActionsAll.all(message.guild.id);
 
         await ChannelCreationFunctions.PostAllStartSpyMessages(message, spyActionsData, spyChannelData, players, settings, locations, areas, items, inventoryData);
     }

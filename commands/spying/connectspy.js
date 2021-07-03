@@ -1,5 +1,6 @@
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
 const formatArea = require('../../utilities/formatArea').formatArea;
+const SpyManagement = require('../../utilities/SpyManagement');
 
 module.exports = {
     name: 'connectspy',
@@ -68,11 +69,11 @@ module.exports = {
         }
 
         //Check if this connection already exists.
-        let matchedConnection = UtilityFunctions.FindMatchedConnection(newSpyConnection, spyConnections);
+        let matchedConnections = UtilityFunctions.FindMatchedConnections(newSpyConnection, spyConnections);
 
-        if (matchedConnection) {
-            client.deleteSpyConnection.run(newSpyConnection.area1, newSpyConnection.area2, newSpyConnection.guild, newSpyConnection.active);
-            returnMessage += `This spy connection has been overwritten:\n**${UtilityFunctions.FormatSpyConnection(matchedConnection)}**\n\n`;
+        for (let connection of matchedConnections) {
+            client.deleteSpyConnection.run(connection.area1, connection.area2, connection.guild, connection.active);
+            returnMessage += `This spy connection has been overwritten:\n**${UtilityFunctions.FormatSpyConnection(connection)}**\n\n`;
         }
 
         //If we're updating the values of a spy connection that is currently active, mark the active one as not perminent so it gets deleted on rollover
@@ -101,12 +102,12 @@ module.exports = {
 
         //Visible?
         returnMessage += (visible) ?
-            `:white_check_mark::eye: This is a visible spy.\n\n` :
-            `:x::eye: This is NOT a visible spy. The area name and description will be hidden in the spy channel. ` +
+            `:eye: This is a visible spy.\n\n` :
+            `:ear: This is NOT a visible spy. The area name and description will be hidden in the spy channel. ` +
             `If you don't want this, make the spy a visible spy with \`-v\`\n\n`;
 
         //Refresh spying, see if we need to do anything fancy like update spy actions or spy channels
-        returnMessage += await UtilityFunctions.RefreshSpying(client, message, message.guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings);
+        returnMessage += await SpyManagement.RefreshSpying(client, message, message.guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings);
 
         message.channel.send(`\n` + returnMessage + `\n\n` + formatArea(client, area1, true), { split: true });
     }

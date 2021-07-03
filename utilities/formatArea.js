@@ -20,8 +20,8 @@ module.exports = {
         let instantConnectionsInString  = instantConnections.filter(c => area.id == c.area2).map(c => UtilityFunctions.FormatInstantConnection(c)).join(", ");
 
         let spyConnections = client.getSpyConnectionsAll.all(area.guild);
-        let spyConnectionsOutString = spyConnections.filter(c => area.id == c.area1).map(c => UtilityFunctions.FormatSpyConnection(c)).join(", "); 
-        let spyConnectionsInString  = spyConnections.filter(c => area.id == c.area2).map(c => UtilityFunctions.FormatSpyConnection(c)).join(", "); 
+        let spyConnectionsOutString = spyConnections.filter(c => area.id == c.area1).map(c => UtilityFunctions.FormatSpyConnection(c)).join(" - "); 
+        let spyConnectionsInString  = spyConnections.filter(c => area.id == c.area2).map(c => UtilityFunctions.FormatSpyConnection(c)).join(" - "); 
 
         let descriptionString = (area.description == null) ? "-" : area.description;
         let imageString = (area.image == null) ? "NO IMAGE" : area.image;

@@ -22,8 +22,8 @@ module.exports = {
         const moveSpecialString = (player.moveSpecial == undefined) ? "-" : player.moveSpecial;
 
         let spyActions = client.getSpyActions.all(player.guild_username);
-        let spyActionStringFull = (spyActions.length == 0) ? "-" : spyActions.map(s => UtilityFunctions.FormatSpyAction(s)).join(", ");
-        let spyActionStringPlayer = (spyActions.length == 0) ? "-" : spyActions.map(s => UtilityFunctions.FormatSpyAction(s, !s.visible)).join(", ");
+        let spyActionStringFull = (spyActions.length == 0) ? "-" : spyActions.map(s => UtilityFunctions.FormatSpyAction(s)).join(" | ");
+        let spyActionStringPlayer = (spyActions.length == 0) ? "-" : spyActions.map(s => UtilityFunctions.FormatSpyAction(s, !s.visible)).join(" | ");
 
         const inventoryData = client.getItemsAndInventories.all(player.guild);
         const playerInventoryData = inventoryData.filter(d => d.username == player.username);
