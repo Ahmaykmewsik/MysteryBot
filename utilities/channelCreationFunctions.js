@@ -9,22 +9,20 @@ module.exports = {
 
     async CreateSingleChannel(client, message, area, guild, settings, players, locations, inventoryData) {
         try {
-            let categoryID = settings.categoryID;
             let channelName = "p" + settings.phase + "-" + area.id;
             let areaDescription = this.CreateAreaDescription(area, settings);
             let items = client.getItems.all(guild.id);
 
             let channel = await guild.channels.create(channelName, {
                 type: 'text',
-                parentID: categoryID,
+                parentID: settings.categoryID,
                 permissionOverwrites: [{
                     id: guild.id,
                     deny: [`VIEW_CHANNEL`]
                 }]
             })
-
-            await channel.setParent(categoryID);
-            await channel.updateOverwrite(channel.guild.id, { VIEW_CHANNEL: false });
+            await channel.setParent(settings.categoryID);
+            //await channel.updateOverwrite(channel.guild.id, { VIEW_CHANNEL: false });
 
             const earlogChannel = await client.getEarlogChannel.get(`${guild.id}_${area.id}`);
 
@@ -117,52 +115,28 @@ module.exports = {
                 }]
             })
 
-            await channel.createWebhook(`EarlogWebhook_${area.id}_1`)
-            await channel.createWebhook(`EarlogWebhook_${area.id}_2`)
+            await channel.createWebhook(`EarlogWebhook_${area.id}_1`);
+            await channel.createWebhook(`EarlogWebhook_${area.id}_2`);
 
-            return client.setEarlogChannel.run({
+            let earlogChannel = {
                 guild_areaID: `${message.guild.id}_${area.id}`,
                 guild: message.guild.id,
                 channelID: channel.id
-            });
+            }
+            client.setEarlogChannel.run(earlogChannel);
+            return earlogChannel;
+
         } catch (error) {
             postErrorMessage(error, message.channel);
         }
 
     },
 
-    
-
-    async MakeSureSpyChannelsExist(client, message, guild, players, areas, spyChannelData) {
-        await spyChannelData.forEach(async spyChannelData => {
-            const spyChannel = client.channels.cache.get(spyChannelData.channelID);
-            if (spyChannel) return;
-
-            //We can't find the discord channel, so we gotta make it. 
-            let player = players.find(player => player.username == spyChannelData.username);
-            let area = areas.find(area => area.id == spyChannelData.areaID);
-            let settings = UtilityFunctions.GetSettings(client, player.guild);
-
-            //delete the useless spyChannel data
-            client.deleteSpyChannelData.run(player.guild, player.username, spyChannelData.areaID);
-
-            //Find the associated spy action that should go with this. Return if none found.
-            let spyActions = client.getSpyActions.all(player.guild_username);
-            if (spyActions.length == 0) return;
-            let spyActionForChannel = spyActions.find(spyAction => spyAction.areaID == area.id);
-            if (!spyActionForChannel) return;
-
-            //Make a new channel!
-            await this.CreateSpyChannel(client, message, message.guild, player, area, settings);
-            //TODO: Post info that should be there
-
-        });
-    },
-
     async CreateSpyChannel(client, message, guild, player, area, settings) {
         try {
             let channel = await guild.channels.create("spy-" + player.username, {
                 type: 'text',
+                parent: settings.spyCategoryID,
                 permissionOverwrites: [{
                     id: player.guild,
                     deny: ['VIEW_CHANNEL', 'SEND_MESSAGES']
@@ -173,16 +147,21 @@ module.exports = {
                 }]
             })
 
+            //await channel.setParent(settings.spyCategoryID);
+            // await channel.overwritePermissions([
+            //     {
+            //         id: player.guild,
+            //         deny: ['VIEW_CHANNEL', 'SEND_MESSAGES']
+            //     },
+            //     {
+            //         id: player.discordID,
+            //         allow: ['VIEW_CHANNEL']
+            //     }
+            // ]);
+
             //Create Webhooks
-            await channel.overwritePermissions([{
-                id: player.guild,
-                deny: [`VIEW_CHANNEL`]
-            }]);
-
             await channel.createWebhook(`SpyWebhook_${player.username}_1`);
-            await channel.createWebhook(`SpyWebhook_${player.username}_2`)
-
-            await channel.setParent(settings.spyCategoryID)
+            await channel.createWebhook(`SpyWebhook_${player.username}_2`);
 
             newSpyChannel = {
                 guild_username: `${player.guild_username}`,
@@ -196,6 +175,7 @@ module.exports = {
             return newSpyChannel;
 
         } catch (error) {
+            //Don't post error if this is in a game channel (that'd be kind of bad)
             if (!message) return;
             postErrorMessage(error, message.channel);
         }
@@ -208,7 +188,7 @@ module.exports = {
             let area = areas.find(area => area.id == spyAction.spyArea);
             let spyMessageArray = await this.GetStartSpyMessage(message, spyAction, players, settings, locations, area, items, inventoryData);
             
-            //if it's not visible don't mess with the accuracy because we don't want to encrypt the area description
+            //if it's not visible don't mess with the accuracy because we don't want to encrypt the redacted message
             let accuracy = spyAction.accuracy;
             if (!spyAction.visible) accuracy = 1.0;
 

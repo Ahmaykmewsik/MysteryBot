@@ -305,19 +305,19 @@ module.exports = {
 
         if (!accuracy) accuracy = spyAction.accuracy;
 
+        //Check if a spy channel is spying it
         let spyChannelData = spyChannels.find(c => c.areaID == spyAction.spyArea && c.username == spyAction.username);
-
-        //No spy channel is spying this area
         if (!spyChannelData) return;
 
         try {
             let spyChannel = client.channels.cache.get(spyChannelData.channelID);
             if (!spyChannel) {
-                //Can't find the discord channel for some reason? So check it exists and try again.
+                //Can't find the discord channel for some reason? So check it exists (will create it if it can)
                 let players = client.getPlayers.all(message.guild.id);
                 let areas = client.getAreas.all(message.guild.id);
                 let spyChannelData = client.getSpyChannels.all(message.guild.id);
-                await ChannelCreationFunctions.MakeSureSpyChannelsExist(client, null, players, areas, spyChannelData);
+                let guild = client.guilds.cache.find(g => g.id == message.guild.guild);
+                await SpyManagement.MakeSureSpyChannelsExist(client, null, guild, players, areas, spyChannelData);
                 spyChannel = client.channels.cache.get(spyChannelData.channelID);
             }
 

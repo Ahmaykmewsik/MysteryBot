@@ -21,7 +21,7 @@ module.exports = {
         const healValue = parseFloat(healInput);
         const settings = UtilityFunctions.GetSettings(client, message.guild.id);
         
-        if (!(typeof healValue == "number") || healValue % 0.25 != 0.0) {
+        if (isNaN(healValue) || healValue % 0.25 != 0.0) {
             return message.channel.send("Invalid damage: " + healInput + ". Please enter a number divisible by 1/4.");
         }
 

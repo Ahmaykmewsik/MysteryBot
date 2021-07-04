@@ -20,7 +20,7 @@ module.exports = {
         const healthInput = args.shift();
         const healthValue = parseFloat(healthInput);
 
-        if (!(typeof healthValue == "number") || healthValue % 0.25 != 0.0) {
+        if (isNaN(healthValue)|| healthValue % 0.25 != 0.0) {
             return message.channel.send("Invalid health: " + healthInput + ". Please enter a number divisible by 1/4.");
         }
 

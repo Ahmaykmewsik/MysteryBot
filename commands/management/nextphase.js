@@ -133,28 +133,35 @@ module.exports = {
             });
 
             //Post messages on where people are going
-            //If players can go here normally, post where they went
-            //If a player goes somewhere sneaky sneaky, don't tell nuthin
             areas.forEach(area => {
 
                 const locationsHere = locations.filter(l => l.areaID == area.id);
                 if (locationsHere.length == 0) return;
                 let movementMessage = "";
                 for (location of locationsHere) {
+
                     //find player (will need adjustment if multi-area mode is implemented)
                     let player = players.find(p => p.username == location.username);
+
+                    //If they stayed here say so
+                    if (player.move == location.areaID) {
+                        movementMessage += `${player.character} stayed here.\n`;
+                        continue;
+                    }
+
+                    //If players can go here normally, post where they went
+                    //If a player goes somewhere sneaky sneaky, don't tell nuthin
                     const connectionExists = connections.find(c => c.area1 == location.areaID && c.area2 == player.move);
                     movementMessage += (connectionExists) ?
                         `${player.character} moved to ${location.areaID}\n` :
                         `${player.character} moved to ???\n`;
                 }
 
-                //get current channel 
+                //get current channel and post movement message
                 //If can't find the channel, tell the GM (it might not exist or something else went wrong)
-                const gameplayChannelData = gameplayChannels.find(c => c.channelName == "p" + settings.phase + "-" + area.id);
-                const gameplayChannel = client.channels.cache.get(gameplayChannelData.channelID);
-
                 try {
+                    const gameplayChannelData = gameplayChannels.find(c => c.channelName == "p" + settings.phase + "-" + area.id);
+                    const gameplayChannel = client.channels.cache.get(gameplayChannelData.channelID);
                     gameplayChannel.send(movementMessage);
                 } catch (error) {
                     console.error(error);
@@ -163,7 +170,7 @@ module.exports = {
 
             })
 
-            //Move the player
+            //Move players!
             players.forEach(player => {
 
                 let playerLocation = locations.find(l => l.username == player.username);
@@ -188,8 +195,8 @@ module.exports = {
 
                 //Update Database
                 client.setSettings.run(settings);
-                players.forEach(p => {client.setPlayer.run(p)});
-                locations.forEach(l => {client.setLocation.run(l)});
+                players.forEach(p => { client.setPlayer.run(p) });
+                locations.forEach(l => { client.setLocation.run(l) });
                 gameplayChannels.forEach(g => {
                     g.active = 0;
                     client.setGameplayChannel.run(g);
@@ -202,7 +209,7 @@ module.exports = {
                 message.channel.send(`WARNING: Something went wrong in the bot during the phase update. You may need to try again. Give this info to Ahmayk: \`\`\`error\`\`\``, { split: true });
             }
 
-            message.channel.send(returnMessage, {split: true});
+            message.channel.send(returnMessage, { split: true });
 
         }
     }

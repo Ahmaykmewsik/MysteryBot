@@ -36,12 +36,12 @@ module.exports = {
         }
 
         if (settings.phase) {
-            
+
             let warningMessage = `The game has already started phase ${settings.phase}. Are you SURE you want to run this again? (You probably DON'T!) (y/n)`;
             return UtilityFunctions.WarnUserWithPrompt(message, warningMessage, GameStart);
         }
 
-        
+
         UtilityFunctions.RunCommand(client, message, "stats");
         let warningMessage = "\n\n";
         while (warningMessage.length < 200) {
@@ -49,44 +49,49 @@ module.exports = {
         }
         warningMessage += `\n\n**Looks like everything is ready to go. Start the game? (y/n)**`;
         return UtilityFunctions.WarnUserWithPrompt(message, warningMessage, GameStart);
-            
+
 
         async function GameStart() {
             message.channel.send("*Then it's time to start!*");
             console.log(`GAME START FOR: ${settings.categoryName}`);
-    
+
             if (settings.phase == null)
                 settings.phase = 1;
-    
+
             //If you're running !gamestart you probably don't have any earlogs you care about, so delete them.
             client.deleteAllEarlogChannelData.run(message.guild.id);
-    
+
             //create earlogs
-            areas.forEach(async area => {
-                await ChannelCreationFunctions.CreateEarlog(client, message, area);
-            });
-    
+            let earlogPromises = [];
+            for (area of areas) {
+                earlogPromises.push(new Promise((resolve) => {
+                    resolve(ChannelCreationFunctions.CreateEarlog(client, message, area));
+                }))
+            }
+            let returnValues = await Promise.allSettled(earlogPromises);
+            console.log(returnValues);
+            
             //Create spy category and store it
             let categoryObject = await message.guild.channels.create("SPY CHANNELS", { type: 'category' });
             settings.spyCategoryID = categoryObject.id;
             client.setSettings.run(settings);
-    
+
             //set position underneath game category
             let position = message.guild.channels.cache.get(settings.categoryID).position;
-    
+
             if (position)
                 categoryObject.setPosition(position + 1);
-    
+
             try {
                 await createChannels(client, message, areas, players, locations, settings);
-            }  catch (error) {
+            } catch (error) {
                 postErrorMessage(error, message.channel);
             }
-            
+
             client.channels.cache.get(settings.actionLogID).send(
                 "----------------------------\n---------**PHASE " + settings.phase + "**---------\n----------------------------"
             );
-    
+
             message.channel.send("**The game has begun!**\n" + locations.map(l => l.username + ": " + l.areaID).join('\n'));
         }
 

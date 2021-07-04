@@ -6,7 +6,7 @@ module.exports = {
     format: "!addplayer <username> <Character>",
     guildonly: true,
     gmonly: true,
-	execute(client, message, args) {
+	execute(client, message, args, invisible = false) {
 
 
         if (args.length == 0) {
@@ -26,23 +26,23 @@ module.exports = {
             
         //Notify if invalid input for user
         if (playerobject == undefined) {
-            return message.channel.send("Invalid username: " + inputusername);
+            return ReturnMessage("Invalid username: " + inputusername);
         }
 
         const playerExists = client.getUserInDatabase.get(playerobject.id);
 
         if (playerExists) {
             if (playerExists.guild == message.guild.id) {
-                return message.channel.send(`Adding player failed. ${playerobject.username} is already a player in this server!`);
+                return ReturnMessage(`Adding player failed. ${playerobject.username} is already a player in this server!`);
             }
             else {
                 //TODO: Check if game is in progress. If it isn't, delete it!
-                return message.channel.send(`Adding player failed. ${playerobject.username} is currently in a game on another server!`);
+                return ReturnMessage(`Adding player failed. ${playerobject.username} is currently in a game on another server!`);
             }
         }
 
         if (characterName.length == 0) {
-            return message.channel.send("You need to enter a character name.");
+            return ReturnMessage(`You need to enter a character name for ${playerobject.username}.`);
         }
 
         const settings = UtilityFunctions.GetSettings(client, message.guild.id);
@@ -64,15 +64,21 @@ module.exports = {
 
         client.setPlayer.run(newPlayer);
 
+        if (invisible) return `Added: ${playerobject.username}`;
+
         const players = client.getPlayers.all(message.guild.id);
 
-        var outputMessage = `Player added! ${players.length} players so far.\n__**PLAYER LIST:**__\n`
+        let outputMessage = `Player added! ${players.length} players so far.\n__**PLAYER LIST:**__\n`
 
-        for (let player in players) {
+        for (let player in players) 
             outputMessage += `**${players[player].username}**, ${players[player].character}\n`
-        }
         
         message.channel.send(outputMessage);
+
+        function ReturnMessage(text) {
+            if (invisible) return text;
+            return message.channel.send(returnMessage);
+        }
         
 	}
 };

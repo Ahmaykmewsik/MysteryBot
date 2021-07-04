@@ -30,7 +30,7 @@ module.exports = {
         const accuracyInput = args.shift();
         const accuracy = parseFloat(accuracyInput);
 
-        if (!(typeof accuracy == "number") || accuracy < 0 || accuracy > 1.0) {
+        if (isNaN(accuracy) || accuracy < 0 || accuracy > 1.0) {
             return message.channel.send("Invalid accuracy: " + accuracyInput + ". Please enter a number between 0 and 1.");
         }
 
@@ -47,24 +47,24 @@ module.exports = {
         //Active flag
         if (args.includes("-a")) {
             //check that a game is running
-            if (!settings.phase) 
+            if (!settings.phase)
                 return message.channel.send("You can't make someone spy yet using \"-a\". The game hasn't started yet!");
             active = 1;
         }
-        
+
         //Perniment flag
-        if (args.includes("-p")) 
+        if (args.includes("-p"))
             permanent = 1;
 
-        
+
         //Check if this action already exists (matched with the inputed active value). If it does, delete it
         let spyActions = client.getSpyActions.all(player.guild_username);
         let matchedAction = spyActions.find(a => a.username == player.username && a.spyArea == area.id && a.active == active);
         if (matchedAction) {
-            if (matchedAction.permanent) 
+            if (matchedAction.permanent)
                 permanent = 1;
             client.deleteSpyAction.run(matchedAction.guild_username, matchedAction.spyAction, matchedAction.active)
-           returnMessage += `Spy action of accuracy ${matchedAction.accuracy} has been overridden.`;
+            returnMessage += `Spy action of accuracy ${matchedAction.accuracy} has been overridden.`;
         }
 
         const spyAction = {
@@ -89,7 +89,7 @@ module.exports = {
         }
 
         returnMessage += `**${UtilityFunctions.FormatSpyAction(spyAction)}**\n`;
-        
+
         //Visible?
         if (visible) {
             returnMessage += `This is a visible spy.`;

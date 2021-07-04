@@ -29,7 +29,7 @@ module.exports = {
         const accuracyInput = args.shift();
         const accuracy = parseFloat(accuracyInput);
 
-        if (!(typeof accuracy == "number") || accuracy < 0 || accuracy > 1.0)
+        if (isNaN(accuracy)|| accuracy < 0 || accuracy > 1.0)
             return message.channel.send("Invalid accuracy: " + accuracyInput + ". Please enter a number between 0 and 1.");
 
         let visible = 0;

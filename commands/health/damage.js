@@ -20,7 +20,7 @@ module.exports = {
         const damageInput = args.shift();
         const damageValue = parseFloat(damageInput);
 
-        if (!(typeof damageValue == "number") || damageValue % 0.25 != 0.0) {
+        if (isNaN(damageValue) || damageValue % 0.25 != 0.0) {
             return message.channel.send("Invalid damage: " + damageInput + ". Please enter a number divisible by 1/4.");
         }
 

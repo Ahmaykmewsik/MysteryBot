@@ -1,3 +1,4 @@
+const { Util } = require("discord.js");
 const channelCreationFunctions = require("./channelCreationFunctions");
 const UtilityFunctions = require("./UtilityFunctions");
 
@@ -8,7 +9,7 @@ module.exports = {
 
         //Update Spy Actions Based on Spy Connections
         // Spy Connections -> Spy Actions
-        let updatedSpyActions = this.UpdateSpyActions(client, message, spyActionsData, spyConnections, locations);
+        let updatedSpyActions = await this.UpdateSpyActions(client, message, spyActionsData, spyConnections, locations);
         client.deleteAllSpyActions.run(guild.id);
         updatedSpyActions.forEach(a => client.addSpyAction.run(a));
 
@@ -43,17 +44,17 @@ module.exports = {
 
     //Converts all active spy connections into Spy Actions
     //Updates the database and returns the updated spyActions
-    UpdateSpyActions(client, message, spyActionsData, spyConnections, locations) {
+    async UpdateSpyActions(client, message, spyActionsData, spyConnections, locations) {
 
         //Add all spy actions that need to be added due to new connections
-        spyConnections.forEach(spyConnection => {
+        for (spyConnection of spyConnections) {
             //If the connection isn't active don't do shit
-            if (!spyConnection.active) return;
+            if (!spyConnection.active) continue;
 
             //Get all players in the spyConnection's area
             let playerLocationsInSpyArea = locations.filter(l => l.areaID == spyConnection.area1);
 
-            playerLocationsInSpyArea.forEach(async player => {
+            for (player of playerLocationsInSpyArea) {
 
                 //find if the player has a matching spy action
                 //A matching spy Action that's already there takes precidnece
@@ -61,8 +62,9 @@ module.exports = {
                     spyAction.username == player.username &&
                     spyAction.spyArea == spyConnection.area2
                 );
-                if (matchingCurrentSpyAction) return;
+                if (matchingCurrentSpyAction) continue;
 
+                //Otherwise add new spy Action
                 newSpyAction = {
                     guild_username: player.guild_username,
                     username: player.username,
@@ -75,16 +77,14 @@ module.exports = {
                     active: 1
                 }
                 spyActionsData.push(newSpyAction);
-                client.addSpyAction.run(newSpyAction);
-            })
-
-        });
-
+                await client.addSpyAction.run(newSpyAction);
+            };
+        }
 
         //Remove spy Actions that are outdated from connections that no longer exist
-        spyActionsData.forEach(spyAction => {
+        for (spyAction of spyActionsData) {
             //If it was put here manually don't mess with it
-            if (spyAction.playerSpy) return;
+            if (spyAction.playerSpy) continue;
 
             let playerLocation = locations.find(l => l.username == spyAction.username);
 
@@ -93,27 +93,21 @@ module.exports = {
                 spyConnection.area2 == spyAction.spyArea &&
                 spyConnection.active == spyAction.active
             );
-            if (matchingSpyConnection) return;
+            if (matchingSpyConnection) continue;
 
-            //No matching connection found, so bye bye
-            client.deleteSpyAction.run(spyAction.guild_username, spyAction.spyArea, spyAction.active);
-        })
-
-        // let guildID;
-        // try {
-        //     guildID = message.guild.id;
-        // } catch {
-        //     guildID = locations[0].guild;
-        // }
-        // spyActionsData = client.getSpyActionsAll.all(guildID);
-
+            //No matching connection found, so bye bye action
+            spyActionsData = spyActionsData.filter(a => !UtilityFunctions.MatchSpyAction(a, spyAction));
+            await client.deleteSpyAction.run(spyAction.guild_username, spyAction.spyArea, spyAction.active);
+        }
+        
         return spyActionsData;
     },
 
     //This can be run at literally any time and it will put the spy channels in the right place
     async UpdateSpyChannels(client, message, guild, players, areas, spyChannelData, spyActionsData, settings) {
-        //Iterate through all spy channels and clear out any outdated spy actions
-        spyChannelData.forEach(spyChannel => {
+        
+        //Iterate through all spy channels and clear out any outdated spy actions in the spy Channels
+        for (spyChannel of spyChannelData) {
 
             let matchedSpyAction = spyActionsData.find(spyAction =>
                 spyAction.username == spyChannel.username &&
@@ -122,12 +116,12 @@ module.exports = {
             );
 
             //We found a matching spy action
-            if (matchedSpyAction) return;
+            if (matchedSpyAction) continue;
 
             //no active Spy Action, so unassign the spy Channel
             spyChannel.areaID == null;
-            return ReplaceSpyChannel(spyChannel);
-        });
+            await ReplaceSpyChannel(spyChannel);
+        }
 
         //make sure all spy Actions have an appropriate spy channel stored in memory
         for (spyAction of spyActionsData) {
@@ -163,16 +157,43 @@ module.exports = {
             spyChannelData.push(newSpyChannelData);
         }
 
+        //Check that the GM didn't delete the spy channel or some shit
+        await this.MakeSureSpyChannelsExist(client, message, guild, players, areas, spyChannelData);
+
         return spyChannelData;
 
-        //Check that the GM didn't delete the spy channel or some shit
-        //Commenting this out cause the spyChannelData is sadly outdated sometimes
-        //return await this.MakeSureSpyChannelsExist(client, message, players, areas, spyChannelData);
-
         //Function that replaces a spy channel in the database
-        function ReplaceSpyChannel(spyChannel) {
-            client.deleteSpyChannelData.run(spyChannel.guild, spyChannel.username, spyChannel.areaID);
-            client.setSpyChannel.run(spyChannel);
+        async function ReplaceSpyChannel(spyChannel) {
+            await client.deleteSpyChannelData.run(spyChannel.guild, spyChannel.username, spyChannel.areaID);
+            await client.setSpyChannel.run(spyChannel);
         }
     },
+
+
+    
+    async MakeSureSpyChannelsExist(client, message, guild, players, areas, spyChannelDataAll) {
+        for (spyChannelData of spyChannelDataAll) {
+            const spyChannel = client.channels.cache.get(spyChannelData.channelID);
+            if (spyChannel) continue;
+
+            //We can't find the discord channel, so we gotta make it. 
+            let player = players.find(player => player.username == spyChannelData.username);
+            let area = areas.find(area => area.id == spyChannelData.areaID);
+            let settings = UtilityFunctions.GetSettings(client, player.guild);
+
+            //delete the useless spyChannel data
+            client.deleteSpyChannelData.run(player.guild, player.username, spyChannelData.areaID);
+
+            //Find the associated spy action that should go with this. Return if none found.
+            let spyActions = client.getSpyActions.all(player.guild_username);
+            if (spyActions.length == 0) continue;
+            let spyActionForChannel = spyActions.find(spyAction => spyAction.areaID == area.id);
+            if (!spyActionForChannel) continue;
+
+            //Make a new channel!
+            await this.CreateSpyChannel(client, message, guild, player, area, settings);
+            //TODO: Post info that should be there
+
+        }
+    }
 }

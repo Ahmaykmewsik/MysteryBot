@@ -141,7 +141,7 @@ client.on("ready", () => {
 				visible BOOL,
 				active BOOL
 			);`
-		).run();	
+		).run();
 
 		//Spy Connections
 		sql.prepare(
@@ -624,6 +624,11 @@ client.on("ready", () => {
 
 client.on("message", message => {
 
+	//TESTING
+	// if (message.content == "test") {
+	// 	console.table(client.getLocations.all(message.guild.id));
+	// }
+
 	///EARLOG---------------------------------------------------------
 	if (message.channel.type != "dm" && message.channel.name[0] == "p") {
 		try {
@@ -716,4 +721,8 @@ client.on("message", message => {
 	}
 });
 
+client.on('rateLimit', (info) => {
+	console.log(`Rate limit hit!`);
+	console.dir(info);
+})
 client.login(token);
