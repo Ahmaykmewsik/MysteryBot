@@ -1,13 +1,15 @@
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
 const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
+const SpyManagement = require('../../utilities/SpyManagement');
 
 module.exports = {
     name: 'spyplayer',
     description: 'Gives a player the ability to discretley view another channel. Includes an accuraccy value (0.0 - 1.0) limiting the number of words that are copied. Include -v to make the spy visible. This will turn on the area name, area description, area image, and other info posted at the beginning of the phase that would be seen by someone\'s eyes (This is hidden by default). Include `-p` to make the spy action permanent unless removed manually. Include `-a` to make the spying active now instead of activated on the phase rollover. ',
     format: "!spyplayer <player> <areaIDToSpy> <accuracy> [-v] [-p] [-a]",
+    aliases: [`playerspy`],
     guildonly: true,
     gmonly: true,
-    execute(client, message, args) {
+    async execute(client, message, args) {
 
         if (args.length == 0) {
             return message.channel.send("What? Please enter a player. And like, all the other shit.");
@@ -16,16 +18,14 @@ module.exports = {
         let player = UtilityFunctions.GetPlayer(client, message, message.guild.id, args.shift());
         if (player.username == undefined) return;
 
-        if (args.length == 0) {
+        if (args.length == 0)
             return message.channel.send("But spy where? Enter an area.");
-        }
 
         let area = UtilityFunctions.GetArea(client, message, args.shift().toLowerCase());
         if (!area.guild) return;
 
-        if (args.length == 0) {
+        if (args.length == 0)
             return message.channel.send("Please include a number between 0.0 and 1.0 for the accuracy.");
-        }
 
         const accuracyInput = args.shift();
         const accuracy = parseFloat(accuracyInput);
@@ -56,18 +56,23 @@ module.exports = {
         if (args.includes("-p"))
             permanent = 1;
 
+        let spyActionsData = client.getSpyActions.all(player.guild_username);
+        let spyConnections = client.getSpyConnectionsAll.all(message.guild.id);
+        let locations = client.getLocations.all(message.guild.id);
+        let players = client.getPlayers.all(message.guild.id);
+        let areas = client.getAreas.all(message.guild.id);
+        let spyChannelData = client.getSpyChannels.all(message.guild.id);
 
-        //Check if this action already exists (matched with the inputed active value). If it does, delete it
-        let spyActions = client.getSpyActions.all(player.guild_username);
-        let matchedAction = spyActions.find(a => a.username == player.username && a.spyArea == area.id && a.active == active);
-        if (matchedAction) {
-            if (matchedAction.permanent)
-                permanent = 1;
-            client.deleteSpyAction.run(matchedAction.guild_username, matchedAction.spyAction, matchedAction.active)
-            returnMessage += `Spy action of accuracy ${matchedAction.accuracy} has been overridden.`;
+        //Check if this action already exists (matches player, area, and active state). Overwrite all matches
+        let matchedActions = spyActionsData.filter(a => a.username == player.username && a.spyArea == area.id && a.active == active);
+        //Delete all matching actions
+        for (action of matchedActions) {
+            spyActionsData = spyActionsData.filter(a => !UtilityFunctions.MatchSpyAction(a, action));
+            client.deleteSpyAction.run(action.guild_username, action.spyArea, action.active);
+            returnMessage += `**This spy action has been overridden: ** ${UtilityFunctions.FormatSpyAction(action)}\n`;
         }
 
-        const spyAction = {
+        const newSpyAction = {
             guild_username: `${message.guild.id}_${player.username}`,
             username: player.username,
             guild: message.guild.id,
@@ -79,82 +84,26 @@ module.exports = {
             active: active
         };
 
-        client.addSpyAction.run(spyAction);
+        spyActionsData.push(newSpyAction);
+        client.addSpyAction.run(newSpyAction);
 
         //Notify
-        if (active) {
-            returnMessage += `The following spy action will go into effect immediatley:\n`
-        } else {
-            returnMessage += `The following spy action will go into effect next phase:\n`
-        }
+        returnMessage += (active) ?
+            `The following spy action will go into effect immediatley:\n` :
+            `The following spy action will go into effect next phase:\n`;
 
-        returnMessage += `**${UtilityFunctions.FormatSpyAction(spyAction)}**\n`;
+        returnMessage += `**${UtilityFunctions.FormatSpyAction(newSpyAction)}**\n\n`;
 
         //Visible?
-        if (visible) {
-            returnMessage += `This is a visible spy.`;
-        } else {
-            returnMessage += `This is NOT a visible spy.`;
-        }
+        returnMessage += (visible) ?
+            `:eye: This is a visible spy.\n\n` :
+            `:ear: This is NOT a visible spy. The area name and description will be hidden in the spy channel. ` +
+            `If you don't want this, make the spy a visible spy with \`-v\`\n\n`;
 
-        message.channel.send(returnMessage);
+        //Refresh spying, see if we need to do anything fancy like update spy actions or spy channels
+        returnMessage += await SpyManagement.RefreshSpying(client, message, message.guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings);
 
-        message.channel.send(formatPlayer(client, player));
-
-        if (active) {
-
-            //Make a new spy channel for that player if they need it (they probably do!!!!)
-
-
-
-
-
-
-            // let spyChannels = client.getSpyChannels.all(message.guild.id);
-
-            // let freeSpyChannels = spyChannels.filter(d => d.username == spyAction.username && !d.spyArea);
-
-
-            // if (freeSpyChannels.length > 0) {
-            //     //if a spy channel is free use it
-            //     freeSpyChannels[0].areaID = spyAction.areaID;
-            //     client.setSpyChannel.run(freeSpyChannels[0]);
-            //     return message.channel.send(`Spy channel updated.`);
-            // } else {
-            //     //Else make a new channel
-            //     message.guild.channels.create("spy-" + spyAction.username, {
-            //         type: 'text',
-            //         permissionOverwrites: [{
-            //             id: message.guild.id,
-            //             deny: ['VIEW_CHANNEL', 'SEND_MESSAGES']
-            //         },
-            //         {
-            //             id: player.discordID,
-            //             allow: ['VIEW_CHANNEL']
-            //         }]
-            //     }).then(channel => {
-
-            //         //Create Webhooks
-            //         channel.createWebhook(`SpyWebhook_${spyAction.username}_1`);
-            //         channel.createWebhook(`SpyWebhook_${spyAction.username}_2`)
-            //             .then(() => {
-            //                 channel.setParent(settings.spyCategoryID)
-            //                     .then(() => {
-            //                         newSpyChannel = {
-            //                             guild_username: `${message.guild.id}_${spyAction.username}`,
-            //                             guild: message.guild.id,
-            //                             username: spyAction.username,
-            //                             areaID: spyAction.areaID,
-            //                             channelID: channel.id
-            //                         };
-            //                         client.setSpyChannel.run(newSpyChannel);
-            //                         message.channel.send(`New channel created: ${channel.name}`);
-            //                     })
-            //             })
-            //             .catch(console.error);
-            //     })
-            // }
-        }
+        message.channel.send(`\n` + returnMessage + `\n\n` + formatPlayer(client, player), { split: true });
     }
 
 

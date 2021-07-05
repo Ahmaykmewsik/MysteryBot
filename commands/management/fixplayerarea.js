@@ -1,6 +1,7 @@
 const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
 const ChannelCreationFunctions = require('../../utilities/channelCreationFunctions.js');
+const SpyManagement = require('../../utilities/SpyManagement');
 
 module.exports = {
     name: 'fixplayerarea',
@@ -8,6 +9,7 @@ module.exports = {
     format: "!fixplayerarea <username> <areaid>",
     gmonly: true,
     execute(client, message, args) {
+        
 
         let settings = UtilityFunctions.GetSettings(client, message.guild.id);
         if (!settings.phase) 
@@ -24,7 +26,7 @@ module.exports = {
         let currentLocation = locations.find(l => l.username == player.username);
         let warningMessage;
         if (area.id == currentLocation.areaID)
-            warningMessage = `Huh? But ${player.username} is already in ${area.id}! Do you want me to run this command anyway? (I'll do my best to move them to \`${area.id}\`!)`;
+            warningMessage = `Huh? But ${player.username} is already in ${area.id}! Do you want me to run this command anyway? (I'll do my best to move them to \`${area.id}\`!) (y/n)`;
         else
             warningMessage = `${player.username} is currently in \`${currentLocation.areaID}\`. Move them out of that discord channel and into \`${area.id}\`?`;
 
@@ -32,21 +34,25 @@ module.exports = {
 
         async function FixPlayerArea() {
             try {
+                let spyActionsData = client.getSpyActionsAll.all(message.guild.id);
+                let spyConnections = client.getSpyConnectionsAll.all(message.guild.id);
+                let areas = client.getAreas.all(message.guild.id);
+                let players = client.getPlayers.all(message.guild.id);
+                let spyChannelData = client.getSpyChannels.all(message.guild.id);
                 let gameplayChannels = client.getGameplayChannels.all(message.guild.id);
                 let inventoryData = client.getItemsAndInventories.all(player.discordID);
                 const items = client.getItems.all(player.guild);
                 const member = message.guild.members.cache.find(m => m.user.id == player.discordID);
     
+                //Find channels
                 let wrongChannelInfo = gameplayChannels.find(c => (c.areaID == currentLocation.areaID) && c.active);
                 let rightChannelInfo = gameplayChannels.find(c => (c.areaID == area.id) && c.active);
                 let wrongChannelID;
                 let rightChannelID;
-    
                 if (wrongChannelInfo)
                     wrongChannelID = wrongChannelInfo.channelID;
                 if (rightChannelInfo)
                     rightChannelID = rightChannelInfo.channelID;
-    
                 if (wrongChannelID != rightChannelID) {
                     let wrongChannel = client.channels.cache.get(wrongChannelID);
                     if (!wrongChannel) {
@@ -57,7 +63,8 @@ module.exports = {
                         await wrongChannel.send(`The GM has manually moved ${player.character} to another area.`);
                     }
                 }
-    
+                
+                //Get channel to move to, or create it if it doesn't exist
                 let rightChannel;
                 if (!rightChannelInfo) {
                     let players = client.getPlayers.all(message.guild.id);
@@ -66,10 +73,12 @@ module.exports = {
                 } else {
                     rightChannel = client.channels.cache.get(rightChannelID);
                 }
-    
+                
+                //Change discord channel permissions
                 await rightChannel.send(`The GM has manually moved ${player.character} into this area!`);
                 await ChannelCreationFunctions.SendSingleEntranceMessageAndOpenChannel(client, message, player, items, inventoryData, rightChannel);
     
+                //Set new location
                 client.deleteLocationsOfPlayer.run(player.guild_username);
                 const newLocation = {
                     guild_username: player.guild_username,
@@ -78,8 +87,15 @@ module.exports = {
                     areaID: area.id
                 };
                 client.setLocation.run(newLocation);
+                locations = client.getLocations.all(message.guild.id);
     
-                return message.channel.send(`Moved ${player.username} to ${area.id}!`);
+                message.channel.send(`Moved ${player.username} to ${area.id}!`);
+
+                //Refresh spying, see if we need to do anything fancy like update spy actions or spy channels
+                
+			    let returnMessage = await SpyManagement.RefreshSpying(client, message, message.guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings);
+                message.channel.send(returnMessage);
+
             }
             catch (error) {
                 console.error(error);

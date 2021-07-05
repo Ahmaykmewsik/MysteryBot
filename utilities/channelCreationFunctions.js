@@ -48,7 +48,7 @@ module.exports = {
 
             locationsHere.forEach(async location => {
                 let player = players.find(p => p.username == location.username);
-                characterDescriptions += this.GetPlayerIntroString(client, player, items, inventoryData) + "\n\n";
+                characterDescriptions += this.GetPlayerIntroString(client, player, items, inventoryData) + "\n";
                 await this.OpenChannelForPlayer(player, message, channel);
             })
 
@@ -86,7 +86,12 @@ module.exports = {
     GetPlayerIntroString(client, player, items, inventoryData) {
         let bigItemString = this.GetBigItemString(client, player, items, inventoryData);
         let heartEmojis = UtilityFunctions.GetHeartEmojis(player.health);
-        return `<${player.discordID}>\n${player.character} --  HEALTH: ${player.health}  ${heartEmojis}\n${bigItemString}`;
+
+        //Toggle this if you want pings
+        let pingsOn = false;
+        let playerPing = (pingsOn) ? `<@${player.discordID}>` : player.username;
+
+        return `${playerPing}\n**${player.character}** --  HEALTH: ${player.health}  ${heartEmojis}\n${bigItemString}`;
     },
 
     async SendSingleEntranceMessageAndOpenChannel(client, message, player, items, inventoryData, channel) {
@@ -98,7 +103,7 @@ module.exports = {
         try {
             const member = channel.guild.members.cache.find(m => m.id == player.discordID);
             (player.alive) ? await channel.createOverwrite(member, { VIEW_CHANNEL: true }) :
-                             await channel.createOverwrite(member, { VIEW_CHANNEL: true, SEND_MESSAGES: false });
+                await channel.createOverwrite(member, { VIEW_CHANNEL: true, SEND_MESSAGES: false });
         } catch (error) {
             message.channel.send(":warning: Failed to open channel " + channel.name + " for " + player.username);
             postErrorMessage(error, message.channel);
@@ -181,29 +186,30 @@ module.exports = {
         }
     },
 
-    async PostAllStartSpyMessages(message, spyActions, spyChannelData, players, settings, locations, areas, items, inventoryData)  {
-        for (spyAction of spyActions) {
-            
-            //Generate message
-            let area = areas.find(area => area.id == spyAction.spyArea);
-            let spyMessageArray = await this.GetStartSpyMessage(message, spyAction, players, settings, locations, area, items, inventoryData);
-            
-            //if it's not visible don't mess with the accuracy because we don't want to encrypt the redacted message
-            let accuracy = spyAction.accuracy;
-            if (!spyAction.visible) accuracy = 1.0;
+    async PostAllStartSpyMessages(message, spyActions, spyChannelData, players, settings, locations, areas, items, inventoryData) {
+        for (spyAction of spyActions) 
+            this.PostStartSpyMessages(message, spyAction, spyChannelData, players, settings, locations, areas, items, inventoryData);
+    },
 
-            //Post in it
-            UtilityFunctions.PostSpyMessage(message.client, message, spyMessageArray[0],  spyAction, spyChannelData, 1.0, false);
-            UtilityFunctions.PostSpyMessage(message.client, message, spyMessageArray[1], spyAction, spyChannelData, accuracy, false);
-        };
+    async PostStartSpyMessages(message, spyAction, spyChannelData, players, settings, locations, areas, items, inventoryData) {
+        //Generate message
+        let area = areas.find(area => area.id == spyAction.spyArea);
+        let spyMessageArray = await this.GetStartSpyMessage(message, spyAction, players, settings, locations, area, items, inventoryData);
 
+        //if it's not visible don't mess with the accuracy because we don't want to encrypt the redacted message
+        let accuracy = spyAction.accuracy;
+        if (!spyAction.visible) accuracy = 1.0;
+
+        //Post in it
+        UtilityFunctions.PostSpyMessage(message.client, message, spyMessageArray[0], spyAction, spyChannelData, 1.0, false);
+        UtilityFunctions.PostSpyMessage(message.client, message, spyMessageArray[1], spyAction, spyChannelData, accuracy, false);
     },
 
     //Post identical message for spy channel (with a few adjustements)
     async GetStartSpyMessage(message, spyActionForChannel, players, settings, locations, area, items, inventoryData) {
 
         let areaname = (spyActionForChannel.visible) ? area.name : "???";
-        
+
         let spyMessage = `:detective: :detective: :detective: **NOW SPYING: ${areaname}** :detective: :detective: :detective:\n\n`;
 
         if (!spyActionForChannel.visible) {
@@ -217,9 +223,58 @@ module.exports = {
         const locationsHere = locations.filter(l => area.id == l.areaID);
         locationsHere.forEach(async location => {
             let player = players.find(p => p.username == location.username);
-            areaDescription += this.GetPlayerIntroString(message.client, player, items, inventoryData) + "\n\n";
+            areaDescription += "\n" + this.GetPlayerIntroString(message.client, player, items, inventoryData) + "\n";
         });
 
-        return [ spyMessage, areaDescription ];
+        return [spyMessage, areaDescription];
+    },
+
+    //Checks the number of channels in the category and makes a new category if we're about to go over the limit (50)
+    async CheckCategorySize(client, message, settings, areas, locations, channelsToMake=undefined) {
+        const categoryObject = message.guild.channels.cache.get(settings.categoryID);
+        const numOfChannels = categoryObject.children.size;
+
+        if (!channelsToMake) {
+            channelsToMake = 0;
+            for (area of areas) {
+                if (locations.some(l => area.id == l.areaID)) channelsToMake++;
+            }
+        }
+
+        if (numOfChannels + channelsToMake > 50) {
+            return this.CreateNewGameplayCategory(client, message, settings);
+        }
+        return settings;
+    },
+
+    //Make new category
+    async CreateNewGameplayCategory(client, message, settings, gameName = undefined) {
+        try {
+            if (!gameName) gameName = settings.categoryName;
+            if (!gameName) gameName = "GAME";
+            let channelname = gameName;
+            settings.categoryNum++;
+            if (settings.categoryNum != 1) channelname += ` (${settings.categoryNum})`;
+    
+            let categoryObject = await message.guild.channels.create(channelname, {
+                type: 'category',
+                permissionOverwrites: [{
+                    id: message.guild.id,
+                    deny: [`VIEW_CHANNEL`]
+                }]
+            })
+    
+            settings.categoryName = gameName;
+            settings.categoryID = categoryObject.id;
+            client.setSettings.run(settings);
+            return settings;
+        } catch (error) {
+            postErrorMessage(error, message.channel);
+        }
+        
+    },
+
+    CheckNumChannelsInGuild(client, message) {
+        
     }
 }

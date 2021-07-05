@@ -2,13 +2,14 @@ TODO LIST
 
 
 BUGS
-post all movement messages in one message per channel
+Post spy into message when new area assigned to channel
+Don't make a spy channel if we can free one up
+!moveinstant spy update
 
 
 FEATURES
 
 Add show all channels command
-spy from area
 Add reactions feature to earlogs
 
 
@@ -22,3 +23,6 @@ Crash on !nextphase when no area set for a player? (happend on phase 7 of music 
 !moveinstant into an empty area
 Post big items on !moveinstant
 !me - lists player
+post all movement messages in one message per channel
+spy from area
+Display difference functions correctly

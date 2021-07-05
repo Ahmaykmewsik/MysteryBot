@@ -62,14 +62,19 @@ module.exports = {
             client.deleteAllEarlogChannelData.run(message.guild.id);
 
             //create earlogs
-            let earlogPromises = [];
             for (area of areas) {
-                earlogPromises.push(new Promise((resolve) => {
-                    resolve(ChannelCreationFunctions.CreateEarlog(client, message, area));
-                }))
+                await ChannelCreationFunctions.CreateEarlog(client, message, area);
             }
-            let returnValues = await Promise.allSettled(earlogPromises);
-            console.log(returnValues);
+
+            //Faster way that I think is more dangerous
+            // let earlogPromises = [];
+            // for (area of areas) {
+            //     earlogPromises.push(new Promise((resolve) => {
+            //         resolve(ChannelCreationFunctions.CreateEarlog(client, message, area));
+            //     }))
+            // }
+            // let returnValues = await Promise.allSettled(earlogPromises);
+            // console.log(returnValues);
             
             //Create spy category and store it
             let categoryObject = await message.guild.channels.create("SPY CHANNELS", { type: 'category' });

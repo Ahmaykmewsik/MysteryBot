@@ -51,6 +51,8 @@ module.exports = {
             warningMessage += "All players have sent in their **movement**.\n";
         }
 
+
+
         //Check that we aren't going to overflow the category
         //If it will, create new category
         // var channelTotal = 0;

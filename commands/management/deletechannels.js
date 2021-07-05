@@ -43,13 +43,16 @@ module.exports = {
 		}
 
 		async function DeleteChannelsInList(channelList) {
-			channelList.forEach(channel => {DeleteChannelOrCategory(channel.channelID)});
+			for (channel of channelList) {
+				await DeleteChannelOrCategory(channel.channelID);
+			}
+			
 		}
 
 		async function DeleteChannelOrCategory(channelID) {
 			let discordChannel = client.channels.cache.get(channelID);
 			try {
-				discordChannel.delete();
+				await discordChannel.delete();
 			} catch (error) {
 				message.channel.send(`Failed to delete: <#${channelID}> - ${error}`);
 			}

@@ -21,11 +21,12 @@ module.exports = {
         let instantConnectionsOutStirngPlayer = (instantConnectionsOutString.length == 0) ? "---" : instantConnectionsOutString;
 
         let spyConnections = client.getSpyConnectionsAll.all(area.guild);
-        let spyConnectionsOutString = spyConnections.filter(c => area.id == c.area1).map(c => UtilityFunctions.FormatSpyConnection(c)).join(" - "); 
-        let spyConnectionsInString  = spyConnections.filter(c => area.id == c.area2).map(c => UtilityFunctions.FormatSpyConnection(c)).join(" - "); 
+        let spyConnectionsOutString = spyConnections.filter(c => area.id == c.area1).map(c => UtilityFunctions.FormatSpyConnection(c)).join("  -  "); 
+        let spyConnectionsInString  = spyConnections.filter(c => area.id == c.area2).map(c => UtilityFunctions.FormatSpyConnection(c)).join("  -  "); 
 
         let descriptionString = (area.description == null) ? "-" : area.description;
         let imageString = (area.image == null) ? "NO IMAGE" : area.image;
+        let hasImage = (area.image == null) ? ":x:" : ":ballot_box_with_check:";
 
         let color = "#5b86a8";
 
@@ -42,10 +43,11 @@ module.exports = {
             if (instantConnectionsInString.length > 0)
                 fullOutput += `:small_red_triangle_down: __Instant Connections In__: ${instantConnectionsInString}\n`;
             if (spyConnectionsOutString.length > 0)
-                fullOutput += `:detective::arrow_right::speaking_head: __Spy Connections Out__: ${spyConnectionsOutString}\n`;
+                fullOutput += `:detective: __Spy Connections Out (Spying)__: ${spyConnectionsOutString}\n`;
             if (spyConnectionsInString.length > 0)
-                fullOutput += `:speaking_head::arrow_left::detective: __Spy Connections In__: ${spyConnectionsInString}\n`;
+                fullOutput += `:shushing_face: __Spy Connections In (Being Spied)__: ${spyConnectionsInString}\n`;
 
+            fullOutput += `:frame_photo: __Has Image__: ${hasImage}\n`
             fullOutput += `:family_man_girl_boy: __Players Present__: **${playerPresentString}**\n\n__Description__:\n${area.description}\n`;
 
             if (images)

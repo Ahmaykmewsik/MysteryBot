@@ -1,50 +1,54 @@
-const { Util } = require("discord.js");
+
 const channelCreationFunctions = require("./channelCreationFunctions");
 const UtilityFunctions = require("./UtilityFunctions");
 
 module.exports = {
-    
+
     //Command run when we want to make sure that everything regarding spy connections, spy actions, and spy channels add up.
     async RefreshSpying(client, message, guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings) {
 
-        //Update Spy Actions Based on Spy Connections
+        //Update Spy Actions Based on Spy Connections AND player locations
         // Spy Connections -> Spy Actions
-        let updatedSpyActions = await this.UpdateSpyActions(client, message, spyActionsData, spyConnections, locations);
-        client.deleteAllSpyActions.run(guild.id);
-        updatedSpyActions.forEach(a => client.addSpyAction.run(a));
 
-        //Checkup on Spy Channels based on Spy Actions
+        const updatedSpyActions = this.UpdateSpyActions(client, message, spyActionsData, spyConnections, locations);
+
+        //Update Spy Channels based on Spy Actions
         // Spy Actions -> Spy Channels
-        let newSpyChannelData = await this.UpdateSpyChannels(client, message, guild, players, areas, spyChannelData, updatedSpyActions, settings);
+        let newSpyChannelData = await this.UpdateSpyChannels(client, message, guild, players, areas, spyChannelData, updatedSpyActions, locations, settings);
+
+        UtilityFunctions.UpdateSpyData(client, guild.id, null, updatedSpyActions, newSpyChannelData);
 
         let addedActions = UtilityFunctions.DifferenceOfSpyActions(updatedSpyActions, spyActionsData);
         let deletedActions = UtilityFunctions.DifferenceOfSpyActions(spyActionsData, updatedSpyActions);
         let addedSpyChannels = UtilityFunctions.DifferenceOfSpyChannels(newSpyChannelData, spyChannelData);
 
-        let returnMessage = ""
+        let returnMessage = []
 
-        if (addedActions.length == 0 || deletedActions.length == 0) 
-            returnMessage += `No spy actions were added or deleted.`;
-        
+        if (addedActions.length == 0 && deletedActions.length == 0)
+            returnMessage.push(`No spy actions were added or deleted.`);
+
         if (addedActions.length > 0) {
-            returnMessage += `:bangbang: These spy actions were added:\n` +
-                addedActions.map(a => `${a.username}: ${UtilityFunctions.FormatSpyAction(a)}`).join("\n") + `\n`;
+            returnMessage.push(`:new: These spy actions were added:\n` +
+                addedActions.map(a => `**${a.username}**: ${UtilityFunctions.FormatSpyAction(a)}`).join("\n"));
         }
 
         if (deletedActions.length > 0) {
-            returnMessage += `:bangbang: Theses players' spy actions were deleted:\n` +
-                deletedActions.map(a => `${a.username}: ${UtilityFunctions.FormatSpyAction(a)}`).join("\n") + `\n`;
+            returnMessage.push(`:x: These spy actions were deleted:\n` +
+                deletedActions.map(a => `**${a.username}**: ${UtilityFunctions.FormatSpyAction(a)}`).join("\n"));
         }
 
-        if (addedSpyChannels.length > 0) 
-            returnMessage += addedSpyChannels.map(channel => `:bangbang: A spy channel was created for ${channel.username}`).join('\n');
-        
-        return returnMessage;
+        if (addedSpyChannels.length > 0)
+            returnMessage.push(addedSpyChannels.map(channel => `:detective: A spy channel was created for ${channel.username}`).join('\n'));
+
+        return returnMessage.join("\n");
     },
 
     //Converts all active spy connections into Spy Actions
     //Updates the database and returns the updated spyActions
-    async UpdateSpyActions(client, message, spyActionsData, spyConnections, locations) {
+    UpdateSpyActions(client, message, spyActionsData, spyConnections, locations) {
+
+        //Make a deep copy (this caused me so much pain to figure out I hate javascript)
+        let updatedSpyActionData = JSON.parse(JSON.stringify(spyActionsData));
 
         //Add all spy actions that need to be added due to new connections
         for (spyConnection of spyConnections) {
@@ -76,8 +80,7 @@ module.exports = {
                     visible: spyConnection.visible,
                     active: 1
                 }
-                spyActionsData.push(newSpyAction);
-                await client.addSpyAction.run(newSpyAction);
+                updatedSpyActionData.push(newSpyAction);
             };
         }
 
@@ -96,18 +99,20 @@ module.exports = {
             if (matchingSpyConnection) continue;
 
             //No matching connection found, so bye bye action
-            spyActionsData = spyActionsData.filter(a => !UtilityFunctions.MatchSpyAction(a, spyAction));
-            await client.deleteSpyAction.run(spyAction.guild_username, spyAction.spyArea, spyAction.active);
+            updatedSpyActionData = updatedSpyActionData.filter(a => !UtilityFunctions.MatchSpyAction(a, spyAction));
         }
-        
-        return spyActionsData;
+
+        return updatedSpyActionData;
     },
 
     //This can be run at literally any time and it will put the spy channels in the right place
-    async UpdateSpyChannels(client, message, guild, players, areas, spyChannelData, spyActionsData, settings) {
-        
+    async UpdateSpyChannels(client, message, guild, players, areas, spyChannelData, spyActionsData, locations, settings) {
+
+        //Make a deep copy (this caused me so much pain to figure out I hate javascript)
+        let updatedSpyChannels = JSON.parse(JSON.stringify(spyChannelData));
+
         //Iterate through all spy channels and clear out any outdated spy actions in the spy Channels
-        for (spyChannel of spyChannelData) {
+        for (spyChannel of updatedSpyChannels) {
 
             let matchedSpyAction = spyActionsData.find(spyAction =>
                 spyAction.username == spyChannel.username &&
@@ -120,7 +125,7 @@ module.exports = {
 
             //no active Spy Action, so unassign the spy Channel
             spyChannel.areaID == null;
-            await ReplaceSpyChannel(spyChannel);
+            await UtilityFunctions.PostSpyNotification_SpyEnd(client, message, spyChannel);
         }
 
         //make sure all spy Actions have an appropriate spy channel stored in memory
@@ -148,29 +153,35 @@ module.exports = {
             );
             if (freeSpyChannel) {
                 freeSpyChannel.areaID = spyAction.spyArea;
-                ReplaceSpyChannel(freeSpyChannel);
+                //ReplaceSpyChannel(freeSpyChannel);
+                let items = client.getItems.all(guild.id);
+                let inventoryData = client.getInventories.all(guild.id);
+                await channelCreationFunctions.PostStartSpyMessages(
+                    message, spyAction, spyChannelData, players, settings, locations, areas, items, inventoryData
+                )
                 continue;
             }
 
             //No free spy Channel, so we need to make one
             let newSpyChannelData = await channelCreationFunctions.CreateSpyChannel(client, message, guild, player, area, settings);
-            spyChannelData.push(newSpyChannelData);
+            updatedSpyChannels.push(newSpyChannelData);
         }
 
         //Check that the GM didn't delete the spy channel or some shit
-        await this.MakeSureSpyChannelsExist(client, message, guild, players, areas, spyChannelData);
+        //Commented out because data update issues
+        //await this.MakeSureSpyChannelsExist(client, message, guild, players, areas, spyChannelData);
 
-        return spyChannelData;
+        return updatedSpyChannels;
 
         //Function that replaces a spy channel in the database
-        async function ReplaceSpyChannel(spyChannel) {
-            await client.deleteSpyChannelData.run(spyChannel.guild, spyChannel.username, spyChannel.areaID);
-            await client.setSpyChannel.run(spyChannel);
-        }
+        // async function ReplaceSpyChannel(spyChannel) {
+        //     await client.deleteSpyChannelData.run(spyChannel.guild, spyChannel.username, spyChannel.areaID);
+        //     await client.setSpyChannel.run(spyChannel);
+        // }
     },
 
 
-    
+
     async MakeSureSpyChannelsExist(client, message, guild, players, areas, spyChannelDataAll) {
         for (spyChannelData of spyChannelDataAll) {
             const spyChannel = client.channels.cache.get(spyChannelData.channelID);

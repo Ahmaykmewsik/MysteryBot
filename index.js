@@ -625,9 +625,10 @@ client.on("ready", () => {
 client.on("message", message => {
 
 	//TESTING
-	// if (message.content == "test") {
-	// 	console.table(client.getLocations.all(message.guild.id));
-	// }
+	if (message.content == "test") {
+		let numChannels = message.guild.channels.cache.size;
+		console.log(numChannels);
+	}
 
 	///EARLOG---------------------------------------------------------
 	if (message.channel.type != "dm" && message.channel.name[0] == "p") {

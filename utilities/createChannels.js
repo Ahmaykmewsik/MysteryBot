@@ -15,30 +15,46 @@ module.exports = {
             let items = client.getItems.all(message.guild.id);
             let inventoryData = client.getInventories.all(message.guild.id);
 
-            //Make Game Channels
-            let channelPromises = [];
-            for (area of areas) {
+            settings = await ChannelCreationFunctions.CheckCategorySize(client, message, settings, areas, locations);
 
+            for (area of areas) {
                 //if aint nobody here don't make the channel
                 const locationsHere = locations.filter(l => area.id == l.areaID);
                 if (locationsHere.length == 0) continue;
 
                 //Otherwise, make it!
-                channelPromises.push(new Promise((resolve) => {
-                    resolve(ChannelCreationFunctions.CreateSingleChannel(client, message, area, message.guild, settings, players, locations, inventoryData));
-                }));
+                try {
+                    await ChannelCreationFunctions.CreateSingleChannel(client, message, area, message.guild, settings, players, locations, inventoryData);
+                } catch (error) {
+                    message.channel.send(`:bangbang: Failed to create channel for: \`${area.id}\``);
+                }
+                
             }
-            let returnValues = await Promise.allSettled(channelPromises);
-            console.log(returnValues);
+
+            //Make Game Channels
+            // let channelPromises = [];
+            // for (area of areas) {
+
+            //     //if aint nobody here don't make the channel
+            //     const locationsHere = locations.filter(l => area.id == l.areaID);
+            //     if (locationsHere.length == 0) continue;
+
+            //     //Otherwise, make it!
+            //     channelPromises.push(new Promise((resolve) => {
+            //         resolve(ChannelCreationFunctions.CreateSingleChannel(client, message, area, message.guild, settings, players, locations, inventoryData));
+            //     }));
+            // }
+            // let returnValues = await Promise.allSettled(channelPromises);
+            // console.log(returnValues);
 
             //Remove all non-pernament Spy Actions
-            spyActionsData = spyActionsData.filter(a => a.permanent);
+
+            spyActionsData = spyActionsData.filter(a => a.permanent || (a.playerSpy && !a.active));
             spyConnections = spyConnections.filter(c => c.permanent);
 
             //Make all SpyActions and Connections Active
             spyActionsData.forEach(a => a.active = 1);
             spyConnections.forEach(c => c.active = 1);
-
 
             //Update Database
             client.deleteAllSpyActions.run(message.guild.id);

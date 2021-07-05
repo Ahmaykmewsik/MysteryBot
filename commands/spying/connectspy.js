@@ -4,7 +4,13 @@ const SpyManagement = require('../../utilities/SpyManagement');
 
 module.exports = {
     name: 'connectspy',
-    description: 'Makes all players in an area spy on another area automatically. This is the recommended way to use the spy functionality. Includes an accuraccy value \`(0.0 - 1.0)\` limiting the number of words that are copied. Include \`-v\` to make the spy visible. This will turn on the area name, area description, area image, and other info posted at the beginning of the phase that would be seen by someone\'s eyes (This info is hidden by default). Include `-a` to make the spying active now instead of activated on the phase rollover.',
+    description:
+        'Makes all players in an area spy on another area automatically. This is the recommended way to use the spy functionality. ' +
+        '\n\nMust include an accuraccy value \`(0.0 - 1.0)\`. This will control the percentage of words that are copied into the spy channels. ' +
+        '\n\nInclude \`-v\` to make the spy visible. ' +
+        'This will turn on the area name, area description, area image, and other info posted at the beginning of the phase ' +
+        'that would be seen by someone\'s eyes. Otherwise this info is redacted. ' +
+        '\n\nInclude `-a` to make the spying active now instead of activated on the phase rollover.',
     format: "!connectspy <area1> <area2> <accuracy> [-v] [-a]",
     aliases: [`spyconnect`],
     guildonly: true,
@@ -49,8 +55,6 @@ module.exports = {
             active = 1;
         }
 
-
-
         let spyConnections = client.getSpyConnectionsAll.all(message.guild.id);
         let spyActionsData = client.getSpyActionsAll.all(message.guild.id);
         let locations = client.getLocations.all(message.guild.id);
@@ -70,8 +74,9 @@ module.exports = {
 
         //Check if this connection already exists.
         let matchedConnections = UtilityFunctions.FindMatchedConnections(newSpyConnection, spyConnections);
-
+        //delete all matching connections
         for (let connection of matchedConnections) {
+            spyConnections = spyConnections.filter(c => !UtilityFunctions.MatchSpyConnection(c, connection));
             client.deleteSpyConnection.run(connection.area1, connection.area2, connection.guild, connection.active);
             returnMessage += `This spy connection has been overwritten:\n**${UtilityFunctions.FormatSpyConnection(connection)}**\n\n`;
         }
@@ -91,19 +96,20 @@ module.exports = {
         }
 
         //Add the connection
+        spyConnections.push(newSpyConnection);
         client.addSpyConnection.run(newSpyConnection);
 
         //Notify
         returnMessage += (active) ?
-            `The following spy action will go into effect immediatley:\n` :
-            `The following spy action will go into effect next phase:\n`;
+            `The following spy connection will go into effect immediatley:\n` :
+            `The following spy connection will go into effect next phase:\n`;
 
         returnMessage += `**${UtilityFunctions.FormatSpyConnection(newSpyConnection)}**\n\n`;
 
         //Visible?
         returnMessage += (visible) ?
-            `:eye: This is a visible spy.\n\n` :
-            `:ear: This is NOT a visible spy. The area name and description will be hidden in the spy channel. ` +
+            `:eye: This connection is a visible spy.\n\n` :
+            `:ear: This connection is NOT a visible spy. The area name and description will be redacted in the spy channel. ` +
             `If you don't want this, make the spy a visible spy with \`-v\`\n\n`;
 
         //Refresh spying, see if we need to do anything fancy like update spy actions or spy channels

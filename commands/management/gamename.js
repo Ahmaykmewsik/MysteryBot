@@ -1,4 +1,5 @@
 const UtilityFunctions = require("../../utilities/UtilityFunctions");
+const ChannelCreationFunctions = require('../../utilities/channelCreationFunctions');
 
 module.exports = {
     name: 'gamename',
@@ -10,24 +11,11 @@ module.exports = {
         const gameName = args.join(" ");
         let settings = UtilityFunctions.GetSettings(client, message.guild.id);
 
-        let categoryObject = await message.guild.channels.create(gameName, {
-            type: 'category',
-            permissionOverwrites: [{
-                id: message.guild.id,
-                deny: [`VIEW_CHANNEL`]
-            }]
-        })
+        await ChannelCreationFunctions.CreateNewGameplayCategory(client, message, settings, gameName);
 
-        settings.categoryName = gameName;
-        settings.categoryID = categoryObject.id;
-        if (typeof settings.categoryNum == "number") {
-            settings.categoryNum += 1;
-        } else {
-            settings.categoryNum = 1;
-        }
+        let numChannels = message.guild.channels.cache.size;
+        let countMessage = `Your server currently has **${numChannels}** channels. The max is 500.`;
 
-        client.setSettings.run(settings);
-
-        message.channel.send(`New category \`${gameName}\`created.`);
+        message.channel.send(`New category \`${gameName}\` created.\n${countMessage}`);
     }
 };

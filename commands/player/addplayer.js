@@ -77,7 +77,7 @@ module.exports = {
 
         function ReturnMessage(text) {
             if (invisible) return text;
-            return message.channel.send(returnMessage);
+            return message.channel.send(text);
         }
         
 	}

@@ -110,6 +110,8 @@ module.exports = {
 			client.setLocation.run(newLocation);
 
 			await message.reply("You have been moved!");
+
+			
 		}
 	}
 };

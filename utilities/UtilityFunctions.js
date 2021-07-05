@@ -32,7 +32,7 @@ module.exports = {
                 guild: guildID,
                 categoryName: null,
                 categoryID: null,
-                categoryNum: null,
+                categoryNum: 0,
                 spyCategoryID: null,
                 phase: null,
                 actionLogID: null,
@@ -148,20 +148,19 @@ module.exports = {
     },
 
     FormatSpyConnection(spyConnection) {
-        let a = (spyConnection.active) ? ":white_check_mark:" : "";
+        let a = (spyConnection.active) ? ":white_check_mark:" : ":track_next:";
         let v = (spyConnection.visible) ? ":eye:" : ":ear:";
-        return `${spyConnection.area1}->${spyConnection.area2} [${spyConnection.accuracy}] ${a}${v}`;
+        return `\`${spyConnection.area1}->${spyConnection.area2} [${spyConnection.accuracy}]\`${v}${a}`;
     },
 
     FormatSpyAction(spyAction, hiddenFromPlayer = false) {
         let p = (spyAction.permanent) ? ":closed_lock_with_key:" : "";
-        let a = (spyAction.active) ? ":white_check_mark:" : "";
+        let a = (spyAction.active) ? ":white_check_mark:" : ":track_next:";
         let v = (spyAction.visible) ? ":eye:" : ":ear:";
-        let areaTag = (spyAction.active) ? "**" : "*";
+        let ps = (spyAction.playerSpy) ? ":face_with_monocle:" : "";
         if (hiddenFromPlayer)
-            return `[HIDDEN NON-VISIBLE SPY ACTION] ${a}`
-        
-        return `${areaTag}${spyAction.spyArea}${areaTag} [${spyAction.accuracy}] ${p}${a}${v}`;
+            return `\`[HIDDEN NON-VISIBLE SPY ACTION]\` ${a}`
+        return `\`${spyAction.spyArea} [${spyAction.accuracy}]\`${v}${a}${p}${ps}`;
     },
 
     MatchSpyAction(a1, a2) {
@@ -175,7 +174,7 @@ module.exports = {
 
     MatchSpyConnection(c1, c2) {
         return (
-            c1.area1 == c2.area2 &&
+            c1.area1 == c2.area1 &&
             c1.area2 == c2.area2 &&
             c1.active == c2.active &&
             c1.guild == c2.guild
@@ -193,19 +192,51 @@ module.exports = {
     FindMatchedConnections(connection, list) {
         return list.filter(c => this.MatchSpyConnection(connection, c));
     },
-    
 
+    //Returns the objects that are 
+    // 1 2 3
+    // 1 2
     DifferenceOfSpyActions(list1, list2) {
-        return list1.filter(a1 => (list2.includes(a2 => !this.MatchSpyAction(a1, a2))));
+        return list1.filter(o1 => !(list2.some(o2 => this.MatchSpyAction(o1, o2))));
     },
 
     DifferenceOfSpyConnections(list1, list2) {
-        return list1.filter(c1 => (list2.includes(c2 => !this.MatchSpyAction(c1, c2))));
+        return list1.filter(o1 => !(list2.some(o2 => this.MatchSpyConnection(o1, o2))));
     },
 
     DifferenceOfSpyChannels(list1, list2) {
-        return list1.filter(c1 => list2.includes(c2 => !this.MatchSpyAction(c1, c2)));
+        return list1.filter(o1 => !(list2.some(o2 => this.MatchSpyChannel(o1, o2))));
     },
+
+    //This is so goddamn inefficent but I'm desperate to make this work
+    UpdateSpyData(client, guildID, spyConnections = null, spyActions = null, spyChannels = null) {
+        if (spyConnections != null) {
+            client.deleteAllSpyConnections.run(guildID);
+            spyConnections.forEach(c => client.addSpyConnection.run(c));
+        }
+        if (spyActions != null) {
+            client.deleteAllSpyActions.run(guildID);
+            spyActions.forEach(a => client.addSpyAction.run(a));
+        }
+        if (spyChannels != null) {
+            client.deleteAllSpyChannelData.run(guildID);
+            spyChannels.forEach(c => client.setSpyChannel.run(c));
+        }
+    },
+
+    // CloneSpyAction(spyAction) {
+    //     return {
+    //         guild_username: spyAction.guild_username,
+    //         username: player.username,
+    //         guild: player.guild,
+    //         spyArea: spyConnection.area2,
+    //         accuracy: spyConnection.accuracy,
+    //         permanent: 0,
+    //         playerSpy: 0,
+    //         visible: spyConnection.visible,
+    //         active: 1
+    //     }
+    // },
 
     GetHeartEmojis(num) {
         let heart100 = `<:h10:859700259152199721>`;
@@ -242,16 +273,13 @@ module.exports = {
 
     async PostMessage(message, messageString, channelToPost, webhooks, accuracy = 1.0, changeApperance = true) {
 
-        if (!messageString) return;
-        if (messageString.length == 0) return;
+        if (messageString.length == 0 && message.attachments.array().length == 0) return;
 
         let username = message.author.username;
         if (message.member.nickname)
             username = `${message.member.nickname}  [${message.author.username}]`;
 
         let avatarToDisplay = message.author.avatarURL();
-
-        let embedFile = message.embed;
 
         if (!changeApperance) {
             username = message.client.user.username;
@@ -287,6 +315,7 @@ module.exports = {
     },
 
     EncryptSpyMessage(message, accuracy) {
+        if (message.length == 0) return "";
         let messageWords = message.split(" ");
         for (let i = 0; i < messageWords.length; i++) {
             const rand = Math.random();
@@ -327,5 +356,17 @@ module.exports = {
             console.error(`Spy channel Error: ` + error);
         }
 
+    },
+
+    async PostSpyNotification_SpyEnd(client, message, spyChannelData) {
+        let spyMessage = `:x: :x: :x: **SPYING TERMINATED** :x: :x: :x:`;
+        try {
+            let spyChannel = client.channels.cache.get(spyChannelData.channelID);
+            const webhooksSpy = await spyChannel.fetchWebhooks();
+            this.PostMessage(message, spyMessage, spyChannel, webhooksSpy, 1.0, false);
+        } catch (error) {
+            postErrorMessage(error, message.chanel);
+        }
     }
+
 }
