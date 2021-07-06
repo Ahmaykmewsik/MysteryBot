@@ -52,7 +52,7 @@ module.exports = {
 
 
         async function GameStart() {
-            message.channel.send("*Then it's time to start!*");
+            message.channel.send("*Then it's time to start!*\nCreating channels. This will take a moment...");
             console.log(`GAME START FOR: ${settings.categoryName}`);
 
             if (settings.phase == null)
@@ -68,6 +68,8 @@ module.exports = {
             for (area of areas) {
                 await ChannelCreationFunctions.CreateEarlog(client, message, area, settings);
             }
+
+            message.channel.send("Earlogs created...");
 
             //Faster way that I think is more dangerous
             // let earlogPromises = [];
@@ -96,7 +98,7 @@ module.exports = {
                 postErrorMessage(error, message.channel);
             }
 
-            client.channels.cache.get(settings.actionLogID).send(
+            await client.channels.cache.get(settings.actionLogID).send(
                 "----------------------------\n---------**PHASE " + settings.phase + "**---------\n----------------------------"
             );
 

@@ -51,48 +51,6 @@ module.exports = {
             warningMessage += "All players have sent in their **movement**.\n";
         }
 
-
-
-        //Check that we aren't going to overflow the category
-        //If it will, create new category
-        // var channelTotal = 0;
-        // var newAreas = 0;
-        // const categoryObject = message.guild.channels.find(c => c.name == settings.categoryName);
-
-        // categoryObject.children.forEach(c => {
-        //     channelTotal++;
-        // });
-        // areas.forEach(area => {
-        //     //This is an overestimate since it also includes areas with
-        //     //dead players that are not created
-        //     if (area.playersPresent.length > 0) {
-        //         newAreas++;
-        //     }
-        // });
-        // if (channelTotal + newAreas > 50) {
-        //     console.log("Hammer time.");
-        //     //clone category and set as new active category
-        //     newName = category.name;
-        //     category.num++;
-        //     if (category.num == 1) {
-        //         categoryObject.name += " (1)";
-        //         newName += " (2)";
-        //     } else {
-        //         newName = newName.split(" (" + (category.num - 1) + ")")[0] + " (" + category.num + ")";
-        //     }
-        //     categoryObject.clone({ name: newName })
-        //         .then((categoryObjectNew) => {
-        //             category = {
-        //                 id: categoryObjectNew.id,
-        //                 name: newName,
-        //                 num: category.num
-        //             };
-
-        //             client.data.set("CATEGORY_DATA", category);
-        //         })
-        //         .catch(console.error);;
-        // }
-
         //Do it immediatley if they put a y
         if (args.includes("y")) return NextPhase();
 
@@ -100,7 +58,7 @@ module.exports = {
         return UtilityFunctions.WarnUserWithPrompt(message, warningMessage, NextPhase);
 
         async function NextPhase() {
-            message.channel.send("Beginning Phase " + (settings.phase + 1) + "...");
+            message.channel.send("Beginning Phase " + (settings.phase + 1) + ". Please wait...");
 
             let returnMessage = "";
 

@@ -35,6 +35,7 @@ module.exports = {
 
 			await DeleteChannelOrCategory(settings.categoryID);
 			await DeleteChannelOrCategory(settings.spyCategoryID);
+			await DeleteChannelOrCategory(settings.earlogCategoryID);
 
 			UtilityFunctions.RunCommand(client, message, "resetall", ['y']);
 

@@ -28,10 +28,9 @@ module.exports = {
                 } catch (error) {
                     message.channel.send(`:bangbang: Failed to create channel for: \`${area.id}\``);
                 }
-                
             }
 
-            //Make Game Channels
+            //Make Game Channels - fast and dangerous
             // let channelPromises = [];
             // for (area of areas) {
 
@@ -67,7 +66,7 @@ module.exports = {
             spyChannelData = client.getSpyChannels.all(message.guild.id);
             spyActionsData = client.getSpyActionsAll.all(message.guild.id);
 
-            await ChannelCreationFunctions.PostAllStartSpyMessages(message, spyActionsData, spyChannelData, players, settings, locations, areas, items, inventoryData);
+            ChannelCreationFunctions.PostAllStartSpyMessages(message, spyActionsData, spyChannelData, players, settings, locations, areas, items, inventoryData);
         } catch (error) {
             postErrorMessage(error, message.channel);
         }

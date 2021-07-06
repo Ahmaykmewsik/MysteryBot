@@ -109,9 +109,9 @@ module.exports = {
                 time: 30000,
                 max: 1
             });
-            collector.on('collect', m => {
+            collector.on('collect', async m => {
                 if (m.content.toLowerCase() == 'y' || m.content.toLowerCase() == 'yes') {
-                    return Action();
+                    return await Action();
                 } else if (m.content.toLowerCase() == 'n' || m.content.toLowerCase() == 'no') {
                     message.channel.send("Okay, never mind then :)");
                 } else {

@@ -50,7 +50,7 @@ module.exports = {
                 await this.OpenChannelForPlayer(player, message, channel);
             }
 
-            await SendMessageChannel(characterDescriptions, channel);
+            SendMessageChannel(characterDescriptions, channel);
 
             return channel;
         } catch (error) {
@@ -94,7 +94,7 @@ module.exports = {
 
     async SendSingleEntranceMessageAndOpenChannel(client, message, player, items, inventoryData, channel) {
         await this.OpenChannelForPlayer(player, message, channel);
-        await channel.send(this.GetPlayerIntroString(client, player, items, inventoryData), { split: true });
+        channel.send(this.GetPlayerIntroString(client, player, items, inventoryData), { split: true });
     },
 
     async OpenChannelForPlayer(player, message, channel) {
@@ -185,15 +185,15 @@ module.exports = {
         }
     },
 
-    async PostAllStartSpyMessages(message, spyActions, spyChannelData, players, settings, locations, areas, items, inventoryData) {
+    PostAllStartSpyMessages(message, spyActions, spyChannelData, players, settings, locations, areas, items, inventoryData) {
         for (spyAction of spyActions) 
             this.PostStartSpyMessages(message, spyAction, spyChannelData, players, settings, locations, areas, items, inventoryData);
     },
 
-    async PostStartSpyMessages(message, spyAction, spyChannelData, players, settings, locations, areas, items, inventoryData) {
+    PostStartSpyMessages(message, spyAction, spyChannelData, players, settings, locations, areas, items, inventoryData) {
         //Generate message
         let area = areas.find(area => area.id == spyAction.spyArea);
-        let spyMessageArray = await this.GetStartSpyMessage(message, spyAction, players, settings, locations, area, items, inventoryData);
+        let spyMessageArray = this.GetStartSpyMessage(message, spyAction, players, settings, locations, area, items, inventoryData);
 
         //if it's not visible don't mess with the accuracy because we don't want to encrypt the redacted message
         let accuracy = spyAction.accuracy;
@@ -205,7 +205,7 @@ module.exports = {
     },
 
     //Post identical message for spy channel (with a few adjustements)
-    async GetStartSpyMessage(message, spyActionForChannel, players, settings, locations, area, items, inventoryData) {
+    GetStartSpyMessage(message, spyActionForChannel, players, settings, locations, area, items, inventoryData) {
 
         let areaname = (spyActionForChannel.visible) ? area.name : "???";
 

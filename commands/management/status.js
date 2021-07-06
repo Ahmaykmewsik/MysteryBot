@@ -4,6 +4,7 @@ module.exports = {
 	name: 'status',
 	description: 'Gives a status on what actions have been sent in.',
     format: "!status",
+    aliases: ['s'],
     gmonly: true,
 	execute(client, message, args) {
 
@@ -19,7 +20,7 @@ module.exports = {
 
         let locations = client.getLocations.all(message.guild.id);
         if (locations.length == 0) {
-            return message.channel.send("No locations found. (What the hell have you been doing?)");
+            return message.channel.send("No locations found. What the hell have you been doing?");
         }
 
         if (args.length == 0) {
@@ -67,7 +68,7 @@ module.exports = {
     
             outputMessageArray.push("--------MOVEMENT--------");
             players.forEach(player => {
-                let toAdd = ":small_blue_diamond:__" + player.character.toUpperCase() + "__: ";
+                let toAdd = `:small_blue_diamond:__${player.character.toUpperCase()}__: `;
                 
                 if (player.move == undefined && player.moveSpecial == undefined) {
                     toAdd += "**NONE**";

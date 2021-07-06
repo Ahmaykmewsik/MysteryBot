@@ -123,9 +123,12 @@ module.exports = {
             //We found a matching spy action
             if (matchedSpyAction) continue;
 
-            //no active Spy Action, so unassign the spy Channel
+            //Spy channel is empty, no action needed
+            if (spyChannel.areaID == null) continue;
+
+            //Old assignment found, so unassign the spy Channel
             spyChannel.areaID == null;
-            await UtilityFunctions.PostSpyNotification_SpyEnd(client, message, spyChannel);
+            UtilityFunctions.PostSpyNotification_SpyEnd(client, message, spyChannel);
         }
 
         //make sure all spy Actions have an appropriate spy channel stored in memory
@@ -133,7 +136,7 @@ module.exports = {
 
             if (!spyAction.active) continue;
 
-            let matchedSpyChannel = spyChannelData.find(spyChannel =>
+            let matchedSpyChannel = updatedSpyChannels.find(spyChannel =>
                 spyAction.username == spyChannel.username &&
                 spyAction.spyArea == spyChannel.areaID &&
                 spyAction.active
@@ -156,7 +159,8 @@ module.exports = {
                 //ReplaceSpyChannel(freeSpyChannel);
                 let items = client.getItems.all(guild.id);
                 let inventoryData = client.getInventories.all(guild.id);
-                await channelCreationFunctions.PostStartSpyMessages(
+                console.log(`New spy channel assignment for ${freeSpyChannel.username}: ${freeSpyChannel.areaID}`)
+                channelCreationFunctions.PostStartSpyMessages(
                     message, spyAction, spyChannelData, players, settings, locations, areas, items, inventoryData
                 )
                 continue;
