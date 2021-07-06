@@ -12,35 +12,30 @@ module.exports = {
 		if (!player.username) return;
 		
 		const settings = UtilityFunctions.GetSettings(client, player.guild);
-		if (settings.phase == null) {
+		if (settings.phase == null) 
 			return message.channel.send("No game is currently in progress.");
-		}
 
-		if (player.forceMoved) {
+		if (player.forceMoved) 
 			return message.channel.send("The GM has already processed your movement manually. If you wish to change it, please consult your GM.");
-		}
-
+		
 		let location = client.getLocationOfPlayer.get(`${player.guild}_${player.username}`);
 
-		if (!location) {
+		if (!location) 
 			return message.channel.send("The bot can't find where you are! Ask your GM for assistance.");
-		}
-
+		
 		let currentAreaConnections = client.getConnections.all(location.areaID, player.guild);
-		if (currentAreaConnections.length == 0) {
+		if (currentAreaConnections.length == 0) 
 			return message.channel.send("Sorry, you can't go anywhere!");
-		}
-
+		
 		if (args.length === 0) {
 			return message.channel.send("Please specify the ID of the area you wish to move to. Valid options: `"
-					+ currentAreaConnections.join('`, `') + '`.');
+					+ currentAreaConnections.map(c => c.area2).join('`, `') + '`.');
 		}
 
 		let areaInput = currentAreaConnections.find(c => c.area2 == args.join(" "));
-		if (areaInput == undefined) {
+		if (areaInput == undefined) 
 			areaInput = currentAreaConnections.find(c => c.area2.includes(args.join(" ")));
-		}
-
+		
 		if (args.length > 1 || !areaInput) {
 			return message.channel.send("Sorry, `" + args.join(' ') + "` is not a valid movement option. Valid options: "
 				+ currentAreaConnections.map(c => c.area2).join(`, `));
@@ -50,9 +45,8 @@ module.exports = {
 		let actionLogMessage = "";
 		let returnMessage = "";
 
-		if (player.move) {
+		if (player.move) 
 			returnMessage += `Your previous \`!move\` command: \`${player.move}\` has been overwritten.\n`
-		}
 
 		player.move = areaInput;
 		if (player.moveSpecial) {

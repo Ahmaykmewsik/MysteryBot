@@ -41,6 +41,11 @@ module.exports = {
         else 
             profileOutput = `\n\n*No profile*`
 
-        message.reply(formatPlayer(client, player, true) + profileOutput, { split: true });
+        //Return user commands
+        const { commands } = message.client;
+        let userCommands = commands.filter(command => command.category == "user").map(command => command.name).join(`, `);
+        let commandMessage = `\n\n----------------------\n*__User commands__: ${userCommands}*`;
+
+        message.reply(formatPlayer(client, player, true) + profileOutput + commandMessage, { split: true });
     }
 };

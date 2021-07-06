@@ -47,6 +47,6 @@ module.exports = {
 
         //Create Earlog if game has started
         const settings = UtilityFunctions.GetSettings(client, message.guild.id);
-        if (settings.phase) ChannelCreationFunctions.CreateEarlog(client, message, newArea);
+        if (settings.phase) ChannelCreationFunctions.CreateEarlog(client, message, newArea, settings);
     }
 };

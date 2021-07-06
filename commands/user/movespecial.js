@@ -24,6 +24,9 @@ module.exports = {
 
 		const action = args.join(" ");
 
+		if (action.length == 0)
+			return message.channel.send("What? Please explain your movespeical command.");
+
 		if (player.moveSpecial) {
 			returnMessage += `Your previous \`!movespecial\` command: \`${player.moveSpecial}\` has been overwritten.\n`
 			player.move = null;

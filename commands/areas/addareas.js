@@ -53,7 +53,7 @@ module.exports = {
             returnMessage += `New area created: \`${newArea.id}\`\n`
 
             //Create Earlog if game has started
-            if (settings.phase) ChannelCreationFunctions.CreateEarlog(client, message, newArea);
+            if (settings.phase) ChannelCreationFunctions.CreateEarlog(client, message, newArea, settings);
         }
 
         message.channel.send(returnMessage, {split: true});

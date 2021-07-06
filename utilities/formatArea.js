@@ -59,9 +59,9 @@ module.exports = {
         //Partial output (This is what players will see)
         const infoStringPartial =
             `__id__: ${area.id}
-            __Connections Out__: ${connectionsOutString}
+            __Connections Out__: **${connectionsOutString}**
             __Instant Connections Out__: ${instantConnectionsOutStirngPlayer}
-            __Characters Present__: ${charactersPresent}\n`;
+            __Characters Present__: **${charactersPresent}**\n`;
 
         if (descriptionString.length > (1024)) {
             descriptionString = descriptionString.substring(0, 1024 - 3) + "...";

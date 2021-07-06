@@ -11,6 +11,7 @@ module.exports = {
 
         let player = UtilityFunctions.GetPlayer(client, message, message.guild.id, args.shift());
         if (player.username == undefined) return;
+        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
 
         const characterName = args.join(" ");
 
@@ -21,7 +22,7 @@ module.exports = {
         message.channel.send(player.username + "'s character name has been changed to: `" + player.character + "`");
         message.channel.send(formatPlayer(client, player));
 
-        client.users.cache.get(player.discordID).send("**You will now appear as: **\n" + player.character);
-        message.channel.send(`:exclamation:${player.username} was notified.`);
+        let messageToPlayer = `**You will now appear as: **\n${player.character}`;
+        UtilityFunctions.NotifyPlayer(client, message, player, messageToPlayer, settings);
 	}
 };

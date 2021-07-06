@@ -71,7 +71,7 @@ module.exports = {
 
             message.channel.send("Earlogs created...");
 
-            //Faster way that I think is more dangerous
+            //Faster way that is more dangerous
             // let earlogPromises = [];
             // for (area of areas) {
             //     earlogPromises.push(new Promise((resolve) => {
