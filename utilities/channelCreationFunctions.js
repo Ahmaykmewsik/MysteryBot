@@ -15,16 +15,14 @@ module.exports = {
 
             let channel = await guild.channels.create(channelName, {
                 type: 'text',
-                parentID: settings.categoryID,
+                parent: settings.categoryID,
                 permissionOverwrites: [{
                     id: guild.id,
                     deny: [`VIEW_CHANNEL`]
                 }]
             })
-            await channel.setParent(settings.categoryID);
-            //await channel.updateOverwrite(channel.guild.id, { VIEW_CHANNEL: false });
 
-            const earlogChannel = await client.getEarlogChannel.get(`${guild.id}_${area.id}`);
+            const earlogChannel = client.getEarlogChannel.get(`${guild.id}_${area.id}`);
 
             const newGameplayChannel = {
                 guild_areaID: `${guild.id}_${area.id}`,
@@ -46,11 +44,11 @@ module.exports = {
 
             let characterDescriptions = "";
 
-            locationsHere.forEach(async location => {
+            for (location of locationsHere) {
                 let player = players.find(p => p.username == location.username);
                 characterDescriptions += this.GetPlayerIntroString(client, player, items, inventoryData) + "\n";
                 await this.OpenChannelForPlayer(player, message, channel);
-            })
+            }
 
             await SendMessageChannel(characterDescriptions, channel);
 
@@ -110,10 +108,11 @@ module.exports = {
         }
     },
 
-    async CreateEarlog(client, message, area) {
+    async CreateEarlog(client, message, area, settings) {
         try {
             let channel = await message.guild.channels.create("earlog-" + area.id, {
                 type: 'text',
+                parent: settings.earlogCategoryID,
                 permissionOverwrites: [{
                     id: message.guild.id,
                     deny: ['SEND_MESSAGES', 'VIEW_CHANNEL']
@@ -272,9 +271,6 @@ module.exports = {
             postErrorMessage(error, message.channel);
         }
         
-    },
-
-    CheckNumChannelsInGuild(client, message) {
-        
     }
+
 }

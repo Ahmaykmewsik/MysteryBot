@@ -34,6 +34,7 @@ module.exports = {
                 categoryID: null,
                 categoryNum: 0,
                 spyCategoryID: null,
+                earlogCategoryID: null,
                 phase: null,
                 actionLogID: null,
                 healthSystemActivated: 1,

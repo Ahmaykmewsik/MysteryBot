@@ -61,9 +61,12 @@ module.exports = {
             //If you're running !gamestart you probably don't have any earlogs you care about, so delete them.
             client.deleteAllEarlogChannelData.run(message.guild.id);
 
+            let earlogCategory = await message.guild.channels.create("EARLOG", { type: 'category' });
+            settings.earlogCategoryID = earlogCategory.id;
+
             //create earlogs
             for (area of areas) {
-                await ChannelCreationFunctions.CreateEarlog(client, message, area);
+                await ChannelCreationFunctions.CreateEarlog(client, message, area, settings);
             }
 
             //Faster way that I think is more dangerous

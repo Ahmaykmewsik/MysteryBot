@@ -199,6 +199,7 @@ client.on("ready", () => {
 				categoryID TEXT,
 				categoryNum INTEGER,
 				spyCategoryID TEXT,
+				earlogCategoryID TEXT,
 				phase INTEGER,
 				actionLogID TEXT,
 				healthSystemActivated BOOL,
@@ -538,8 +539,8 @@ client.on("ready", () => {
 	);
 
 	client.setSettings = sql.prepare(
-		`INSERT OR REPLACE INTO settings (guild, categoryName, categoryID, categoryNum, spyCategoryID, phase, actionLogID, healthSystemActivated, defaultHealth, maxHealth)
-		VALUES (@guild, @categoryName, @categoryID, @categoryNum, @spyCategoryID, @phase, @actionLogID, @healthSystemActivated, @defaultHealth, @maxHealth)`
+		`INSERT OR REPLACE INTO settings (guild, categoryName, categoryID, categoryNum, spyCategoryID, earlogCategoryID, phase, actionLogID, healthSystemActivated, defaultHealth, maxHealth)
+		VALUES (@guild, @categoryName, @categoryID, @categoryNum, @spyCategoryID, @earlogCategoryID, @phase, @actionLogID, @healthSystemActivated, @defaultHealth, @maxHealth)`
 	);
 
 	client.deleteSettings = sql.prepare(
@@ -726,4 +727,9 @@ client.on('rateLimit', (info) => {
 	console.log(`Rate limit hit!`);
 	console.dir(info);
 })
+
+client.on("error", error => {
+	console.error(error);
+})
+
 client.login(token);
