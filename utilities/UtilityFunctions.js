@@ -1,4 +1,3 @@
-const getHeartImage = require("./getHeartImage");
 const postErrorMessage = require('./errorHandling').postErrorMessage;
 //const SpyManagement = require('./SpyManagement');
 
@@ -384,6 +383,10 @@ module.exports = {
         }
         
         return message.channel.send(`:exclamation:${player.username} was notified.`);
+    },
+
+    NotImplemented(message) {
+        return message.channel.send("No.");
     }
 
 }

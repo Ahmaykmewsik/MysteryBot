@@ -1,6 +1,5 @@
 const UtilityFunctions = require('../../utilities/UtilityFunctions');
 const formatPlayer = require('../../utilities/formatPlayer').formatPlayer;
-const getHeartImage = require('../../utilities/getHeartImage').getHeartImage;
 
 module.exports = {
 	name: 'damage',

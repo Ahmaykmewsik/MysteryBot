@@ -82,15 +82,16 @@ module.exports = {
             // console.log(returnValues);
             
             //Create spy category and store it
-            let categoryObject = await message.guild.channels.create("SPY CHANNELS", { type: 'category' });
-            settings.spyCategoryID = categoryObject.id;
-            client.setSettings.run(settings);
-
+            // let categoryObject = await message.guild.channels.create("SPY CHANNELS", { type: 'category' });
+            // settings.spyCategoryID = categoryObject.id;
+            
             //set position underneath game category
-            let position = message.guild.channels.cache.get(settings.categoryID).position;
+            // let position = message.guild.channels.cache.get(settings.categoryID).position;
 
-            if (position)
-                categoryObject.setPosition(position + 1);
+            // if (position)
+            //     categoryObject.setPosition(position + 1);
+
+            client.setSettings.run(settings);
 
             try {
                 await createChannels(client, message, areas, players, locations, settings);

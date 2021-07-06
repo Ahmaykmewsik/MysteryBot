@@ -7,6 +7,8 @@ module.exports = {
     //Command run when we want to make sure that everything regarding spy connections, spy actions, and spy channels add up.
     async RefreshSpying(client, message, guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings) {
 
+        return;
+
         //Update Spy Actions Based on Spy Connections AND player locations
         // Spy Connections -> Spy Actions
 

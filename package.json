@@ -1,7 +1,7 @@
 {
   "name": "mysterybot",
-  "version": "1.0.0",
-  "description": "A Discord Bot to run the Mystery Game",
+  "version": "3.0.0",
+  "description": "A Discord Bot to run Objective Games.",
   "main": "index.js",
   "scripts": {
     "test": "!ping"

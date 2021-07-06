@@ -10,6 +10,8 @@ module.exports = {
     gmonly: true,
     async execute(client, message, args) {
 
+        return UtilityFunctions.NotImplemented(message);
+
         if (args.length == 0)
             return message.channel.send("Disconnect what? Enter 2 areas.");
 

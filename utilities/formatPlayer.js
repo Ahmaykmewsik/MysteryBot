@@ -1,6 +1,5 @@
 const Discord = require('discord.js');
 const formatItem = require('./formatItem').formatItem;
-const getHeartImage = require('./getHeartImage').getHeartImage;
 const UtilityFunctions = require('./UtilityFunctions');
 
 module.exports = {
@@ -34,10 +33,7 @@ module.exports = {
             playerInventoryData.forEach(d => {
                 itemString += formatItem(client, d, false) + "\n"
             });
-        }
-
-        const heartImageURL = getHeartImage(player.health);
-        const attachment = new Discord.MessageAttachment(heartImageURL, "hearts.png");        
+        }       
 
         let infoText = (playerView) ?
             MakeInfoText(status, player.health, areaString, spyActionStringPlayer, actionString, moveString, moveSpecialString):
