@@ -11,6 +11,7 @@ module.exports = {
 
         let player = UtilityFunctions.GetPlayer(client, message, message.guild.id, args.shift());
         if (player.username == undefined) return;
+        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
         
         player.health = 0;
         player.alive = 0;
@@ -20,5 +21,6 @@ module.exports = {
 
         message.channel.send(player.username + " is dead!\n");
         message.channel.send(formatPlayer(client, player));
+        UtilityFunctions.NotifyPlayer(client, message, player, "**YOU ARE DEAD**", settings);
 	}
 };

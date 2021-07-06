@@ -17,13 +17,14 @@ module.exports = {
             return message.channel.send("You need to put a value.");
         }
 
+        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
+
         const damageInput = args.shift();
         const damageValue = parseFloat(damageInput);
 
-        if (isNaN(damageValue) || damageValue % 0.25 != 0.0) {
+        if (isNaN(damageValue) || damageValue % 0.25 != 0.0) 
             return message.channel.send("Invalid damage: " + damageInput + ". Please enter a number divisible by 1/4.");
-        }
-
+        
         const healthValueOld = player.health;
         player.health -= damageValue;
 
@@ -33,23 +34,19 @@ module.exports = {
             player.move = null;
         }
 
-        var deltaHealth = healthValueOld - player.health;
-        var messageToPlayer = "";
-        if (deltaHealth > 0) {
-            messageToPlayer = "You took " + deltaHealth + " damage!\nCurrent Health: " + player.health;
-        } else if (deltaHealth < 0) {
-            deltaHealth *= -1;
-            messageToPlayer = "You gained " + deltaHealth + " health!\nCurrent Health: " + player.health;
-        }
+        let deltaHealth = healthValueOld - player.health;
+        let messageToPlayer = "Nothing happened!";
+        if (deltaHealth > 0) messageToPlayer = `You took ${deltaHealth} damage!`;
+        if (deltaHealth < 0) messageToPlayer = `You gained ${deltaHealth * -1} health!`;
+        messageToPlayer += `\nCurrent Health: ${player.health}\n` + UtilityFunctions.GetHeartEmojis(player.health);
 
         client.setPlayer.run(player);
 
-        if (messageToPlayer != ""){
-            client.users.cache.get(player.discordID).send(messageToPlayer, {files: [getHeartImage(player.health)]});
-        }
+        message.channel.send(
+            `${player.username} has taken ${damageValue} damage!\nCurrent health: ${player.health}\n` +
+            formatPlayer(client, player), { split: true });
 
-        message.channel.send(player.username + " has taken `" + damageValue + "` damage!\nCurrent health: " + player.health);
-        message.channel.send(formatPlayer(client, player));
-        message.channel.send(`:exclamation:${player.username} was notified.`);
+        UtilityFunctions.NotifyPlayer(client, message, player, messageToPlayer, settings);
+
 	}
 };

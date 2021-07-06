@@ -15,6 +15,8 @@ module.exports = {
         if (player.alive == 1) {
             return message.channel.send(`Huh? But ${player.username} is already alive!`);
         }
+
+        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
         
         player.alive = 1;
 
@@ -22,5 +24,6 @@ module.exports = {
 
         message.channel.send(player.username + " has risen from the dead!\n If they should have health other than 0 change it with `!sethealth` or `!heal`");
         message.channel.send(formatPlayer(client, player));
+        UtilityFunctions.NotifyPlayer(client, message, player, "**YOU ARE ALIVE**", settings);
 	}
 };

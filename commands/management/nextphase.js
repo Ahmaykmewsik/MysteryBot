@@ -58,7 +58,7 @@ module.exports = {
         return UtilityFunctions.WarnUserWithPrompt(message, warningMessage, NextPhase);
 
         async function NextPhase() {
-            message.channel.send("Beginning Phase " + (settings.phase + 1) + ". Please wait...");
+            message.channel.send("Beginning Phase " + (settings.phase + 1) + ". Please wait, this may take some time...");
 
             let returnMessage = "";
 

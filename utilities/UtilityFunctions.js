@@ -249,7 +249,7 @@ module.exports = {
         return GenerateHeartString(num);
 
         function GenerateHeartString(n) {
-            if (n < 0.0 || n > 30) return "";
+            if (n < 0 || n > 30) return "";
             if (n == 0.00) return heart000;
             if (n == 0.25) return heart025;
             if (n == 0.50) return heart050;
@@ -368,6 +368,22 @@ module.exports = {
         } catch (error) {
             postErrorMessage(error, message.chanel);
         }
+    },
+
+    async NotifyPlayer(client, message, player, notification, settings, pregameOverride = false) {
+        
+        if (notification.length == 0) return;
+
+        if (settings.phase == null && !pregameOverride)
+            return message.channel.send(`The game has not started. ${player.username} was not notified.`);
+        
+        try {
+            await client.users.cache.get(player.discordID).send(notification);
+        } catch (error) {
+            return message.channel.send(`:x: Failed to send notification to ${player.username}.`);
+        }
+        
+        return message.channel.send(`:exclamation:${player.username} was notified.`);
     }
 
 }

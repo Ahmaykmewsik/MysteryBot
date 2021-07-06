@@ -17,13 +17,14 @@ module.exports = {
             return message.channel.send("You need to put a value.");
         }
 
+        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
+
         const healthInput = args.shift();
         const healthValue = parseFloat(healthInput);
 
-        if (isNaN(healthValue)|| healthValue % 0.25 != 0.0) {
+        if (isNaN(healthValue)|| healthValue % 0.25 != 0.0) 
             return message.channel.send("Invalid health: " + healthInput + ". Please enter a number divisible by 1/4.");
-        }
-
+        
         const healthValueOld = player.health;
         player.health = healthValue;
 
@@ -35,23 +36,17 @@ module.exports = {
             player.alive = 1;
         }
 
-        var deltaHealth = healthValueOld - player.health;
-        var messageToPlayer = "";
-        if (deltaHealth > 0) {
-            messageToPlayer = "You took " + deltaHealth + " damage!\nCurrent Health: " + player.health;
-        } else if (deltaHealth < 0) {
-            deltaHealth *= -1;
-            messageToPlayer = "You gained " + deltaHealth + " health!\nCurrent Health: " + player.health;
-        }
+        let deltaHealth = healthValueOld - player.health;
+        let messageToPlayer = "Nothing happened!";
+        if (deltaHealth > 0) messageToPlayer = `You took ${deltaHealth} damage!`;
+        if (deltaHealth < 0) messageToPlayer = `You gained ${deltaHealth * -1} health!`;
+        messageToPlayer += `\nCurrent Health: ${player.health}\n` + UtilityFunctions.GetHeartEmojis(player.health);
         
         client.setPlayer.run(player);
 
         message.channel.send("Health of " + player.username + " set to `" + healthValue + "`");
         message.channel.send(formatPlayer(client, player));
 
-        if (messageToPlayer != ""){
-            client.users.cache.get(player.discordID).send(messageToPlayer, {files: [getHeartImage(player.health)]});
-            message.channel.send(`:exclamation:${player.username} was notified.`);
-        }
+        UtilityFunctions.NotifyPlayer(client, message, player, messageToPlayer, settings);
 	}
 };

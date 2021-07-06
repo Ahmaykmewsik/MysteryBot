@@ -11,10 +11,9 @@ module.exports = {
         let area = UtilityFunctions.GetArea(client, message, args.shift());
         if (!area.guild) return;
 
-        if (!args.includes("-e")) {
-            message.channel.send(formatArea(client, area, true), {split: true});
-        } else {
-            message.channel.send(formatArea(client, area));
-        }
+        if (args.includes("-e")) 
+            return message.channel.send(formatArea(client, area, false));
+    
+        return message.channel.send(formatArea(client, area, true), {split: true});
     }
 };
