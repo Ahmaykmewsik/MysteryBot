@@ -7,6 +7,7 @@ require("dotenv").config();
 
 const { EarlogListener } = require("./EarlogListener");
 const postErrorMessage = require('./utilities/errorHandling').postErrorMessage;
+const UtilityFunctions = require("./utilities/UtilityFunctions");
 
 const SQLite = require("better-sqlite3");
 const sql = new SQLite('./data.sqlite');
@@ -190,6 +191,19 @@ client.on("ready", () => {
 				locked BOOL
 			)`
 		).run();
+
+		//Message database
+		sql.prepare(
+			`CREATE TABLE messageDatabase(
+				gameplayID TEXT PRIMARY KEY,
+				earlogID TEXT,
+				earlogChannelID TEXT,
+				guild TEXT,
+				phase INTEGER
+			)`
+		).run();
+
+		sql.prepare("CREATE UNIQUE INDEX idx_gameplayID ON messageDatabase (gameplayID);").run();
 
 		//Settings
 		sql.prepare(
@@ -619,6 +633,28 @@ client.on("ready", () => {
 		WHERE guild = ?`
 	);
 
+	// -------Message Database Functions------
+
+	client.setMessage = sql.prepare(
+		`INSERT OR REPLACE INTO messageDatabase (gameplayID, earlogID, earlogChannelID, guild, phase)
+		VALUES (@gameplayID, @earlogID, @earlogChannelID, @guild, @phase)`
+	);
+
+	client.getMessage = sql.prepare(
+		`SELECT * FROM messageDatabase
+		WHERE gameplayID = ?`
+	);
+
+	client.deleteMessegesOfPhase = sql.prepare(
+		`DELETE FROM messageDatabase
+		WHERE guild = ? AND phase = ?`
+	);
+
+	client.deleteAllMessages = sql.prepare(
+		`DELETE FROM messageDatabase
+		WHERE guild = ?`
+	)
+
 	//Boot message
 	console.log("It's time to get mysterious!");
 });
@@ -723,6 +759,82 @@ client.on("message", message => {
 	}
 });
 
+//Getting reactions of all messages ever
+//https://github.com/AnIdiotsGuide/discordjs-bot-guide/blob/master/coding-guides/raw-events.md
+client.on('raw', packet => {
+    // We don't want this to run on unrelated packets
+    if (!['MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE'].includes(packet.t)) return;
+    // Grab the channel to check the message from
+    const channel = client.channels.cache.get(packet.d.channel_id);
+    // There's no need to emit if the message is cached, because the event will fire anyway for that
+    if (channel.messages.cache.has(packet.d.message_id)) return;
+    // Since we have confirmed the message is not cached, let's fetch it
+    channel.messages.fetch(packet.d.message_id).then(message => {
+        // Emojis can have identifiers of name:id format, so we have to account for that case as well
+        const emoji = packet.d.emoji.id ? `${packet.d.emoji.name}:${packet.d.emoji.id}` : packet.d.emoji.name;
+        // This gives us the reaction we need to emit the event properly, in top of the message object
+        const reaction = message.reactions.cache.get(emoji);
+        // Adds the currently reacting user to the reaction's users collection.
+        if (reaction) reaction.users.cache.set(packet.d.user_id, client.users.cache.get(packet.d.user_id));
+        // Check which type of event it is before emitting
+        if (packet.t === 'MESSAGE_REACTION_ADD') {
+            client.emit('messageReactionAdd', reaction, client.users.cache.get(packet.d.user_id));
+        }
+        if (packet.t === 'MESSAGE_REACTION_REMOVE') {
+            client.emit('messageReactionRemove', reaction, client.users.cache.get(packet.d.user_id));
+        }
+    });
+});
+
+
+client.on("messageUpdate", async updatedMessage => {
+	//Only do anything if we're obviously in a gameplay channel
+	if (updatedMessage.channel.type == "dm" || updatedMessage.channel.name[0] != "p") return;
+
+	let earlogMessage = await UtilityFunctions.GetMessageFromDatabase(client, updatedMessage);
+	if (!earlogMessage) return;
+
+	try {
+		earlogMessage.react(`📝`);
+	} catch (error) {
+		console.error(`messageUpdate Error: ${error}`);
+	}
+})
+
+
+client.on("messageReactionAdd", async (reaction, user) => {
+	//Only do anything if we're obviously in a gameplay channel
+	if (reaction.message.channel.type == "dm" || reaction.message.channel.name[0] != "p") return;
+
+	let earlogMessage = await UtilityFunctions.GetMessageFromDatabase(client, reaction.message);
+	if (!earlogMessage) return;
+
+	try {
+		earlogMessage.react(reaction.emoji);
+	} catch (error) {
+		console.error(`messageReactionAdd Error: ${error}`);
+	}
+})
+
+client.on("messageReactionRemove", async (reaction, user) => {
+	//Only do anything if we're obviously in a gameplay channel
+	if (reaction.message.channel.type == "dm" || reaction.message.channel.name[0] != "p") return;
+	
+	if (reaction.message.reactions.cache.filter(r => r.emoji == reaction.emoji).size != 0) return;
+
+	let earlogMessage = await UtilityFunctions.GetMessageFromDatabase(client, reaction.message);
+	if (!earlogMessage) return;
+	
+	try {
+		earlogMessage.reactions.cache.get(reaction.emoji.name).remove();
+	} catch (error) {
+		console.error(`messageReactionRemove Error: ${error}`);
+	}
+})
+
+
+
+
 client.on('rateLimit', (info) => {
 	console.log(`Rate limit hit!`);
 	console.dir(info);
@@ -731,5 +843,7 @@ client.on('rateLimit', (info) => {
 client.on("error", error => {
 	console.error(error);
 })
+
+
 
 client.login(token);

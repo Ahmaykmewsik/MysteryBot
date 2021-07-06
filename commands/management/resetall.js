@@ -48,6 +48,7 @@ module.exports = {
 			client.deleteAllSpyChannelData.run(message.guild.id);
 			client.deleteAllGameplayChannelData.run(message.guild.id);
 			client.deleteSettings.run(message.guild.id);
+			client.deleteAllMessages.run(message.guild.id);
 
 			if (!silent)
 				message.channel.send("Goodbye DATA. https://youtu.be/6kguaGI7aZg");

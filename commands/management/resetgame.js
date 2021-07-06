@@ -25,6 +25,7 @@ module.exports = {
             client.deleteAllEarlogChannelData.run(message.guild.id);
             client.deleteAllSpyChannelData.run(message.guild.id);
             client.deleteAllGameplayChannelData.run(message.guild.id);
+            client.deleteAllMessages.run(message.guild.id);
 
             //Settings is a special case. Only one thing needs to change
             settings.phase = null;

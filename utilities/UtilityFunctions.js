@@ -271,7 +271,7 @@ module.exports = {
         }
     },
 
-    async PostMessage(message, messageString, channelToPost, webhooks, accuracy = 1.0, changeApperance = true) {
+    async PostMessage(message, messageString, channelToPost, webhooks, accuracy = 1.0, changeApperance = true, earlog = true) {
 
         if (messageString.length == 0 && message.attachments.array().length == 0) return;
 
@@ -311,7 +311,19 @@ module.exports = {
 
         //A little bit of a hack but who cares lol it works
         if (content.includes(">>> *-----Phase ") || content.includes(`:detective: :detective: :detective: **NOW SPYING:`))
-            postedMessage.pin();
+            await postedMessage.pin();
+
+        //Store earlog messeges in database
+        if (!earlog) return;
+        const settings = this.GetSettings(message.client, message.guild.id);
+        let dataBaseMessage = {
+            gameplayID: message.id,
+            earlogID: postedMessage.id,
+            earlogChannelID: channelToPost.id,
+            guild: message.guild.id,
+            phase: settings.phase
+        }
+        message.client.setMessage.run(dataBaseMessage);
     },
 
     EncryptSpyMessage(message, accuracy) {
@@ -351,7 +363,7 @@ module.exports = {
             }
 
             const webhooksSpy = await spyChannel.fetchWebhooks();
-            this.PostMessage(message, spyMessage, spyChannel, webhooksSpy, accuracy, changeApperance);
+            this.PostMessage(message, spyMessage, spyChannel, webhooksSpy, accuracy, changeApperance, false);
         } catch (error) {
             console.error(`Spy channel Error: ` + error);
         }
@@ -370,23 +382,37 @@ module.exports = {
     },
 
     async NotifyPlayer(client, message, player, notification, settings, pregameOverride = false) {
-        
+
         if (notification.length == 0) return;
 
         if (settings.phase == null && !pregameOverride)
             return message.channel.send(`The game has not started. ${player.username} was not notified.`);
-        
+
         try {
             await client.users.cache.get(player.discordID).send(notification);
         } catch (error) {
             return message.channel.send(`:x: Failed to send notification to ${player.username}.`);
         }
-        
+
         return message.channel.send(`:exclamation:${player.username} was notified.`);
     },
 
     NotImplemented(message) {
         return message.channel.send("No.");
+    },
+
+
+    async GetMessageFromDatabase(client, updatedMessage) {
+        try {
+            //Get message from database
+            let gameplayMessageData = client.getMessage.get(updatedMessage.id);
+            //find earlog discord channel
+            let earlogChannel = updatedMessage.guild.channels.cache.get(gameplayMessageData.earlogChannelID);
+            //find message in earlog
+            return await earlogChannel.messages.fetch(gameplayMessageData.earlogID);
+        } catch {
+            return null;
+        }
     }
 
 }
