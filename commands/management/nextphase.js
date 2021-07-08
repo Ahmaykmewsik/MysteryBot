@@ -113,7 +113,7 @@ module.exports = {
                     //If a player goes somewhere sneaky sneaky, don't tell nuthin
                     const connectionExists = connections.find(c => c.area1 == location.areaID && c.area2 == player.move);
                     movementMessage += (connectionExists) ?
-                        `${player.character} moved to ${location.areaID}\n` :
+                        `${player.character} moved to ${player.move}\n` :
                         `${player.character} moved to ???\n`;
                 }
 
