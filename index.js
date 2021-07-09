@@ -222,11 +222,6 @@ client.on("ready", () => {
 			);`
 		).run();
 
-		// sql.prepare(
-		// 	`CREATE TABLE avatarFilenames ()`
-
-		// ).run()
-
 
 		sql.pragma("synchronous = 1");
 		sql.pragma("journal_mode = wal");
@@ -722,34 +717,20 @@ client.on("message", message => {
 	}
 
 	//Notify if this can only be used by the GM
-	if (command.gmonly) {
-		if (message.channel.type === "dm") {
-			message.reply(
-				"GM-only commands cannot be sent via DM. Send it in the server instead."
-			);
-			return;
-		}
-		if (!message.member.hasPermission("ADMINISTRATOR")) {
-			message.reply("This command is for GM use only.");
-			return;
-		}
-	}
+	if (command.gmonly && message.channel.type === "dm")
+		return message.reply("GM-only commands cannot be sent via DM. Send it in the server instead.");
+
+	//Only let GMs use GM commands
+	if (command.gmonly && !message.member.hasPermission("ADMINISTRATOR"))
+		return message.reply("This command is for GM use only.");
 
 	//Notify if this can only be sent in guild
-	if (command.guildonly && message.channel.type === "dm") {
-		message.reply(
-			"This command cannot be sent as a DM. Send it in the server instead."
-		);
-		return;
-	}
+	if (command.guildonly && message.channel.type === "dm")
+		return message.reply("This command cannot be sent as a DM. Send it in the server instead.")
 
 	//Notify if this can only be sent in dm
-	if (command.dmonly && message.channel.type === "text" && command.name) {
-		message.reply(
-			"This command cannot be sent in the server. Send it as a DM instead."
-		);
-		return;
-	}
+	if (command.dmonly && message.channel.type === "text" && command.name)
+		return message.reply("This command cannot be sent in the server. Send it as a DM instead.");
 
 	//Do the command
 	try {
@@ -762,28 +743,28 @@ client.on("message", message => {
 //Getting reactions of all messages ever
 //https://github.com/AnIdiotsGuide/discordjs-bot-guide/blob/master/coding-guides/raw-events.md
 client.on('raw', packet => {
-    // We don't want this to run on unrelated packets
-    if (!['MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE'].includes(packet.t)) return;
-    // Grab the channel to check the message from
-    const channel = client.channels.cache.get(packet.d.channel_id);
-    // There's no need to emit if the message is cached, because the event will fire anyway for that
-    if (channel.messages.cache.has(packet.d.message_id)) return;
-    // Since we have confirmed the message is not cached, let's fetch it
-    channel.messages.fetch(packet.d.message_id).then(message => {
-        // Emojis can have identifiers of name:id format, so we have to account for that case as well
-        const emoji = packet.d.emoji.id ? `${packet.d.emoji.name}:${packet.d.emoji.id}` : packet.d.emoji.name;
-        // This gives us the reaction we need to emit the event properly, in top of the message object
-        const reaction = message.reactions.cache.get(emoji);
-        // Adds the currently reacting user to the reaction's users collection.
-        if (reaction) reaction.users.cache.set(packet.d.user_id, client.users.cache.get(packet.d.user_id));
-        // Check which type of event it is before emitting
-        if (packet.t === 'MESSAGE_REACTION_ADD') {
-            client.emit('messageReactionAdd', reaction, client.users.cache.get(packet.d.user_id));
-        }
-        if (packet.t === 'MESSAGE_REACTION_REMOVE') {
-            client.emit('messageReactionRemove', reaction, client.users.cache.get(packet.d.user_id));
-        }
-    });
+	// We don't want this to run on unrelated packets
+	if (!['MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE'].includes(packet.t)) return;
+	// Grab the channel to check the message from
+	const channel = client.channels.cache.get(packet.d.channel_id);
+	// There's no need to emit if the message is cached, because the event will fire anyway for that
+	if (channel.messages.cache.has(packet.d.message_id)) return;
+	// Since we have confirmed the message is not cached, let's fetch it
+	channel.messages.fetch(packet.d.message_id).then(message => {
+		// Emojis can have identifiers of name:id format, so we have to account for that case as well
+		const emoji = packet.d.emoji.id ? `${packet.d.emoji.name}:${packet.d.emoji.id}` : packet.d.emoji.name;
+		// This gives us the reaction we need to emit the event properly, in top of the message object
+		const reaction = message.reactions.cache.get(emoji);
+		// Adds the currently reacting user to the reaction's users collection.
+		if (reaction) reaction.users.cache.set(packet.d.user_id, client.users.cache.get(packet.d.user_id));
+		// Check which type of event it is before emitting
+		if (packet.t === 'MESSAGE_REACTION_ADD') {
+			client.emit('messageReactionAdd', reaction, client.users.cache.get(packet.d.user_id));
+		}
+		if (packet.t === 'MESSAGE_REACTION_REMOVE') {
+			client.emit('messageReactionRemove', reaction, client.users.cache.get(packet.d.user_id));
+		}
+	});
 });
 
 
@@ -803,7 +784,8 @@ client.on("messageUpdate", async updatedMessage => {
 
 
 client.on("messageReactionAdd", async (reaction, user) => {
-	//Only do anything if we're obviously in a gameplay channel
+	//Only do anything if we're obviously in a gameplay channel and there's a message
+	if (!reaction.message) return;
 	if (reaction.message.channel.type == "dm" || reaction.message.channel.name[0] != "p") return;
 
 	let earlogMessage = await UtilityFunctions.GetMessageFromDatabase(client, reaction.message);
@@ -818,13 +800,15 @@ client.on("messageReactionAdd", async (reaction, user) => {
 
 client.on("messageReactionRemove", async (reaction, user) => {
 	//Only do anything if we're obviously in a gameplay channel
+	if (!reaction.message) return;
 	if (reaction.message.channel.type == "dm" || reaction.message.channel.name[0] != "p") return;
-	
+
+	//Only remove if it's the last reaction of that emoji
 	if (reaction.message.reactions.cache.filter(r => r.emoji == reaction.emoji).size != 0) return;
 
 	let earlogMessage = await UtilityFunctions.GetMessageFromDatabase(client, reaction.message);
 	if (!earlogMessage) return;
-	
+
 	try {
 		earlogMessage.reactions.cache.get(reaction.emoji.name).remove();
 	} catch (error) {
