@@ -193,9 +193,6 @@ module.exports = {
         return list.filter(c => this.MatchSpyConnection(connection, c));
     },
 
-    //Returns the objects that are 
-    // 1 2 3
-    // 1 2
     DifferenceOfSpyActions(list1, list2) {
         return list1.filter(o1 => !(list2.some(o2 => this.MatchSpyAction(o1, o2))));
     },
@@ -223,20 +220,6 @@ module.exports = {
             spyChannels.forEach(c => client.setSpyChannel.run(c));
         }
     },
-
-    // CloneSpyAction(spyAction) {
-    //     return {
-    //         guild_username: spyAction.guild_username,
-    //         username: player.username,
-    //         guild: player.guild,
-    //         spyArea: spyConnection.area2,
-    //         accuracy: spyConnection.accuracy,
-    //         permanent: 0,
-    //         playerSpy: 0,
-    //         visible: spyConnection.visible,
-    //         active: 1
-    //     }
-    // },
 
     GetHeartEmojis(num) {
         let heart100 = `<:h10:859700259152199721>`;
@@ -363,7 +346,7 @@ module.exports = {
             }
 
             const webhooksSpy = await spyChannel.fetchWebhooks();
-            this.PostMessage(message, spyMessage, spyChannel, webhooksSpy, accuracy, changeApperance, false);
+            await this.PostMessage(message, spyMessage, spyChannel, webhooksSpy, accuracy, changeApperance, false);
         } catch (error) {
             console.error(`Spy channel Error: ` + error);
         }
@@ -413,6 +396,10 @@ module.exports = {
         } catch {
             return null;
         }
-    }
+    },
+
+    async sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
 
 }

@@ -786,6 +786,7 @@ client.on('raw', packet => {
     });
 });
 
+client.on('debug', console.log);
 
 client.on("messageUpdate", async updatedMessage => {
 	//Only do anything if we're obviously in a gameplay channel

@@ -5,9 +5,7 @@ const UtilityFunctions = require("./UtilityFunctions");
 module.exports = {
 
     //Command run when we want to make sure that everything regarding spy connections, spy actions, and spy channels add up.
-    async RefreshSpying(client, message, guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings) {
-
-        return;
+    async RefreshSpying(client, message, guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings, isMidphase = true) {
 
         //Update Spy Actions Based on Spy Connections AND player locations
         // Spy Connections -> Spy Actions
@@ -16,7 +14,7 @@ module.exports = {
 
         //Update Spy Channels based on Spy Actions
         // Spy Actions -> Spy Channels
-        let newSpyChannelData = await this.UpdateSpyChannels(client, message, guild, players, areas, spyChannelData, updatedSpyActions, locations, settings);
+        let newSpyChannelData = await this.UpdateSpyChannels(client, message, guild, players, areas, spyChannelData, updatedSpyActions, locations, settings, isMidphase);
 
         UtilityFunctions.UpdateSpyData(client, guild.id, null, updatedSpyActions, newSpyChannelData);
 
@@ -40,7 +38,7 @@ module.exports = {
         }
 
         if (addedSpyChannels.length > 0)
-            returnMessage.push(addedSpyChannels.map(channel => `:detective: A spy channel was created for ${channel.username}`).join('\n'));
+            returnMessage.push(addedSpyChannels.map(channel => `:detective: A spy channel was activated for ${channel.username}`).join('\n'));
 
         return returnMessage.join("\n");
     },
@@ -108,10 +106,12 @@ module.exports = {
     },
 
     //This can be run at literally any time and it will put the spy channels in the right place
-    async UpdateSpyChannels(client, message, guild, players, areas, spyChannelData, spyActionsData, locations, settings) {
+    async UpdateSpyChannels(client, message, guild, players, areas, spyChannelData, spyActionsData, locations, settings, isMidphase) {
 
         //Make a deep copy (this caused me so much pain to figure out I hate javascript)
         let updatedSpyChannels = JSON.parse(JSON.stringify(spyChannelData));
+        let items = client.getItems.all(guild.id);
+        let inventoryData = client.getInventories.all(guild.id);
 
         //Iterate through all spy channels and clear out any outdated spy actions in the spy Channels
         for (spyChannel of updatedSpyChannels) {
@@ -129,7 +129,7 @@ module.exports = {
             if (spyChannel.areaID == null) continue;
 
             //Old assignment found, so unassign the spy Channel
-            spyChannel.areaID == null;
+            spyChannel.areaID = null;
             UtilityFunctions.PostSpyNotification_SpyEnd(client, message, spyChannel);
         }
 
@@ -152,25 +152,22 @@ module.exports = {
 
             //No spy channel for the action, so update it!
             //If there's a free Spy Channel for that player, use it
-            let freeSpyChannel = spyChannelData.find(spyChannel =>
+            let freeSpyChannel = updatedSpyChannels.find(spyChannel =>
                 spyChannel.username == spyAction.username &&
                 spyChannel.areaID == null
             );
             if (freeSpyChannel) {
                 freeSpyChannel.areaID = spyAction.spyArea;
-                //ReplaceSpyChannel(freeSpyChannel);
-                let items = client.getItems.all(guild.id);
-                let inventoryData = client.getInventories.all(guild.id);
-                console.log(`New spy channel assignment for ${freeSpyChannel.username}: ${freeSpyChannel.areaID}`)
-                channelCreationFunctions.PostStartSpyMessages(
-                    message, spyAction, spyChannelData, players, settings, locations, areas, items, inventoryData
-                )
+                if (!isMidphase) continue;
+                await channelCreationFunctions.PostStartSpyMessages(message, spyAction, updatedSpyChannels, players, settings, locations, areas, items, inventoryData);
                 continue;
             }
 
             //No free spy Channel, so we need to make one
             let newSpyChannelData = await channelCreationFunctions.CreateSpyChannel(client, message, guild, player, area, settings);
             updatedSpyChannels.push(newSpyChannelData);
+            if (!isMidphase) continue;
+            await channelCreationFunctions.PostStartSpyMessages(message, spyAction, updatedSpyChannels, players, settings, locations, areas, items, inventoryData);
         }
 
         //Check that the GM didn't delete the spy channel or some shit

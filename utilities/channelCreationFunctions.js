@@ -16,10 +16,12 @@ module.exports = {
             let channel = await guild.channels.create(channelName, {
                 type: 'text',
                 parent: settings.categoryID,
-                permissionOverwrites: [{
-                    id: guild.id,
-                    deny: [`VIEW_CHANNEL`]
-                }]
+                permissionOverwrites: [
+                    {
+                        id: guild.id,
+                        deny: [`VIEW_CHANNEL`, `SEND_MESSAGES`]
+                    }
+                ]
             })
 
             const earlogChannel = client.getEarlogChannel.get(`${guild.id}_${area.id}`);
@@ -47,7 +49,7 @@ module.exports = {
             for (location of locationsHere) {
                 let player = players.find(p => p.username == location.username);
                 characterDescriptions += this.GetPlayerIntroString(client, player, items, inventoryData) + "\n";
-                await this.OpenChannelForPlayer(player, message, channel);
+                await this.PlacePlayerInChannel(player, message, channel);
             }
 
             SendMessageChannel(characterDescriptions, channel);
@@ -86,26 +88,44 @@ module.exports = {
         let heartEmojis = UtilityFunctions.GetHeartEmojis(player.health);
 
         //Toggle this if you want pings
-        let pingsOn = true;
+        let pingsOn = false;
         let playerPing = (pingsOn) ? `<@${player.discordID}>` : player.username;
 
         return `${playerPing}\n**${player.character}** --  HEALTH: ${player.health}  ${heartEmojis}\n${bigItemString}`;
     },
 
     async SendSingleEntranceMessageAndOpenChannel(client, message, player, items, inventoryData, channel) {
-        await this.OpenChannelForPlayer(player, message, channel);
-        channel.send(this.GetPlayerIntroString(client, player, items, inventoryData), { split: true });
+        await this.PlacePlayerInChannel(player, message, channel);
+        await channel.send(this.GetPlayerIntroString(client, player, items, inventoryData), { split: true });
+        await this.UnlockChannel(message, channel);
     },
 
-    async OpenChannelForPlayer(player, message, channel) {
+    //
+    async PlacePlayerInChannel(player, message, channel) {
         try {
             const member = channel.guild.members.cache.find(m => m.id == player.discordID);
-            (player.alive) ? await channel.createOverwrite(member, { VIEW_CHANNEL: true }) :
+            (player.alive) ?
+                await channel.createOverwrite(member, { VIEW_CHANNEL: true }) :
                 await channel.createOverwrite(member, { VIEW_CHANNEL: true, SEND_MESSAGES: false });
         } catch (error) {
-            message.channel.send(":warning: Failed to open channel " + channel.name + " for " + player.username);
+            message.channel.send(`:warning: Failed to place ${player.username} in ${channel.name}`);
             postErrorMessage(error, message.channel);
         }
+    },
+
+    async UnlockChannel(message, channel) {
+        try {
+            await channel.updateOverwrite(channel.guild.id, { SEND_MESSAGES: true });
+        } catch (error) {
+            let channelName = (channel) ? channel.name : "??? channel"
+            message.channel.send(`:warning: Failed to open ${channelName}. It may require being UNLOCKed manually.`);
+            postErrorMessage(error, message.channel);
+        }
+    },
+
+    UnlockAllChannels(message, channels) {
+        for (channel of channels)
+            this.UnlockChannel(message, channel);
     },
 
     async CreateEarlog(client, message, area, settings) {
@@ -120,7 +140,9 @@ module.exports = {
             })
 
             await channel.createWebhook(`EarlogWebhook_${area.id}_1`);
+            UtilityFunctions.sleep(200);
             await channel.createWebhook(`EarlogWebhook_${area.id}_2`);
+            UtilityFunctions.sleep(200);
 
             let earlogChannel = {
                 guild_areaID: `${message.guild.id}_${area.id}`,
@@ -165,7 +187,9 @@ module.exports = {
 
             //Create Webhooks
             await channel.createWebhook(`SpyWebhook_${player.username}_1`);
+            UtilityFunctions.sleep(200);
             await channel.createWebhook(`SpyWebhook_${player.username}_2`);
+            UtilityFunctions.sleep(200);
 
             newSpyChannel = {
                 guild_username: `${player.guild_username}`,
@@ -185,12 +209,12 @@ module.exports = {
         }
     },
 
-    PostAllStartSpyMessages(message, spyActions, spyChannelData, players, settings, locations, areas, items, inventoryData) {
-        for (spyAction of spyActions) 
-            this.PostStartSpyMessages(message, spyAction, spyChannelData, players, settings, locations, areas, items, inventoryData);
+    async PostAllStartSpyMessages(message, spyActions, spyChannelData, players, settings, locations, areas, items, inventoryData) {
+        for (spyAction of spyActions)
+            await this.PostStartSpyMessages(message, spyAction, spyChannelData, players, settings, locations, areas, items, inventoryData);
     },
 
-    PostStartSpyMessages(message, spyAction, spyChannelData, players, settings, locations, areas, items, inventoryData) {
+    async PostStartSpyMessages(message, spyAction, spyChannelData, players, settings, locations, areas, items, inventoryData) {
         //Generate message
         let area = areas.find(area => area.id == spyAction.spyArea);
         let spyMessageArray = this.GetStartSpyMessage(message, spyAction, players, settings, locations, area, items, inventoryData);
@@ -200,8 +224,10 @@ module.exports = {
         if (!spyAction.visible) accuracy = 1.0;
 
         //Post in it
-        UtilityFunctions.PostSpyMessage(message.client, message, spyMessageArray[0], spyAction, spyChannelData, 1.0, false);
-        UtilityFunctions.PostSpyMessage(message.client, message, spyMessageArray[1], spyAction, spyChannelData, accuracy, false);
+        await UtilityFunctions.PostSpyMessage(message.client, message, spyMessageArray[0], spyAction, spyChannelData, 1.0, false);
+        await UtilityFunctions.PostSpyMessage(message.client, message, spyMessageArray[1], spyAction, spyChannelData, accuracy, false);
+        //Sleep a bit, because if we don't discord will complain
+        await UtilityFunctions.sleep(200);
     },
 
     //Post identical message for spy channel (with a few adjustements)
@@ -229,7 +255,7 @@ module.exports = {
     },
 
     //Checks the number of channels in the category and makes a new category if we're about to go over the limit (50)
-    async CheckCategorySize(client, message, settings, areas, locations, channelsToMake=undefined) {
+    async CheckCategorySize(client, message, settings, areas, locations, channelsToMake = undefined) {
         const categoryObject = message.guild.channels.cache.get(settings.categoryID);
         const numOfChannels = categoryObject.children.size;
 
@@ -254,7 +280,7 @@ module.exports = {
             let channelname = gameName;
             settings.categoryNum++;
             if (settings.categoryNum != 1) channelname += ` (${settings.categoryNum})`;
-    
+
             let categoryObject = await message.guild.channels.create(channelname, {
                 type: 'category',
                 permissionOverwrites: [{
@@ -262,7 +288,7 @@ module.exports = {
                     deny: [`VIEW_CHANNEL`]
                 }]
             })
-    
+
             settings.categoryName = gameName;
             settings.categoryID = categoryObject.id;
             client.setSettings.run(settings);
@@ -270,7 +296,7 @@ module.exports = {
         } catch (error) {
             postErrorMessage(error, message.channel);
         }
-        
+
     }
 
 }
