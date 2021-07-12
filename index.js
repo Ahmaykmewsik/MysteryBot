@@ -663,8 +663,18 @@ client.on("message", message => {
 
 	//TESTING
 	if (message.content == "test") {
-		let numChannels = message.guild.channels.cache.size;
-		console.log(numChannels);
+		async function test () {
+			message.channel.send("ONE");
+			await UtilityFunctions.sleep(1000);
+			message.channel.send("TWO");
+			await UtilityFunctions.sleep(1000);
+			message.channel.send("THREE!");
+			await UtilityFunctions.sleep(1000);
+		}
+
+		test();
+		
+		return;
 	}
 
 	///EARLOG---------------------------------------------------------
@@ -762,6 +772,7 @@ client.on("message", message => {
 //Getting reactions of all messages ever
 //https://github.com/AnIdiotsGuide/discordjs-bot-guide/blob/master/coding-guides/raw-events.md
 client.on('raw', packet => {
+	console.dir(packet);
     // We don't want this to run on unrelated packets
     if (!['MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE'].includes(packet.t)) return;
     // Grab the channel to check the message from
@@ -787,6 +798,8 @@ client.on('raw', packet => {
 });
 
 client.on('debug', console.log);
+
+client.on('warn', console.log);
 
 client.on("messageUpdate", async updatedMessage => {
 	//Only do anything if we're obviously in a gameplay channel

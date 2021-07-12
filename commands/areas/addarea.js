@@ -7,7 +7,7 @@ module.exports = {
     description: 'Creates a new area with specified ID string. The area ID cannot contain whitespace.',
     format: "!addarea <id>",
     gmonly: true,
-    execute(client, message, args) {
+    async execute(client, message, args) {
 
         if (args.length === 0) {
             return message.channel.send("No area ID provided. Please specify an ID string for the new area.");
@@ -44,9 +44,8 @@ module.exports = {
             formatArea(client, newArea, 1)
         );
 
-
-        //Create Earlog if game has started
+        //Create Earlog
         const settings = UtilityFunctions.GetSettings(client, message.guild.id);
-        if (settings.phase) ChannelCreationFunctions.CreateEarlog(client, message, newArea, settings);
+        await ChannelCreationFunctions.CreateEarlog(client, message, newArea, settings);
     }
 };
