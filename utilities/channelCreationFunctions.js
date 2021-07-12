@@ -129,11 +129,6 @@ module.exports = {
     },
 
     async CreateEarlog(client, message, area, settings) {
-
-        if (!settings.earlogCategoryID) {
-            settings = this.CreateEarlogCategory(message, settings);
-        }
-
         try {
             let channel = await message.guild.channels.create("earlog-" + area.id, {
                 type: 'text',
@@ -145,9 +140,9 @@ module.exports = {
             })
 
             await channel.createWebhook(`EarlogWebhook_${area.id}_1`);
-            await UtilityFunctions.sleep(500);
+            UtilityFunctions.sleep(200);
             await channel.createWebhook(`EarlogWebhook_${area.id}_2`);
-            await UtilityFunctions.sleep(500);
+            UtilityFunctions.sleep(200);
 
             let earlogChannel = {
                 guild_areaID: `${message.guild.id}_${area.id}`,
@@ -161,12 +156,6 @@ module.exports = {
             postErrorMessage(error, message.channel);
         }
 
-    },
-
-    async CreateEarlogCategory(message, settings) {
-        let earlogCategory = await message.guild.channels.create("EARLOG", { type: 'category' });
-        settings.earlogCategoryID = earlogCategory.id;
-        return settings;
     },
 
     async CreateSpyChannel(client, message, guild, player, area, settings) {
@@ -198,9 +187,9 @@ module.exports = {
 
             //Create Webhooks
             await channel.createWebhook(`SpyWebhook_${player.username}_1`);
-            await UtilityFunctions.sleep(500);
+            UtilityFunctions.sleep(200);
             await channel.createWebhook(`SpyWebhook_${player.username}_2`);
-            await UtilityFunctions.sleep(500);
+            UtilityFunctions.sleep(200);
 
             newSpyChannel = {
                 guild_username: `${player.guild_username}`,
