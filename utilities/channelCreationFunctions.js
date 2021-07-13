@@ -50,7 +50,7 @@ module.exports = {
 
             for (location of locationsHere) {
                 let player = players.find(p => p.username == location.username);
-                characterDescriptions += this.GetPlayerIntroString(client, player, items, inventoryData) + "\n";
+                characterDescriptions += this.GetPlayerIntroString(client, player, items, inventoryData) + "\n\n";
                 await this.PlacePlayerInChannel(player, message, channel);
             }
 
@@ -79,7 +79,7 @@ module.exports = {
             //Only show big and clothing items
             if (!(item.big || item.clothing)) return;
 
-            bigItemsText += "\n**" + player.character + "** has: " + formatItem(client, item, false);
+            bigItemsText += "**" + player.character + "** has: " + formatItem(client, item, false);
         });
         return bigItemsText;
 
@@ -145,11 +145,11 @@ module.exports = {
                 }]
             })
 
-            await UtilityFunctions.sleep(500);
+            await UtilityFunctions.sleep(200);
             await channel.createWebhook(`EarlogWebhook_${area.id}_1`);
-            await UtilityFunctions.sleep(500);
+            await UtilityFunctions.sleep(200);
             await channel.createWebhook(`EarlogWebhook_${area.id}_2`);
-            await UtilityFunctions.sleep(500);
+            await UtilityFunctions.sleep(200);
 
             let earlogChannel = {
                 guild_areaID: `${message.guild.id}_${area.id}`,
