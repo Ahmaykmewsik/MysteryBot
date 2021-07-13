@@ -24,6 +24,8 @@ module.exports = {
                 ]
             })
 
+            await UtilityFunctions.sleep(1000);
+
             const earlogChannel = client.getEarlogChannel.get(`${guild.id}_${area.id}`);
 
             const newGameplayChannel = {
@@ -130,6 +132,10 @@ module.exports = {
 
     async CreateEarlog(client, message, area, settings) {
         try {
+
+                
+            settings = await this.CreateEarlogCategoryIfNeeded(client, message.guild, settings);
+
             let channel = await message.guild.channels.create("earlog-" + area.id, {
                 type: 'text',
                 parent: settings.earlogCategoryID,
@@ -139,10 +145,11 @@ module.exports = {
                 }]
             })
 
+            await UtilityFunctions.sleep(500);
             await channel.createWebhook(`EarlogWebhook_${area.id}_1`);
-            UtilityFunctions.sleep(200);
+            await UtilityFunctions.sleep(500);
             await channel.createWebhook(`EarlogWebhook_${area.id}_2`);
-            UtilityFunctions.sleep(200);
+            await UtilityFunctions.sleep(500);
 
             let earlogChannel = {
                 guild_areaID: `${message.guild.id}_${area.id}`,
@@ -150,12 +157,21 @@ module.exports = {
                 channelID: channel.id
             }
             client.setEarlogChannel.run(earlogChannel);
-            return earlogChannel;
+            return settings;
 
         } catch (error) {
             postErrorMessage(error, message.channel);
         }
 
+    },
+
+    async CreateEarlogCategoryIfNeeded(client, guild, settings) {
+        //only make it if earlog category doesn't already exist
+        if (settings.earlogCategoryID) return settings;
+        let earlogCategory = await guild.channels.create("EARLOG", { type: 'category' });
+        settings.earlogCategoryID = earlogCategory.id;
+        await client.setSettings.run(settings);
+        return settings
     },
 
     async CreateSpyChannel(client, message, guild, player, area, settings) {
@@ -187,9 +203,9 @@ module.exports = {
 
             //Create Webhooks
             await channel.createWebhook(`SpyWebhook_${player.username}_1`);
-            UtilityFunctions.sleep(200);
+            await UtilityFunctions.sleep(1000);
             await channel.createWebhook(`SpyWebhook_${player.username}_2`);
-            UtilityFunctions.sleep(200);
+            await UtilityFunctions.sleep(1000);
 
             newSpyChannel = {
                 guild_username: `${player.guild_username}`,

@@ -762,6 +762,7 @@ client.on("message", message => {
 //Getting reactions of all messages ever
 //https://github.com/AnIdiotsGuide/discordjs-bot-guide/blob/master/coding-guides/raw-events.md
 client.on('raw', packet => {
+	console.log(client.ws);
     // We don't want this to run on unrelated packets
     if (!['MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE'].includes(packet.t)) return;
     // Grab the channel to check the message from
@@ -785,6 +786,8 @@ client.on('raw', packet => {
         }
     });
 });
+
+client.on('raw', console.dir);
 
 client.on('debug', console.log);
 

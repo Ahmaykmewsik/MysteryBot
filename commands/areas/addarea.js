@@ -7,7 +7,7 @@ module.exports = {
     description: 'Creates a new area with specified ID string. The area ID cannot contain whitespace.',
     format: "!addarea <id>",
     gmonly: true,
-    execute(client, message, args) {
+    async execute(client, message, args) {
 
         if (args.length === 0) {
             return message.channel.send("No area ID provided. Please specify an ID string for the new area.");
@@ -22,6 +22,8 @@ module.exports = {
         if (doesAreaExist) {
             return message.channel.send(`An area with the ID \`${id}\`already exists!`);
         }
+
+        await message.channel.send("Creating Earlog...");
 
         const newArea = {
             guild_id: `${message.guild.id}_${id}`,
@@ -39,14 +41,13 @@ module.exports = {
             guild: message.guild.id
         });
 
+        //Create Earlog
+        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
+        await ChannelCreationFunctions.CreateEarlog(client, message, newArea, settings);
+
         message.channel.send("Successfully created new area: `" + id +
             "`.\nUse `!areaname`, `!areadesc`, `!connect`, and `!areaimage` to edit this area's properties.\n\n" +
             formatArea(client, newArea, 1)
         );
-
-
-        //Create Earlog if game has started
-        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
-        if (settings.phase) ChannelCreationFunctions.CreateEarlog(client, message, newArea, settings);
     }
 };
