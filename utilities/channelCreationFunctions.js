@@ -24,7 +24,7 @@ module.exports = {
                 ]
             })
 
-            await UtilityFunctions.sleep(1000);
+            await UtilityFunctions.sleep(100);
 
             const earlogChannel = client.getEarlogChannel.get(`${guild.id}_${area.id}`);
 
@@ -50,7 +50,7 @@ module.exports = {
 
             for (location of locationsHere) {
                 let player = players.find(p => p.username == location.username);
-                characterDescriptions += this.GetPlayerIntroString(client, player, items, inventoryData) + "\n\n";
+                characterDescriptions += this.GetPlayerIntroString(client, player, items, inventoryData) + "\n";
                 await this.PlacePlayerInChannel(player, message, channel);
             }
 
@@ -79,7 +79,7 @@ module.exports = {
             //Only show big and clothing items
             if (!(item.big || item.clothing)) return;
 
-            bigItemsText += "**" + player.character + "** has: " + formatItem(client, item, false);
+            bigItemsText += `:small_blue_diamond:${formatItem(client, item, false)}\n`;
         });
         return bigItemsText;
 

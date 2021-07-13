@@ -16,7 +16,7 @@ module.exports = {
     gmonly: true,
     async execute(client, message, args) {
 
-        //return UtilityFunctions.NotImplemented(message);
+        return UtilityFunctions.NotImplemented(message);
 
         let player = UtilityFunctions.GetPlayer(client, message, message.guild.id, args.shift());
         if (player.username == undefined) return;
