@@ -90,7 +90,7 @@ module.exports = {
         let heartEmojis = UtilityFunctions.GetHeartEmojis(player.health);
 
         //Toggle this if you want pings
-        let pingsOn = false;
+        let pingsOn = true;
         let playerPing = (pingsOn) ? `<@${player.discordID}>` : player.username;
 
         return `${playerPing}\n**${player.character}** --  HEALTH: ${player.health}  ${heartEmojis}\n${bigItemString}`;
