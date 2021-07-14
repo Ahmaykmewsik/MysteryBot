@@ -17,6 +17,8 @@ module.exports = {
 
             settings = await ChannelCreationFunctions.CheckCategorySize(client, message, settings, areas, locations);
 
+            let newChannels = [];
+
             for (area of areas) {
                 //if aint nobody here don't make the channel
                 const locationsHere = locations.filter(l => area.id == l.areaID);
@@ -24,7 +26,7 @@ module.exports = {
 
                 //Otherwise, make it!
                 try {
-                    await ChannelCreationFunctions.CreateSingleChannel(client, message, area, message.guild, settings, players, locations, inventoryData);
+                    newChannels.push(await ChannelCreationFunctions.CreateSingleChannel(client, message, area, message.guild, settings, players, locations, inventoryData));
                 } catch (error) {
                     message.channel.send(`:bangbang: Failed to create channel for: \`${area.id}\``);
                 }
@@ -61,12 +63,16 @@ module.exports = {
             client.deleteAllSpyConnections.run(message.guild.id);
             spyConnections.forEach(c => client.addSpyConnection.run(c));
 
-            await SpyManagement.RefreshSpying(client, message, message.guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings);
+            await SpyManagement.RefreshSpying(client, message, message.guild, spyActionsData, spyConnections, spyChannelData, players, areas, locations, settings, false);
 
             spyChannelData = client.getSpyChannels.all(message.guild.id);
             spyActionsData = client.getSpyActionsAll.all(message.guild.id);
 
-            ChannelCreationFunctions.PostAllStartSpyMessages(message, spyActionsData, spyChannelData, players, settings, locations, areas, items, inventoryData);
+            await ChannelCreationFunctions.PostAllStartSpyMessages(message, spyActionsData, spyChannelData, players, settings, locations, areas, items, inventoryData);
+
+            ChannelCreationFunctions.UnlockAllChannels(message, newChannels);
+
+
         } catch (error) {
             postErrorMessage(error, message.channel);
         }

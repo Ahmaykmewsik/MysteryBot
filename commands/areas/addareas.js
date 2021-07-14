@@ -7,7 +7,7 @@ module.exports = {
     description: 'Creates multiple areas with one command. Remember that an area-id cannot contain whitespace.',
     format: "!addareas <id> <id> <id> <id>...",
     gmonly: true,
-    execute(client, message, args) {
+    async execute(client, message, args) {
 
         if (args.length === 0) {
             return message.channel.send("No area ID provided. Please specify an ID string for the new area.");
@@ -15,7 +15,15 @@ module.exports = {
 
         oldAreas = client.getAreas.all(message.guild.id);
         newAreas = [];
-        const settings = UtilityFunctions.GetSettings(client, message.guild.id);
+        let settings = UtilityFunctions.GetSettings(client, message.guild.id);
+
+        if (args.length > 5)
+            return message.channel.send("Sorry, you can't add more than 5 areas at a time (blame the discord API)");
+
+        await message.channel.send("Creating Earlogs...");
+
+        //Check if earlog category exists
+        settings = await ChannelCreationFunctions.CreateEarlogCategoryIfNeeded(client, message.guild, settings);
 
         let returnMessage = "";
 
@@ -52,8 +60,8 @@ module.exports = {
 
             returnMessage += `New area created: \`${newArea.id}\`\n`
 
-            //Create Earlog if game has started
-            if (settings.phase) ChannelCreationFunctions.CreateEarlog(client, message, newArea, settings);
+            //Create Earlog
+            await ChannelCreationFunctions.CreateEarlog(client, message, newArea, settings);
         }
 
         message.channel.send(returnMessage, {split: true});

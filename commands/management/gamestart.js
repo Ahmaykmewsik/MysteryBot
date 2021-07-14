@@ -59,17 +59,16 @@ module.exports = {
                 settings.phase = 1;
 
             //If you're running !gamestart you probably don't have any earlogs you care about, so delete them.
-            client.deleteAllEarlogChannelData.run(message.guild.id);
+            //client.deleteAllEarlogChannelData.run(message.guild.id);
 
-            let earlogCategory = await message.guild.channels.create("EARLOG", { type: 'category' });
-            settings.earlogCategoryID = earlogCategory.id;
+            
 
             //create earlogs
-            for (area of areas) {
-                await ChannelCreationFunctions.CreateEarlog(client, message, area, settings);
-            }
+            // for (area of areas) {
+            //     await ChannelCreationFunctions.CreateEarlog(client, message, area, settings);
+            // }
 
-            message.channel.send("Earlogs created...");
+            //message.channel.send("Earlogs created...");
 
             //Faster way that is more dangerous
             // let earlogPromises = [];
@@ -81,15 +80,16 @@ module.exports = {
             // let returnValues = await Promise.allSettled(earlogPromises);
             // console.log(returnValues);
             
-            //Create spy category and store it
+
+
+            // //Create spy category and store it
             // let categoryObject = await message.guild.channels.create("SPY CHANNELS", { type: 'category' });
             // settings.spyCategoryID = categoryObject.id;
-            
-            //set position underneath game category
+            // //set position underneath game category
             // let position = message.guild.channels.cache.get(settings.categoryID).position;
+            // if (position) categoryObject.setPosition(position + 1);
 
-            // if (position)
-            //     categoryObject.setPosition(position + 1);
+
 
             client.setSettings.run(settings);
 

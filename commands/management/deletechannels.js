@@ -15,8 +15,8 @@ module.exports = {
 										Do it yourself if you really need to.")
 
 		let settings = UtilityFunctions.GetSettings(client, message.guild.id);
-		if (!settings.phase)
-			return message.channel.send("You need to start the game first with !gamestart. (Aborting)");
+		// if (!settings.phase)
+		// 	return message.channel.send("You need to start the game first with !gamestart. (Aborting)");
 
 		let warningMessage = "Delete all gameplay channles and earlogs? You can't undo this! (y/n)";
 		return UtilityFunctions.WarnUserWithPrompt(message, warningMessage, DeleteChannels);

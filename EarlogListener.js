@@ -19,7 +19,7 @@ module.exports = {
 		const webhooks = await earlogChannel.fetchWebhooks();
 
 		//Post in Earlog
-		UtilityFunctions.PostMessage(message, message.content, earlogChannel, webhooks);
+		await UtilityFunctions.PostMessage(message, message.content, earlogChannel, webhooks);
 
 		let spyChannels = client.getSpyChannels.all(message.guild.id);
         if (spyChannels.length == 0) return;

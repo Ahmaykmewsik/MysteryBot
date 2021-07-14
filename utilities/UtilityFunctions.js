@@ -346,7 +346,7 @@ module.exports = {
             }
 
             const webhooksSpy = await spyChannel.fetchWebhooks();
-            this.PostMessage(message, spyMessage, spyChannel, webhooksSpy, accuracy, changeApperance, false);
+            await this.PostMessage(message, spyMessage, spyChannel, webhooksSpy, accuracy, changeApperance, false);
         } catch (error) {
             console.error(`Spy channel Error: ` + error);
         }
@@ -396,6 +396,10 @@ module.exports = {
         } catch {
             return null;
         }
-    }
+    },
+
+    async sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
 
 }
