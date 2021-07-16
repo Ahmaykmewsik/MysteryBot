@@ -270,15 +270,7 @@ module.exports = {
             embedFile = undefined;
         }
 
-        var webhook;
-        if (!channelToPost.lastMessage) {
-            webhook = webhooks.first();
-        } else if (!channelToPost.lastMessage.webhookID) {
-            webhook = webhooks.first();
-        } else {
-            webhooks.sweep(w => w.id == channelToPost.lastMessage.webhookID && w.username == username);
-            webhook = webhooks.first();
-        }
+        let webhook = webhooks.first();
 
         let content = this.EncryptSpyMessage(messageString, accuracy);
 
