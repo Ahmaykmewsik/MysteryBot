@@ -8,6 +8,7 @@ module.exports = {
         Return player object from the database using user input.
         Returns closest matching string to username via Includes() 
         */
+       intput = input.toLowerCase();
         for (const p of client.getPlayers.iterate(guildID)) {
             if (p.username.toLowerCase().includes(input)) {
                 return p;
