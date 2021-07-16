@@ -132,8 +132,7 @@ module.exports = {
 
     async CreateEarlog(client, message, area, settings) {
         try {
-
-                
+  
             settings = await this.CreateEarlogCategoryIfNeeded(client, message.guild, settings);
 
             let channel = await message.guild.channels.create("earlog-" + area.id, {
@@ -145,10 +144,7 @@ module.exports = {
                 }]
             })
 
-            await UtilityFunctions.sleep(200);
             await channel.createWebhook(`EarlogWebhook_${area.id}_1`);
-            await UtilityFunctions.sleep(200);
-            await channel.createWebhook(`EarlogWebhook_${area.id}_2`);
             await UtilityFunctions.sleep(200);
 
             let earlogChannel = {
@@ -203,9 +199,7 @@ module.exports = {
 
             //Create Webhooks
             await channel.createWebhook(`SpyWebhook_${player.username}_1`);
-            await UtilityFunctions.sleep(1000);
-            await channel.createWebhook(`SpyWebhook_${player.username}_2`);
-            await UtilityFunctions.sleep(1000);
+            await UtilityFunctions.sleep(200);
 
             newSpyChannel = {
                 guild_username: `${player.guild_username}`,
